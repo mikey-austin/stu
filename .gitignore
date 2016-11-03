@@ -3,3 +3,4 @@ stutter.tab.c
 stutter.tab.h
 stutter
 *~
+*.o
