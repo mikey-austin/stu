@@ -1,13 +1,13 @@
 all: stutter
 
 stutter: lex.yy.o stutter.tab.o sv.o
-	flex stutter.l
-	bison -d stutter.y
 	cc -o stutter lex.yy.o stutter.tab.o sv.o
 
-lex.yy.o: stutter.l sv.h
+lex.yy.o: stutter.tab.h stutter.l sv.h
 	flex stutter.l
 	cc -c lex.yy.c
+
+stutter.tab.h: stutter.tab.o
 
 stutter.tab.o: stutter.y sv.h
 	bison -d stutter.y
