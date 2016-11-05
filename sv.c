@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <err.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "sv.h"
 
@@ -91,6 +92,46 @@ Sv_destroy(Sv **sv)
 
         free(*sv);
         *sv = NULL;
+    }
+}
+
+extern void
+Sv_dump(Sv *sv)
+{
+    int i;
+
+    if (sv) {
+        switch (sv->type) {
+        case SV_SYM:
+            if (sv->val.buf)
+                printf("%s", sv->val.buf);
+            break;
+
+        case SV_ERR:
+        case SV_STR:
+            if (sv->val.buf)
+                printf("%s", sv->val.buf);
+            break;
+
+        case SV_SEXP:
+            printf("(");
+            for (i = 0; i < SV_SEXP_REGISTERS; i++) {
+                Sv_dump(sv->val.reg[i]);
+                if (i == 0)
+                    printf(" ");
+            }
+            printf(")");
+            break;
+
+        case SV_INT:
+            printf("%d", sv->val.i);
+            break;
+
+        case SV_FUNC:
+            break;
+        }
+    } else {
+        printf("nil");
     }
 }
 

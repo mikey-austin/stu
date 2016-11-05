@@ -36,6 +36,7 @@ extern Sv *Sv_new_str(const char *);
 extern Sv *Sv_new_sym(const char *);
 extern Sv *Sv_new_err(const char *);
 
+extern void Sv_dump(Sv *sv);
 extern void Sv_destroy(Sv **);
 extern Sv *Sv_cons(Sv *, Sv *);
 extern Sv *Sv_cdr(Sv *);
