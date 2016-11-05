@@ -1,55 +1,57 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
+#include <err.h>
+#include "sv.h"
 
 extern int yylex(void);
-extern void yyerror(char const *s);
+extern void yyerror(Sv **result, char const *s);
 
-void yyerror (char const *s)
+void yyerror (Sv **result, char const *s)
 {
-    fprintf (stderr, "%s\n", s);
+    warnx("%s", s);
 }
 %}
 
 %union {
     int i;
-    char *str;
     char *sym;
+    char *str;
+    Sv *sv;
 }
 
-/* declare tokens */
-%token  <i>             INTEGER
-%token  <str>           STRING
-%token  <sym>           SYMBOL
+%token <i>   INTEGER
+%token <str> STRING
+%token <sym> SYMBOL
+
+%type <sv> list sexp atom elements
 
 %start stutter
-
-%%
-
-stutter:                { printf("nothing\n"); }
-    | list              { printf("stutter list\n"); }
-    ;
-
-sexp: atom           { printf("sexp\n"); }
-    | list
-    ;
-
-list: '(' elements ')'  { printf("list\n"); }
-    | '(' ')'
-    ;
-
-elements: sexp
-    | sexp elements
-    ;
-
-atom: INTEGER            { printf("integer: %d\n", $1); }
-    | STRING             { printf("string: %s\n", $1); }
-    | SYMBOL             { printf("symbol: %s\n", $1); }
-    ;
-
-%%
-
-int main(void) {
-    yyparse();
-    return 0;
+%parse-param {
+    Sv **result
 }
+
+%%
+
+stutter:
+    | list  { *result = $1; }
+    ;
+
+list: '(' elements ')'  { $$ = $2; }
+    | '(' ')'           { $$ = NULL; }
+    ;
+
+elements: sexp      { $$ = $1; }
+    | sexp elements { $$ = Sv_cons($1, $2); }
+    ;
+
+sexp: atom  { $$ = $1; }
+    | list  { $$ = $1; }
+    ;
+
+atom: INTEGER    { $$ = Sv_new_int($1); }
+    | STRING     { $$ = Sv_new_str($1); }
+    | SYMBOL     { $$ = Sv_new_sym($1); }
+    ;
+
+%%

@@ -1,15 +1,126 @@
 #include <stdlib.h>
+#include <err.h>
+#include <string.h>
 
 #include "sv.h"
 
 extern Sv
-*Sv_new(enum Sv_type type, union Sv_val *val)
+*Sv_new(enum Sv_type type)
 {
-    return NULL;
+    Sv *x = NULL;
+    int i;
+
+    if ((x = malloc(sizeof(*x))) != NULL) {
+        x->gc = 0;
+        x->type = type;
+
+        for (i = 0; i < SV_SEXP_REGISTERS; i++)
+            x->val.reg[i] = NULL;
+    } else {
+        err(1, "Sv_new");
+    }
+
+    return x;
 }
 
-extern int
-Sv_destroy(Sv *sv)
+extern Sv
+*Sv_new_int(int i)
 {
-    return 0;
+    Sv *x = Sv_new(SV_INT);
+    x->val.i = i;
+    return  x;
+}
+
+extern Sv
+*Sv_new_str(const char *str)
+{
+    Sv *x = Sv_new(SV_STR);
+
+    if ((x->val.buf = malloc(strlen(str) + 1)) != NULL) {
+        strcpy(x->val.buf, str);
+    } else {
+        err(1, "Sv_new_str");
+    }
+
+    return  x;
+}
+
+extern Sv
+*Sv_new_sym(const char *sym)
+{
+    Sv *x = Sv_new_str(sym);
+    x->type = SV_SYM;
+    return x;
+}
+
+extern Sv
+*Sv_new_err(const char *err)
+{
+    Sv *x = Sv_new_str(err);
+    x->type = SV_ERR;
+    return x;
+}
+
+extern void
+Sv_destroy(Sv **sv)
+{
+    int i;
+
+    if (sv && *sv) {
+        switch ((*sv)->type) {
+        case SV_ERR:
+        case SV_SYM:
+        case SV_STR:
+            if ((*sv)->val.buf) {
+                free((*sv)->val.buf);
+                (*sv)->val.buf = NULL;
+            }
+            break;
+
+        case SV_SEXP:
+            for (i = 0; i < SV_SEXP_REGISTERS; i++) {
+                Sv_destroy(&((*sv)->val.reg[i]));
+                (*sv)->val.reg[i] = NULL;
+            }
+            break;
+
+        case SV_FUNC:
+            break;
+        }
+
+        free(*sv);
+        *sv = NULL;
+    }
+}
+
+extern Sv
+*Sv_cons(Sv *x, Sv *y)
+{
+    Sv *z = Sv_new(SV_SEXP);
+    if (z != NULL) {
+        z->val.reg[SV_CAR] = x;
+        z->val.reg[SV_CDR] = y;
+    } else {
+        err(1, "Sv_cons");
+    }
+
+    return z;
+}
+
+extern Sv *Sv_car(Sv *x)
+{
+    if (!x || x->type != SV_SEXP) {
+        errx(1, "car: sexp argument required");
+    }
+
+    return x->val.reg[SV_CAR];
+}
+
+extern Sv *Sv_cdr(Sv *x)
+{
+    if (!x || x->type != SV_SEXP) {
+        errx(1, "cdr: sexp argument required");
+    }
+
+    return x->val.reg[SV_CDR];
 }

@@ -1,10 +1,10 @@
 all: stutter
 
-stutter: lex.yy.o stutter.tab.o sv.o
-	cc -o stutter lex.yy.o stutter.tab.o sv.o
+stutter: lex.yy.o stutter.tab.o sv.o parse.o
+	cc -o stutter lex.yy.o stutter.tab.o sv.o parse.o
 
 lex.yy.o: stutter.tab.h stutter.l sv.h
-	flex stutter.l
+	flex --header-file=lex.yy.h stutter.l
 	cc -c lex.yy.c
 
 stutter.tab.h: stutter.tab.o
@@ -16,5 +16,8 @@ stutter.tab.o: stutter.y sv.h
 sv.o: sv.c sv.h
 	cc -c sv.c
 
+parse.o: parse.c parse.h stutter.tab.h sv.h
+	cc -c parse.c
+
 clean:
-	rm -f lex.yy.c stutter.tab.c stutter.tab.h stutter *.o
+	rm -f lex.yy.[ch] stutter.tab.[ch] stutter *.o

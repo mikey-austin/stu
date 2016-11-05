@@ -1,6 +1,5 @@
-lex.yy.c
-stutter.tab.c
-stutter.tab.h
+lex.yy.[hc]
+stutter.tab.[hc]
 stutter
 *~
 *.o

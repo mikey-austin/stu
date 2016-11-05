@@ -1,8 +1,10 @@
 %option noyywrap
+%option nodefault
 
 %{
 #include <string.h>
 #include <stdio.h>
+#include "sv.h"
 #include "stutter.tab.h"
 %}
 
