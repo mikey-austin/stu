@@ -84,6 +84,7 @@ Sv_destroy(Sv **sv)
             }
             break;
 
+        case SV_INT:
         case SV_FUNC:
             break;
         }
