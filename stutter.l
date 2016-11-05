@@ -12,7 +12,8 @@
 
 "(" |
 ")" |
-"'" { return yytext[0]; }
+"'" |
+"." { return yytext[0]; }
 
 \"(\\.|[^"])*\" { yylval.str = strdup(yytext); return STRING; }
 

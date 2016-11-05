@@ -15,10 +15,6 @@ extern Sv
 
         yy_switch_to_buffer(bp);
         switch (yyparse(&result)) {
-        case 1:
-            warnx("Syntax error");
-            break;
-
         case 2:
             errx(1, "Parser memory allocation error");
             break;
