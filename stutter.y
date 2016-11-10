@@ -37,13 +37,12 @@ stutter:
     | list             { *result = $1; }
     ;
 
-list: '(' elements ')' { $$ = $2; }
+list: '(' ')'          { $$ = NULL; }
+    | '(' elements ')' { $$ = $2; }
     | '\'' list        { $$ = Sv_cons(Sv_new_sym("quote"), $2); }
-    | '(' ')'          { $$ = NULL; }
     ;
 
-elements: sexp         { $$ = $1; }
-    | '\'' sexp        { $$ = Sv_cons(Sv_new_sym("quote"), $2); }
+elements: sexp         { $$ = Sv_cons($1, NULL); }
     | sexp '.' sexp    { $$ = Sv_cons($1, $3); }
     | sexp elements    { $$ = Sv_cons($1, $2); }
     ;

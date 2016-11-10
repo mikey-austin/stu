@@ -103,10 +103,6 @@ Sv_dump(Sv *sv)
     if (sv) {
         switch (sv->type) {
         case SV_SYM:
-            if (sv->val.buf)
-                printf("%s", sv->val.buf);
-            break;
-
         case SV_ERR:
         case SV_STR:
             if (sv->val.buf)
@@ -118,7 +114,7 @@ Sv_dump(Sv *sv)
             for (i = 0; i < SV_SEXP_REGISTERS; i++) {
                 Sv_dump(sv->val.reg[i]);
                 if (i == 0)
-                    printf(" ");
+                    printf(" . ");
             }
             printf(")");
             break;
