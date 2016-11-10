@@ -36,13 +36,8 @@ extern Sv
 *Sv_new_str(const char *str)
 {
     Sv *x = Sv_new(SV_STR);
-
-    if ((x->val.buf = malloc(strlen(str) + 1)) != NULL) {
-        strcpy(x->val.buf, str);
-    } else {
+    if ((x->val.buf = strdup(str)) == NULL)
         err(1, "Sv_new_str");
-    }
-
     return  x;
 }
 
