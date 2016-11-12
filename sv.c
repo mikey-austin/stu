@@ -5,6 +5,8 @@
 
 #include "sv.h"
 
+static void Sv_cons_dump(Sv *);
+
 extern Sv
 *Sv_new(enum Sv_type type)
 {
@@ -93,8 +95,6 @@ Sv_destroy(Sv **sv)
 extern void
 Sv_dump(Sv *sv)
 {
-    int i;
-
     if (sv) {
         switch (sv->type) {
         case SV_SYM:
@@ -106,11 +106,7 @@ Sv_dump(Sv *sv)
 
         case SV_SEXP:
             printf("(");
-            for (i = 0; i < SV_SEXP_REGISTERS; i++) {
-                Sv_dump(sv->val.reg[i]);
-                if (i == 0)
-                    printf(" . ");
-            }
+            Sv_cons_dump(sv);
             printf(")");
             break;
 
@@ -123,6 +119,23 @@ Sv_dump(Sv *sv)
         }
     } else {
         printf("nil");
+    }
+}
+
+static void
+Sv_cons_dump(Sv *sv)
+{
+    Sv *car = Sv_car(sv);
+    Sv *cdr = Sv_cdr(sv);
+    Sv_dump(car);
+    if (cdr) {
+        if (cdr->type == SV_SEXP) {
+            printf(" ");
+            Sv_cons_dump(cdr);
+        } else {
+            printf(" . ");
+            Sv_dump(cdr);
+        }
     }
 }
 
