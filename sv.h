@@ -1,9 +1,12 @@
 #ifndef SV_DEFINED
 #define SV_DEFINED
 
-#define SV_SEXP_REGISTERS 2
-#define SV_CAR 0
-#define SV_CDR 1
+#define SV_CONS_REGISTERS 2
+#define SV_CAR_REG 0
+#define SV_CDR_REG 1
+
+#define CAR(sv) ((sv) ? (sv)->val.reg[SV_CAR_REG] : NULL)
+#define CDR(sv) ((sv) ? (sv)->val.reg[SV_CDR_REG] : NULL)
 
 /* Types of stutter values. */
 enum Sv_type {
@@ -11,7 +14,7 @@ enum Sv_type {
     SV_SYM,
     SV_INT,
     SV_STR,
-    SV_SEXP,
+    SV_CONS,
     SV_FUNC
 };
 
@@ -20,7 +23,7 @@ struct Sv;
 union Sv_val {
     int i;
     char *buf;
-    struct Sv *reg[SV_SEXP_REGISTERS];
+    struct Sv *reg[SV_CONS_REGISTERS];
 };
 
 /* Core stutter value. */
@@ -39,7 +42,5 @@ extern Sv *Sv_new_err(const char *);
 extern void Sv_dump(Sv *sv);
 extern void Sv_destroy(Sv **);
 extern Sv *Sv_cons(Sv *, Sv *);
-extern Sv *Sv_cdr(Sv *);
-extern Sv *Sv_car(Sv *);
 
 #endif

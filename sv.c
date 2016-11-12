@@ -17,7 +17,7 @@ extern Sv
         x->gc = 0;
         x->type = type;
 
-        for (i = 0; i < SV_SEXP_REGISTERS; i++)
+        for (i = 0; i < SV_CONS_REGISTERS; i++)
             x->val.reg[i] = NULL;
     } else {
         err(1, "Sv_new");
@@ -62,8 +62,6 @@ extern Sv
 extern void
 Sv_destroy(Sv **sv)
 {
-    int i;
-
     if (sv && *sv) {
         switch ((*sv)->type) {
         case SV_ERR:
@@ -75,8 +73,8 @@ Sv_destroy(Sv **sv)
             }
             break;
 
-        case SV_SEXP:
-            for (i = 0; i < SV_SEXP_REGISTERS; i++) {
+        case SV_CONS:
+            for (int i = 0; i < SV_CONS_REGISTERS; i++) {
                 Sv_destroy(&((*sv)->val.reg[i]));
                 (*sv)->val.reg[i] = NULL;
             }
@@ -104,7 +102,7 @@ Sv_dump(Sv *sv)
                 printf("%s", sv->val.buf);
             break;
 
-        case SV_SEXP:
+        case SV_CONS:
             printf("(");
             Sv_cons_dump(sv);
             printf(")");
@@ -125,11 +123,11 @@ Sv_dump(Sv *sv)
 static void
 Sv_cons_dump(Sv *sv)
 {
-    Sv *car = Sv_car(sv);
-    Sv *cdr = Sv_cdr(sv);
+    Sv *car = CAR(sv);
+    Sv *cdr = CDR(sv);
     Sv_dump(car);
     if (cdr) {
-        if (cdr->type == SV_SEXP) {
+        if (cdr->type == SV_CONS) {
             printf(" ");
             Sv_cons_dump(cdr);
         } else {
@@ -142,31 +140,13 @@ Sv_cons_dump(Sv *sv)
 extern Sv
 *Sv_cons(Sv *x, Sv *y)
 {
-    Sv *z = Sv_new(SV_SEXP);
+    Sv *z = Sv_new(SV_CONS);
     if (z != NULL) {
-        z->val.reg[SV_CAR] = x;
-        z->val.reg[SV_CDR] = y;
+        z->val.reg[SV_CAR_REG] = x;
+        z->val.reg[SV_CDR_REG] = y;
     } else {
         err(1, "Sv_cons");
     }
 
     return z;
-}
-
-extern Sv *Sv_car(Sv *x)
-{
-    if (!x || x->type != SV_SEXP) {
-        errx(1, "car: sexp argument required");
-    }
-
-    return x->val.reg[SV_CAR];
-}
-
-extern Sv *Sv_cdr(Sv *x)
-{
-    if (!x || x->type != SV_SEXP) {
-        errx(1, "cdr: sexp argument required");
-    }
-
-    return x->val.reg[SV_CDR];
 }
