@@ -31,22 +31,21 @@ Env_destroy(Env **env)
 }
 
 extern void
-Env_put(Env *env, const char *key, Sv *val)
+Env_put(Env *env, Sv *key, Sv *val)
 {
-    Hash_put(env->hash, key, (void *) val);
+    Hash_put(env->hash, key->val.buf, (void *) val);
 }
 
 extern Sv
-*Env_get(Env *env, const char *key)
+*Env_get(Env *env, Sv *key)
 {
-    Sv *val = Hash_get(env->hash, key);
-    return val;
+    return Hash_get(env->hash, key->val.buf);
 }
 
 extern Sv
-*Env_del(Env *env, const char *key)
+*Env_del(Env *env, Sv *key)
 {
     Sv *val = Env_get(env, key);
-    Hash_del(env->hash, key);
+    Hash_del(env->hash, key->val.buf);
     return val;
 }

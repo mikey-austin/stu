@@ -10,8 +10,8 @@ typedef struct Env {
 
 extern Env *Env_new(void);
 extern void Env_destroy(Env **);
-extern void Env_put(Env *, const char *, Sv *);
-extern Sv *Env_get(Env *, const char *);
-extern Sv *Env_del(Env *, const char *);
+extern void Env_put(Env *, Sv *, Sv *);
+extern Sv *Env_get(Env *, Sv *);
+extern Sv *Env_del(Env *, Sv *);
 
 #endif
