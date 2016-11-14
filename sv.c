@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #include "sv.h"
+#include "env.h"
 
 static void Sv_cons_dump(Sv *);
 
@@ -56,6 +57,14 @@ extern Sv
 {
     Sv *x = Sv_new_str(err);
     x->type = SV_ERR;
+    return x;
+}
+
+extern Sv
+*Sv_new_func(Sv_func func)
+{
+    Sv *x = Sv_new(SV_FUNC);
+    x->val.func = func;
     return x;
 }
 
@@ -113,6 +122,7 @@ Sv_dump(Sv *sv)
             break;
 
         case SV_FUNC:
+            printf("<function>");
             break;
         }
     } else {
@@ -149,4 +159,59 @@ extern Sv
     }
 
     return z;
+}
+
+extern Sv
+*Sv_reverse(Sv *x)
+{
+    Sv *y = x, *z = NULL;
+
+    if (!x || x->type != SV_CONS)
+        return x;
+
+    do {
+        z = Sv_cons(CAR(y), z);
+    } while (y && y->type == SV_CONS);
+
+    return z;
+}
+
+extern Sv
+*Sv_eval(Env *env, Sv *x)
+{
+    switch (x->type) {
+    case SV_SYM:
+        return Env_get(env, x);
+
+    case SV_CONS:
+        return Sv_eval_sexp(env, x);
+
+    default:
+        return x;
+    }
+}
+
+extern Sv
+*Sv_eval_sexp(Env *env, Sv *x)
+{
+    Sv *cur = x, *y = NULL;
+
+    if (!cur)
+        return NULL;
+
+    /* Evaluate arguments. */
+    if (cur->type == SV_CONS) {
+        do {
+            y = Sv_cons(Sv_eval(env, CAR(cur)), y);
+            cur = CDR(cur);
+        } while (cur);
+        x = Sv_reverse(y);
+    }
+
+    /* The car should now be a function. */
+    y = CAR(x);
+    if (y->type != SV_FUNC)
+        return Sv_new_err("first element is not a function");
+
+    return y->val.func(env, CDR(x));
 }

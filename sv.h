@@ -18,11 +18,18 @@ enum Sv_type {
     SV_FUNC
 };
 
-/* Actual value container. */
+/* Forward declarations. */
+struct Env;
 struct Sv;
+
+/* Function value definition. */
+typedef struct Sv *(*Sv_func)(struct Env *, struct Sv *);
+
+/* Actual value container. */
 union Sv_val {
     int i;
     char *buf;
+    Sv_func func;
     struct Sv *reg[SV_CONS_REGISTERS];
 };
 
@@ -38,9 +45,14 @@ extern Sv *Sv_new_int(int);
 extern Sv *Sv_new_str(const char *);
 extern Sv *Sv_new_sym(const char *);
 extern Sv *Sv_new_err(const char *);
+extern Sv *Sv_new_func(Sv_func);
 
 extern void Sv_dump(Sv *sv);
 extern void Sv_destroy(Sv **);
 extern Sv *Sv_cons(Sv *, Sv *);
+extern Sv *Sv_reverse(Sv *);
+
+extern Sv *Sv_eval(struct Env *, Sv *);
+extern Sv *Sv_eval_sexp(struct Env *, Sv *);
 
 #endif
