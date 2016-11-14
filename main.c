@@ -3,11 +3,16 @@
 #include <stdlib.h>
 
 #include "sv.h"
+#include "env.h"
 #include "parse.h"
+#include "builtins.h"
 
 int
 main(int argc, char **argv)
 {
+    Env *env = Env_new();
+    Builtin_install(env);
+
     for (;;) {
         char *input = readline("stutter> ");
         if (input == NULL) {
@@ -18,7 +23,7 @@ main(int argc, char **argv)
 
         Sv *result = Parse_buf(input);
         if (result) {
-            Sv_dump(result);
+            Sv_dump(Sv_eval(env, result));
             printf("\n");
         }
 

@@ -20,7 +20,7 @@
 
 -?[0-9]+ { yylval.i = atoi(yytext); return INTEGER; }
 
-[a-zA-Z0-9._+-/=<>?!&]+ { yylval.str = yytext; return SYMBOL; }
+[a-zA-Z0-9._*+-/=<>?!&]+ { yylval.str = yytext; return SYMBOL; }
 
 ";".*
 

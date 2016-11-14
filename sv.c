@@ -164,21 +164,22 @@ extern Sv
 extern Sv
 *Sv_reverse(Sv *x)
 {
-    Sv *y = x, *z = NULL;
+    Sv *y = NULL;
 
-    if (!x || x->type != SV_CONS)
-        return x;
+    while (x && x->type == SV_CONS) {
+        y = Sv_cons(CAR(x), y);
+        x = CDR(x);
+    }
 
-    do {
-        z = Sv_cons(CAR(y), z);
-    } while (y && y->type == SV_CONS);
-
-    return z;
+    return y;
 }
 
 extern Sv
 *Sv_eval(Env *env, Sv *x)
 {
+    if (!x)
+        return x;
+
     switch (x->type) {
     case SV_SYM:
         return Env_get(env, x);
@@ -202,8 +203,13 @@ extern Sv
     /* Evaluate arguments. */
     if (cur->type == SV_CONS) {
         do {
-            y = Sv_cons(Sv_eval(env, CAR(cur)), y);
-            cur = CDR(cur);
+            if (cur->type == SV_CONS) {
+                y = Sv_cons(Sv_eval(env, CAR(cur)), y);
+                cur = CDR(cur);
+            } else {
+                y = Sv_cons(cur, y);
+                break;
+            }
         } while (cur);
         x = Sv_reverse(y);
     }
