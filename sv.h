@@ -15,6 +15,7 @@ enum Sv_type {
     SV_INT,
     SV_STR,
     SV_CONS,
+    SV_SPECIAL,
     SV_FUNC
 };
 
@@ -50,6 +51,7 @@ extern Sv *Sv_new_func(Sv_func);
 extern void Sv_dump(Sv *sv);
 extern void Sv_destroy(Sv **);
 extern Sv *Sv_cons(Sv *, Sv *);
+extern Sv *Sv_special(Sv *, Sv *);
 extern Sv *Sv_reverse(Sv *);
 
 extern Sv *Sv_eval(struct Env *, Sv *);

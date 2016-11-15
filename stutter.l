@@ -20,6 +20,8 @@
 
 -?[0-9]+ { yylval.i = atol(yytext); return INTEGER; }
 
+"quote" { yylval.str = yytext; return SPECIAL; }
+
 [a-zA-Z0-9._*+-/=<>?!&]+ { yylval.str = yytext; return SYMBOL; }
 
 ";".*

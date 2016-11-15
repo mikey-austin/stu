@@ -20,9 +20,9 @@ void yyerror (Sv **result, char const *s)
 }
 
 %token <i>   INTEGER
-%token <str> STRING SYMBOL
+%token <str> STRING SYMBOL SPECIAL
 
-%type <sv> list sexp atom elements
+%type <sv> list sexp atom elements special
 
 %start stutter
 %parse-param {
@@ -32,13 +32,14 @@ void yyerror (Sv **result, char const *s)
 %%
 
 stutter:
-    | list                  { *result = $1; }
+    | sexp                  { *result = $1; }
     ;
 
 list: '(' ')'               { $$ = NULL; }
     | '(' elements ')'      { $$ = $2; }
     | '(' sexp '.' sexp ')' { $$ = Sv_cons($2, $4); }
-    | '\'' list             { $$ = Sv_cons(Sv_new_sym("quote"), $2); }
+    | '(' special sexp ')'  { $$ = Sv_special($2, $3); }
+    | '\'' list             { $$ = Sv_special(Sv_new_sym("quote"), $2); }
     ;
 
 elements: sexp              { $$ = Sv_cons($1, NULL); }
@@ -47,6 +48,10 @@ elements: sexp              { $$ = Sv_cons($1, NULL); }
 
 sexp: atom                  { $$ = $1; }
     | list                  { $$ = $1; }
+    | '\'' atom             { $$ = Sv_special(Sv_new_sym("quote"), $2); }
+    ;
+
+special: SPECIAL            { $$ = Sv_new_sym($1); }
     ;
 
 atom: INTEGER               { $$ = Sv_new_int($1); }

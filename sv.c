@@ -82,6 +82,7 @@ Sv_destroy(Sv **sv)
             }
             break;
 
+        case SV_SPECIAL:
         case SV_CONS:
             for (int i = 0; i < SV_CONS_REGISTERS; i++) {
                 Sv_destroy(&((*sv)->val.reg[i]));
@@ -111,6 +112,7 @@ Sv_dump(Sv *sv)
                 printf("%s", sv->val.buf);
             break;
 
+        case SV_SPECIAL:
         case SV_CONS:
             printf("(");
             Sv_cons_dump(sv);
@@ -162,6 +164,14 @@ extern Sv
 }
 
 extern Sv
+*Sv_special(Sv *x, Sv *y)
+{
+    Sv *z = Sv_cons(x, y);
+    z->type = SV_SPECIAL;
+    return z;
+}
+
+extern Sv
 *Sv_reverse(Sv *x)
 {
     Sv *y = NULL;
@@ -177,13 +187,19 @@ extern Sv
 extern Sv
 *Sv_eval(Env *env, Sv *x)
 {
+    Sv *y = NULL;
+
     if (!x)
         return x;
 
     switch (x->type) {
     case SV_SYM:
-        return Env_get(env, x);
+        if ((y = Env_get(env, x)) == NULL) {
+            y = Sv_new_err("possibly unknown symbol");
+        }
+        return y;
 
+    case SV_SPECIAL:
     case SV_CONS:
         return Sv_eval_sexp(env, x);
 
@@ -200,8 +216,9 @@ extern Sv
     if (!cur)
         return NULL;
 
-    /* Evaluate arguments. */
-    if (cur->type == SV_CONS) {
+    switch (cur->type) {
+    case SV_CONS:
+        /* Evaluate all arguments. */
         do {
             if (cur->type == SV_CONS) {
                 y = Sv_cons(Sv_eval(env, CAR(cur)), y);
@@ -212,10 +229,19 @@ extern Sv
             }
         } while (cur);
         x = Sv_reverse(y);
+        y = CAR(x);
+        break;
+
+    case SV_SPECIAL:
+        /* Only evaluate the head, leaving tail intact. */
+        y = Sv_eval(env, CAR(x));
+        break;
+
+    default:
+        break;
     }
 
     /* The car should now be a function. */
-    y = CAR(x);
     if (y->type != SV_FUNC)
         return Sv_new_err("first element is not a function");
 
