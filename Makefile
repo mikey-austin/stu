@@ -4,8 +4,8 @@ LDFLAGS=$(shell pkg-config --libs libedit)
 
 all: stutter
 
-stutter: lex.yy.o stutter.tab.o sv.o parse.o main.o hash.o env.o builtins.o
-	$(CC) -o stutter lex.yy.o stutter.tab.o sv.o parse.o main.o hash.o env.o builtins.o $(LDFLAGS)
+stutter: lex.yy.o stutter.tab.o sv.o parse.o main.o hash.o env.o builtins.o utils.o
+	$(CC) -o stutter lex.yy.o stutter.tab.o sv.o parse.o main.o hash.o env.o builtins.o utils.o $(LDFLAGS)
 
 lex.yy.o: stutter.tab.h stutter.l sv.h
 	flex --header-file=lex.yy.h stutter.l
@@ -34,6 +34,9 @@ env.o: env.c env.h hash.h
 
 builtins.o: builtins.c env.h sv.h
 	$(CC) $(CFLAGS) -c builtins.c
+
+utils.o: utils.c utils.h
+	$(CC) $(CFLAGS) -c utils.c
 
 clean:
 	rm -f lex.yy.[ch] stutter.tab.[ch] stutter *.o

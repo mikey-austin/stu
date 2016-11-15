@@ -11,6 +11,7 @@ extern Sv *Builtin_sub(Env *, Sv *);
 extern Sv *Builtin_mul(Env *, Sv *);
 extern Sv *Builtin_div(Env *, Sv *);
 extern Sv *Builtin_quote(Env *, Sv *);
+extern Sv *Builtin_def(Env *, Sv *);
 extern Sv *Builtin_cons(Env *, Sv *);
 extern Sv *Builtin_list(Env *, Sv *);
 extern Sv *Builtin_car(Env *, Sv *);

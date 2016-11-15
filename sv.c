@@ -15,9 +15,7 @@ extern Sv
     int i;
 
     if ((x = malloc(sizeof(*x))) != NULL) {
-        x->gc = 0;
         x->type = type;
-
         for (i = 0; i < SV_CONS_REGISTERS; i++)
             x->val.reg[i] = NULL;
     } else {

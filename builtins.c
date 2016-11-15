@@ -17,6 +17,7 @@ Builtin_install(Env *env)
         { "*",       Builtin_mul },
         { "/",       Builtin_div },
         { "quote",   Builtin_quote },
+        { "def",     Builtin_def },
         { "cons",    Builtin_cons },
         { "list",    Builtin_list },
         { "car",     Builtin_car },
@@ -114,6 +115,21 @@ extern Sv
 *Builtin_quote(Env *env, Sv *x)
 {
     return x;
+}
+
+extern Sv
+*Builtin_def(Env *env, Sv *x)
+{
+    Sv *y = CAR(x);
+    Sv *z = CDR(x);
+
+    /* We need a symbol in the head. */
+    if (!y || y->type != SV_SYM)
+        return Sv_new_err("'def' needs a symbol as the first argument");
+
+    Env_put(env, y, CAR(z));
+
+    return NULL;
 }
 
 extern Sv

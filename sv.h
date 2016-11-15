@@ -36,7 +36,6 @@ union Sv_val {
 
 /* Core stutter value. */
 typedef struct Sv {
-    char gc;
     enum Sv_type type;
     union Sv_val val;
 } Sv;

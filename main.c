@@ -27,7 +27,6 @@ main(int argc, char **argv)
             printf("\n");
         }
 
-        Sv_destroy(&result);
         free(input);
     }
 

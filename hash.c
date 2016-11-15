@@ -2,12 +2,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "utils.h"
 #include "hash.h"
 
 static Hash_ent *Hash_find_entry(Hash *hash, const char *key);
 static void Hash_resize(Hash *hash, int new_size);
 static unsigned int Hash_lookup(const char *key);
 static void Hash_create_entries(Hash *hash);
+static void Hash_default_destroy(Hash_ent *entry);
 
 extern Hash
 *Hash_new(int size, void (*destroy)(Hash_ent *entry))
@@ -17,8 +19,11 @@ extern Hash
     if ((new = malloc(sizeof(*new))) == NULL)
         err(1, "Hash_create");
 
-    new->size    = size;
-    new->destroy = destroy;
+    new->size = size;
+    if (destroy)
+        new->destroy = destroy;
+    else
+        new->destroy = Hash_default_destroy;
 
     /* Leave the entries uninitialized until the first insert. */
     new->entries     = NULL;
@@ -86,7 +91,7 @@ Hash_put(Hash *hash, const char *key, void *value)
     }
 
     /* Setup the new entry. */
-    strncpy(entry->k, key, MAX_KEY_LEN + 1);
+    sstrncpy(entry->k, key, MAX_KEY_LEN);
     entry->v = value;
 }
 
@@ -201,4 +206,11 @@ Hash_lookup(const char *key)
         hash = ((hash << 5) + hash) + c;
 
     return hash;
+}
+
+static void
+Hash_default_destroy(Hash_ent *entry)
+{
+    if (entry)
+        entry->v = NULL;
 }
