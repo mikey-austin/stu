@@ -22,7 +22,7 @@ Builtin_install(Env *env)
         { "car",     Builtin_car },
         { "cdr",     Builtin_cdr },
         { "reverse", Builtin_reverse },
-        NULL
+        { NULL }
     };
 
     for (b = builtins; b->name != NULL; b++) {
@@ -34,7 +34,7 @@ extern Sv
 *Builtin_add(Env *env, Sv *x)
 {
     Sv *cur = NULL;
-    int acc = 0;
+    long acc = 0;
 
     while (x && (cur = CAR(x))) {
         if (cur->type != SV_INT)
@@ -50,7 +50,7 @@ extern Sv
 *Builtin_sub(Env *env, Sv *x)
 {
     Sv *cur = NULL;
-    int acc;
+    long acc;
 
     if (x && (cur = CAR(x))) {
         if (cur->type != SV_INT)
@@ -73,7 +73,7 @@ extern Sv
 *Builtin_mul(Env *env, Sv *x)
 {
     Sv *cur = NULL;
-    int acc = 1;
+    long acc = 1;
 
     while (x && (cur = CAR(x))) {
         if (cur->type != SV_INT)
@@ -89,7 +89,7 @@ extern Sv
 *Builtin_div(Env *env, Sv *x)
 {
     Sv *cur = NULL;
-    int acc;
+    long acc;
 
     if (x && (cur = CAR(x))) {
         if (cur->type != SV_INT)

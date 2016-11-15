@@ -28,7 +28,7 @@ extern Sv
 }
 
 extern Sv
-*Sv_new_int(int i)
+*Sv_new_int(long i)
 {
     Sv *x = Sv_new(SV_INT);
     x->val.i = i;
@@ -118,7 +118,7 @@ Sv_dump(Sv *sv)
             break;
 
         case SV_INT:
-            printf("%d", sv->val.i);
+            printf("%ld", sv->val.i);
             break;
 
         case SV_FUNC:

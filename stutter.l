@@ -18,7 +18,7 @@
 
 \"(\\.|[^"])*\" { yylval.str = yytext; return STRING; }
 
--?[0-9]+ { yylval.i = atoi(yytext); return INTEGER; }
+-?[0-9]+ { yylval.i = atol(yytext); return INTEGER; }
 
 [a-zA-Z0-9._*+-/=<>?!&]+ { yylval.str = yytext; return SYMBOL; }
 

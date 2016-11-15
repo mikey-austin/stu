@@ -14,7 +14,7 @@ void yyerror (Sv **result, char const *s)
 %}
 
 %union {
-    int i;
+    long i;
     char *str;
     Sv *sv;
 }

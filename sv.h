@@ -27,7 +27,7 @@ typedef struct Sv *(*Sv_func)(struct Env *, struct Sv *);
 
 /* Actual value container. */
 union Sv_val {
-    int i;
+    long i;
     char *buf;
     Sv_func func;
     struct Sv *reg[SV_CONS_REGISTERS];
@@ -41,7 +41,7 @@ typedef struct Sv {
 } Sv;
 
 extern Sv *Sv_new(enum Sv_type);
-extern Sv *Sv_new_int(int);
+extern Sv *Sv_new_int(long);
 extern Sv *Sv_new_str(const char *);
 extern Sv *Sv_new_sym(const char *);
 extern Sv *Sv_new_err(const char *);
