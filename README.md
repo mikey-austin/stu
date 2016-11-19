@@ -13,11 +13,12 @@ Stutter is a simple & minimal lisp implementation in C.
 
 Or you can use the repl by specifying no arguments:
 
-    $ ./stutter 
-    stutter> (car (reverse '(1 2 3 4 5 6)))
-    6
-    stutter> (cdr (reverse '(1 2 3 4 5 6)))
-    (5 4 3 2 1)
+    $ ./stutter
+    stutter> (def 'make-adder (lambda (a) (lambda (b) (+ a b))))
+    nil
+    stutter> (def 'add-two (make-adder 2))
+    nil
+    stutter> (add-two 2)
+    4
     stutter> ^D
     Bye!
-
