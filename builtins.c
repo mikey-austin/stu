@@ -60,11 +60,15 @@ extern Sv
         acc = cur->val.i;
         x = CDR(x);
 
-        while (x && (cur = CAR(x))) {
-            if (cur->type != SV_INT)
-                return Sv_new_err("'-' can operate on numbers only");
-            acc -= cur->val.i;
-            x = CDR(x);
+        if (x) {
+            while (x && (cur = CAR(x))) {
+                if (cur->type != SV_INT)
+                    return Sv_new_err("'-' can operate on numbers only");
+                acc -= cur->val.i;
+                x = CDR(x);
+            }
+        } else {
+            acc = -acc;
         }
     }
 
