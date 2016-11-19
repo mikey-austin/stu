@@ -245,7 +245,7 @@ extern Sv
 
         case SV_LAMBDA:
             if (x->val.ufunc) {
-                y = Sv_new_lambda(NULL, Sv_copy(x->val.ufunc->formals),
+                y = Sv_new_lambda(x->val.ufunc->env, Sv_copy(x->val.ufunc->formals),
                     Sv_copy(x->val.ufunc->body));
             }
             break;
