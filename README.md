@@ -21,3 +21,9 @@ Or you can use the repl by specifying no arguments:
     stutter> ^D
     Bye!
 
+### Mac OS X build
+
+You should have `homebrew` installed.
+
+    make macosx_deps
+    make with_brew
