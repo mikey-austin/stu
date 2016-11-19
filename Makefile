@@ -1,8 +1,13 @@
 CC=cc
+BISON=bison
 CFLAGS=-g -Wall $(shell pkg-config --cflags libedit)
 LDFLAGS=$(shell pkg-config --libs libedit)
 
 all: stutter
+
+# run make macosx_deps to get dependencies necessary for mac os x build
+with_brew: BISON=$(shell brew --prefix bison)/bin/bison
+with_brew: stutter
 
 stutter: lex.yy.o stutter.tab.o sv.o parse.o main.o hash.o env.o builtins.o utils.o
 	$(CC) -o stutter lex.yy.o stutter.tab.o sv.o parse.o main.o hash.o env.o builtins.o utils.o $(LDFLAGS)
@@ -14,7 +19,7 @@ lex.yy.o: stutter.tab.h stutter.l sv.h
 stutter.tab.h: stutter.tab.o
 
 stutter.tab.o: stutter.y sv.h
-	bison -d stutter.y
+	$(BISON) -d stutter.y
 	$(CC) $(CFLAGS) -c stutter.tab.c
 
 sv.o: sv.c sv.h env.h
@@ -37,6 +42,9 @@ builtins.o: builtins.c env.h sv.h
 
 utils.o: utils.c utils.h
 	$(CC) $(CFLAGS) -c utils.c
+
+macosx_deps:
+	brew install bison
 
 clean:
 	rm -f lex.yy.[ch] stutter.tab.[ch] stutter *.o
