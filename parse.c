@@ -1,12 +1,13 @@
 #include <stdlib.h>
 #include <err.h>
+#include "env.h"
 #include "sv.h"
 #include "lex.yy.h"
 #include "stutter.tab.h"
 #include "parse.h"
 
 extern Sv
-*Parse_buf(const char *buf)
+*Parse_buf(Env *env, const char *buf)
 {
     Sv *result = NULL;
 
@@ -14,7 +15,7 @@ extern Sv
         YY_BUFFER_STATE bp = yy_scan_string(buf);
 
         yy_switch_to_buffer(bp);
-        switch (yyparse(&result)) {
+        switch (yyparse(env, &result)) {
         case 2:
             errx(1, "Parser memory allocation error");
             break;

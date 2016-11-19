@@ -5,7 +5,9 @@
 
 %{
 #include <stdio.h>
+
 #include "sv.h"
+#include "env.h"
 #include "stutter.tab.h"
 %}
 

@@ -2,12 +2,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <err.h>
+
 #include "sv.h"
+#include "env.h"
 
 extern int yylex(void);
-extern void yyerror(Sv **result, char const *s);
+extern void yyerror(Env *, Sv **, char const *);
 
-void yyerror (Sv **result, char const *s)
+void yyerror (Env *env, Sv **result, char const *s)
 {
     warnx("%s", s);
 }
@@ -22,17 +24,21 @@ void yyerror (Sv **result, char const *s)
 %token <i>   INTEGER BOOLEAN
 %token <str> STRING SYMBOL
 
-%type <sv> list sexp atom elements
+%type <sv> list sexp forms atom elements
 
 %start stutter
-%parse-param {
-    Sv **result
-}
+%parse-param { Env *env } { Sv **result }
 
 %%
 
+/* Just return the last sexp without evaling it. */
 stutter:
-    | sexp                  { *result = $1; }
+    | forms                 { *result = $1; }
+    ;
+
+/* Eval every form in the order received except the last form. */
+forms: forms sexp           { if (env) Sv_eval(env, $1); $$ = $2; }
+    | sexp                  { $$ = $1; }
     ;
 
 list: '(' ')'               { $$ = NULL; }

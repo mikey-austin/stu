@@ -21,7 +21,7 @@ main(int argc, char **argv)
         }
         add_history(input);
 
-        Sv *result = Parse_buf(input);
+        Sv *result = Parse_buf(env, input);
         if (result) {
             Sv_dump(Sv_eval(env, result));
             printf("\n");
