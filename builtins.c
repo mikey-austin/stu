@@ -20,6 +20,7 @@ Builtin_install(Env *env)
         { "def",     Builtin_def },
         { "cons",    Builtin_cons },
         { "list",    Builtin_list },
+        { "lambda",  Builtin_lambda },
         { "eval",    Builtin_eval },
         { "car",     Builtin_car },
         { "cdr",     Builtin_cdr },
@@ -128,7 +129,8 @@ extern Sv
     if (!y || y->type != SV_SYM)
         return Sv_new_err("'def' needs a symbol as the first argument");
 
-    Env_put(env, y, CAR(z));
+    /* Def in the top scope. */
+    Env_top_put(env, y, CAR(z));
 
     return NULL;
 }
@@ -155,6 +157,37 @@ extern Sv
     }
 
     return Sv_reverse(z);
+}
+
+extern Sv
+*Builtin_lambda(Env *env, Sv *x)
+{
+    Sv *formals = NULL, *cur = NULL;
+
+    if (!x)
+        return x;
+
+    /* All formals should be symbols. */
+    formals = CAR(x);
+    if (formals->type == SV_CONS) {
+        while (formals && formals->type == SV_CONS && (cur = CAR(formals))) {
+            if (cur->type != SV_SYM) {
+                return Sv_new_err(
+                    "'lambda' formals need to be symbols");
+            }
+            formals = CDR(formals);
+        }
+
+    } else {
+        return Sv_new_err(
+            "'lambda' needs a list of symbols as the first argument");
+    }
+
+    /* Formals are all good. */
+    formals = CAR(x);
+    cur = CDR(x);
+
+    return Sv_new_lambda(formals, CAR(cur));
 }
 
 extern Sv

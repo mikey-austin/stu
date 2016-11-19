@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 
 #include "sv.h"
 #include "env.h"
@@ -35,12 +36,16 @@ main(int argc, char **argv)
             printf("\nBye!\n");
             break;
         }
+
+        if (!strcmp(input, ""))
+            goto next;
         add_history(input);
 
         result = Parse_buf(env, input);
         Sv_dump(Sv_eval(env, result));
         printf("\n");
 
+    next:
         free(input);
     }
 

@@ -14,6 +14,7 @@ extern Env
         err(1, "Env_new");
 
     /* No destructor as the garbage collector will cleanup. */
+    new->parent = NULL;
     new->hash = Hash_new(INIT_ENV_SIZE, NULL);
 
     return new;
@@ -36,10 +37,28 @@ Env_put(Env *env, Sv *key, Sv *val)
     Hash_put(env->hash, key->val.buf, (void *) val);
 }
 
+extern void
+Env_top_put(Env *env, Sv *key, Sv *val)
+{
+    Env *top = env;
+    while (top && top->parent)
+        top = top->parent;
+    Hash_put(top->hash, key->val.buf, (void *) val);
+}
+
 extern Sv
 *Env_get(Env *env, Sv *key)
 {
-    return Hash_get(env->hash, key->val.buf);
+    Sv *val = NULL;
+
+    if ((val = Hash_get(env->hash, key->val.buf)) == NULL
+        && env->parent)
+    {
+        /* Check parent environment. */
+        return Env_get(env->parent, key);
+    }
+
+    return val;
 }
 
 extern Sv

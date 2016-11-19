@@ -16,7 +16,8 @@ enum Sv_type {
     SV_BOOL,
     SV_STR,
     SV_CONS,
-    SV_FUNC
+    SV_FUNC,
+    SV_LAMBDA
 };
 
 /* Forward declarations. */
@@ -26,12 +27,20 @@ struct Sv;
 /* Function value definition. */
 typedef struct Sv *(*Sv_func)(struct Env *, struct Sv *);
 
+typedef struct Sv_ufunc {
+    struct Env *env;
+    struct Sv *formals;
+    struct Sv *body;
+
+} Sv_ufunc;
+
 /* Actual value container. */
 union Sv_val {
     long i;
     char *buf;
     Sv_func func;
     struct Sv *reg[SV_CONS_REGISTERS];
+    struct Sv_ufunc *ufunc;
 };
 
 /* Core stutter value. */
@@ -48,6 +57,7 @@ extern Sv *Sv_new_str(const char *);
 extern Sv *Sv_new_sym(const char *);
 extern Sv *Sv_new_err(const char *);
 extern Sv *Sv_new_func(Sv_func);
+extern Sv *Sv_new_lambda(Sv *, Sv *);
 
 extern void Sv_dump(Sv *sv);
 extern void Sv_destroy(Sv **);
@@ -56,5 +66,6 @@ extern Sv *Sv_reverse(Sv *);
 
 extern Sv *Sv_eval(struct Env *, Sv *);
 extern Sv *Sv_eval_sexp(struct Env *, Sv *);
+extern Sv *Sv_call(struct Env *, Sv *, Sv *);
 
 #endif

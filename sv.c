@@ -56,7 +56,9 @@ extern Sv
 {
     Sv *x = Sv_new_str(sym);
     x->type = SV_SYM;
-    x->special = !strcmp(sym, "quote");
+    x->special = !strcmp(sym, "quote")
+        || !strcmp(sym, "if")
+        || !strcmp(sym, "lambda");
     return x;
 }
 
@@ -73,6 +75,24 @@ extern Sv
 {
     Sv *x = Sv_new(SV_FUNC);
     x->val.func = func;
+    return x;
+}
+
+extern Sv
+*Sv_new_lambda(Sv *formals, Sv *body)
+{
+    Sv *x = Sv_new(SV_LAMBDA);
+    Sv_ufunc *f = NULL;
+
+    if ((f = malloc(sizeof(*f))) != NULL) {
+        f->env = Env_new();
+        f->formals = formals;
+        f->body = body;
+        x->val.ufunc = f;
+    } else {
+        err(1, "Sv_new_lambda");
+    }
+
     return x;
 }
 
@@ -97,9 +117,19 @@ Sv_destroy(Sv **sv)
             }
             break;
 
+        case SV_FUNC:
         case SV_BOOL:
         case SV_INT:
-        case SV_FUNC:
+            break;
+
+        case SV_LAMBDA:
+            if ((*sv)->val.ufunc) {
+                Env_destroy(&((*sv)->val.ufunc->env));
+                Sv_destroy(&((*sv)->val.ufunc->formals));
+                Sv_destroy(&((*sv)->val.ufunc->body));
+                free((*sv)->val.ufunc);
+                (*sv)->val.ufunc = NULL;
+            }
             break;
         }
 
@@ -135,7 +165,17 @@ Sv_dump(Sv *sv)
             break;
 
         case SV_FUNC:
-            printf("<function>");
+            printf("<builtin>");
+            break;
+
+        case SV_LAMBDA:
+            if (sv->val.ufunc) {
+                printf("(lambda ");
+                Sv_dump(sv->val.ufunc->formals);
+                putchar(' ');
+                Sv_dump(sv->val.ufunc->body);
+                putchar(')');
+            }
             break;
         }
     } else {
@@ -238,8 +278,43 @@ extern Sv
     }
 
     /* The car should now be a function. */
-    if (y->type != SV_FUNC)
-        return Sv_new_err("first element is not a function");
+    if (y->type == SV_FUNC || y->type == SV_LAMBDA) {
+        return Sv_call(env, y, CDR(x));
+    }
 
-    return y->val.func(env, CDR(x));
+    return Sv_new_err("first element is not a function");
+}
+
+extern Sv
+*Sv_call(struct Env *env, Sv *f, Sv *a)
+{
+    Sv *formals, *formal, *arg, *args = a;
+    formals = formal = arg = NULL;
+
+    if (!f)
+        return f;
+
+    if (f->type == SV_FUNC)
+        return f->val.func(env, a);
+
+    if (f->type == SV_LAMBDA) {
+        /* Bind the formals to the arguments. */
+        formals = f->val.ufunc->formals;
+
+        while (formals && (formal = CAR(formals))) {
+            /* Get the next arg. */
+            if (args && (arg = CAR(args))) {
+                Env_put(env, formal, arg);
+            } else {
+                return Sv_new_err("missing some arguments");
+            }
+
+            formals = CDR(formals);
+            args = CDR(args);
+        }
+
+        return Sv_eval(env, f->val.ufunc->body);
+    }
+
+    return Sv_new_err("can only call functions");
 }
