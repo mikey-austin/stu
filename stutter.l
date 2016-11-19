@@ -19,8 +19,8 @@
 \"(\\.|[^"])*\" { yylval.str = yytext; return STRING; }
 
 -?[0-9]+ { yylval.i = atol(yytext); return INTEGER; }
-
-"quote" { yylval.str = yytext; return SPECIAL; }
+"#t"     { yylval.i = 1; return BOOLEAN; }
+"#f"     { yylval.i = 0; return BOOLEAN; }
 
 [a-zA-Z0-9._*+-/=<>?!&]+ { yylval.str = yytext; return SYMBOL; }
 

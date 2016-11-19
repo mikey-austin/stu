@@ -13,9 +13,9 @@ enum Sv_type {
     SV_ERR,
     SV_SYM,
     SV_INT,
+    SV_BOOL,
     SV_STR,
     SV_CONS,
-    SV_SPECIAL,
     SV_FUNC
 };
 
@@ -36,12 +36,14 @@ union Sv_val {
 
 /* Core stutter value. */
 typedef struct Sv {
+    short special;
     enum Sv_type type;
     union Sv_val val;
 } Sv;
 
 extern Sv *Sv_new(enum Sv_type);
 extern Sv *Sv_new_int(long);
+extern Sv *Sv_new_bool(short);
 extern Sv *Sv_new_str(const char *);
 extern Sv *Sv_new_sym(const char *);
 extern Sv *Sv_new_err(const char *);
@@ -50,7 +52,6 @@ extern Sv *Sv_new_func(Sv_func);
 extern void Sv_dump(Sv *sv);
 extern void Sv_destroy(Sv **);
 extern Sv *Sv_cons(Sv *, Sv *);
-extern Sv *Sv_special(Sv *, Sv *);
 extern Sv *Sv_reverse(Sv *);
 
 extern Sv *Sv_eval(struct Env *, Sv *);

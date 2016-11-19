@@ -16,6 +16,7 @@ extern Sv
 
     if ((x = malloc(sizeof(*x))) != NULL) {
         x->type = type;
+        x->special = 0;
         for (i = 0; i < SV_CONS_REGISTERS; i++)
             x->val.reg[i] = NULL;
     } else {
@@ -34,6 +35,14 @@ extern Sv
 }
 
 extern Sv
+*Sv_new_bool(short i)
+{
+    Sv *x = Sv_new(SV_BOOL);
+    x->val.i = (int) i;
+    return  x;
+}
+
+extern Sv
 *Sv_new_str(const char *str)
 {
     Sv *x = Sv_new(SV_STR);
@@ -47,6 +56,7 @@ extern Sv
 {
     Sv *x = Sv_new_str(sym);
     x->type = SV_SYM;
+    x->special = !strcmp(sym, "quote");
     return x;
 }
 
@@ -80,7 +90,6 @@ Sv_destroy(Sv **sv)
             }
             break;
 
-        case SV_SPECIAL:
         case SV_CONS:
             for (int i = 0; i < SV_CONS_REGISTERS; i++) {
                 Sv_destroy(&((*sv)->val.reg[i]));
@@ -88,6 +97,7 @@ Sv_destroy(Sv **sv)
             }
             break;
 
+        case SV_BOOL:
         case SV_INT:
         case SV_FUNC:
             break;
@@ -110,7 +120,6 @@ Sv_dump(Sv *sv)
                 printf("%s", sv->val.buf);
             break;
 
-        case SV_SPECIAL:
         case SV_CONS:
             printf("(");
             Sv_cons_dump(sv);
@@ -119,6 +128,10 @@ Sv_dump(Sv *sv)
 
         case SV_INT:
             printf("%ld", sv->val.i);
+            break;
+
+        case SV_BOOL:
+            printf("%s", sv->val.i ? "#t" : "#f");
             break;
 
         case SV_FUNC:
@@ -162,14 +175,6 @@ extern Sv
 }
 
 extern Sv
-*Sv_special(Sv *x, Sv *y)
-{
-    Sv *z = Sv_cons(x, y);
-    z->type = SV_SPECIAL;
-    return z;
-}
-
-extern Sv
 *Sv_reverse(Sv *x)
 {
     Sv *y = NULL;
@@ -197,7 +202,6 @@ extern Sv
         }
         return y;
 
-    case SV_SPECIAL:
     case SV_CONS:
         return Sv_eval_sexp(env, x);
 
@@ -209,13 +213,16 @@ extern Sv
 extern Sv
 *Sv_eval_sexp(Env *env, Sv *x)
 {
-    Sv *cur = x, *y = NULL;
+    Sv *cur = x, *y = NULL, *z = NULL;
 
     if (!cur)
         return NULL;
 
-    switch (cur->type) {
-    case SV_CONS:
+    z = CAR(x);
+    if (z && z->special) {
+        /* Only evaluate the head, leaving tail intact. */
+        y = Sv_eval(env, z);
+    } else {
         /* Evaluate all arguments. */
         do {
             if (cur->type == SV_CONS) {
@@ -228,15 +235,6 @@ extern Sv
         } while (cur);
         x = Sv_reverse(y);
         y = CAR(x);
-        break;
-
-    case SV_SPECIAL:
-        /* Only evaluate the head, leaving tail intact. */
-        y = Sv_eval(env, CAR(x));
-        break;
-
-    default:
-        break;
     }
 
     /* The car should now be a function. */
