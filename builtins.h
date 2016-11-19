@@ -14,6 +14,7 @@ extern Sv *Builtin_quote(Env *, Sv *);
 extern Sv *Builtin_def(Env *, Sv *);
 extern Sv *Builtin_cons(Env *, Sv *);
 extern Sv *Builtin_list(Env *, Sv *);
+extern Sv *Builtin_eval(Env *, Sv *);
 extern Sv *Builtin_car(Env *, Sv *);
 extern Sv *Builtin_cdr(Env *, Sv *);
 extern Sv *Builtin_reverse(Env *, Sv *);

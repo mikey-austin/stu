@@ -20,6 +20,7 @@ Builtin_install(Env *env)
         { "def",     Builtin_def },
         { "cons",    Builtin_cons },
         { "list",    Builtin_list },
+        { "eval",    Builtin_eval },
         { "car",     Builtin_car },
         { "cdr",     Builtin_cdr },
         { "reverse", Builtin_reverse },
@@ -154,6 +155,12 @@ extern Sv
     }
 
     return Sv_reverse(z);
+}
+
+extern Sv
+*Builtin_eval(Env *env, Sv *x)
+{
+    return x ? Sv_eval(env, CAR(x)) : x;
 }
 
 extern Sv
