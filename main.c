@@ -1,7 +1,7 @@
 #ifdef __APPLE__
     #include <editline/readline.h>
 #else
-    #include <editline/readline.h>
+    #include <readline.h>
 #endif
 
 #include <stdio.h>
