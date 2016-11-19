@@ -52,7 +52,7 @@ extern Sv
 *Builtin_sub(Env *env, Sv *x)
 {
     Sv *cur = NULL;
-    long acc;
+    long acc = 0;
 
     if (x && (cur = CAR(x))) {
         if (cur->type != SV_INT)
@@ -91,7 +91,7 @@ extern Sv
 *Builtin_div(Env *env, Sv *x)
 {
     Sv *cur = NULL;
-    long acc;
+    long acc = 0;
 
     if (x && (cur = CAR(x))) {
         if (cur->type != SV_INT)
@@ -99,14 +99,20 @@ extern Sv
         acc = cur->val.i;
         x = CDR(x);
 
-        while (x && (cur = CAR(x))) {
-            if (cur->type != SV_INT)
-                return Sv_new_err("'/' can operate on numbers only");
-            if (cur->val.i == 0)
-                return Sv_new_err("'/' cannot divide by zero!");
-            acc /= cur->val.i;
-            x = CDR(x);
+        if (x) {
+            while (x && (cur = CAR(x))) {
+                if (cur->type != SV_INT)
+                    return Sv_new_err("'/' can operate on numbers only");
+                if (cur->val.i == 0)
+                    return Sv_new_err("'/' cannot divide by zero!");
+                acc /= cur->val.i;
+                x = CDR(x);
+            }
+        } else {
+            acc = 1 / acc;
         }
+    } else {
+        return Sv_new_err("'/' requires one or more arguments");
     }
 
     return Sv_new_int(acc);
