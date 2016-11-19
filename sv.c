@@ -79,13 +79,15 @@ extern Sv
 }
 
 extern Sv
-*Sv_new_lambda(Sv *formals, Sv *body)
+*Sv_new_lambda(Env *env, Sv *formals, Sv *body)
 {
     Sv *x = Sv_new(SV_LAMBDA);
     Sv_ufunc *f = NULL;
 
     if ((f = malloc(sizeof(*f))) != NULL) {
         f->env = Env_new();
+        if (env)
+            Env_copy(env, f->env);
         f->formals = formals;
         f->body = body;
         x->val.ufunc = f;
@@ -201,6 +203,59 @@ Sv_cons_dump(Sv *sv)
 }
 
 extern Sv
+*Sv_copy(Sv *x)
+{
+    Sv *y = NULL;
+
+    if (x) {
+        switch (x->type) {
+        case SV_SYM:
+            if (x->val.buf)
+                y = Sv_new_sym(x->val.buf);
+            break;
+
+        case SV_ERR:
+            if (x->val.buf)
+                y = Sv_new_err(x->val.buf);
+            break;
+
+        case SV_STR:
+            if (x->val.buf)
+                y = Sv_new_str(x->val.buf);
+            break;
+
+        case SV_CONS:
+            y = Sv_new(SV_CONS);
+            for (int i = 0; i < SV_CONS_REGISTERS; i++) {
+                y->val.reg[i] = Sv_copy(x->val.reg[i]);
+            }
+            break;
+
+        case SV_INT:
+            y = Sv_new_int(x->val.i);
+            break;
+
+        case SV_BOOL:
+            y = Sv_new_bool((short) x->val.i);
+            break;
+
+        case SV_FUNC:
+            y = Sv_new_func(x->val.func);
+            break;
+
+        case SV_LAMBDA:
+            if (x->val.ufunc) {
+                y = Sv_new_lambda(NULL, Sv_copy(x->val.ufunc->formals),
+                    Sv_copy(x->val.ufunc->body));
+            }
+            break;
+        }
+    }
+
+    return y;
+}
+
+extern Sv
 *Sv_cons(Sv *x, Sv *y)
 {
     Sv *z = Sv_new(SV_CONS);
@@ -237,7 +292,7 @@ extern Sv
 
     switch (x->type) {
     case SV_SYM:
-        if ((y = Env_get(env, x)) == NULL) {
+        if ((y = Env_top_get(env, x)) == NULL) {
             y = Sv_new_err("possibly unknown symbol");
         }
         return y;
@@ -304,7 +359,7 @@ extern Sv
         while (formals && (formal = CAR(formals))) {
             /* Get the next arg. */
             if (args && (arg = CAR(args))) {
-                Env_put(env, formal, arg);
+                Env_put(f->val.ufunc->env, formal, arg);
             } else {
                 return Sv_new_err("missing some arguments");
             }
@@ -312,8 +367,9 @@ extern Sv
             formals = CDR(formals);
             args = CDR(args);
         }
+        f->val.ufunc->env->parent = env;
 
-        return Sv_eval(env, f->val.ufunc->body);
+        return Sv_eval(f->val.ufunc->env, f->val.ufunc->body);
     }
 
     return Sv_new_err("can only call functions");

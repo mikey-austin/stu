@@ -57,12 +57,13 @@ extern Sv *Sv_new_str(const char *);
 extern Sv *Sv_new_sym(const char *);
 extern Sv *Sv_new_err(const char *);
 extern Sv *Sv_new_func(Sv_func);
-extern Sv *Sv_new_lambda(Sv *, Sv *);
+extern Sv *Sv_new_lambda(struct Env *, Sv *, Sv *);
 
 extern void Sv_dump(Sv *sv);
 extern void Sv_destroy(Sv **);
 extern Sv *Sv_cons(Sv *, Sv *);
 extern Sv *Sv_reverse(Sv *);
+extern Sv *Sv_copy(Sv *);
 
 extern Sv *Sv_eval(struct Env *, Sv *);
 extern Sv *Sv_eval_sexp(struct Env *, Sv *);

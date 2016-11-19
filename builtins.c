@@ -193,11 +193,10 @@ extern Sv
             "'lambda' needs a list of symbols as the first argument");
     }
 
-    /* Formals are all good. */
     formals = CAR(x);
     cur = CDR(x);
 
-    return Sv_new_lambda(formals, CAR(cur));
+    return Sv_new_lambda(env, formals, CAR(cur));
 }
 
 extern Sv

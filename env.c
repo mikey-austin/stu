@@ -47,7 +47,7 @@ Env_top_put(Env *env, Sv *key, Sv *val)
 }
 
 extern Sv
-*Env_get(Env *env, Sv *key)
+*Env_top_get(Env *env, Sv *key)
 {
     Sv *val = NULL;
 
@@ -62,9 +62,31 @@ extern Sv
 }
 
 extern Sv
+*Env_get(Env *env, Sv *key)
+{
+    return Hash_get(env->hash, key->val.buf);
+}
+
+extern Sv
 *Env_del(Env *env, Sv *key)
 {
     Sv *val = Env_get(env, key);
     Hash_del(env->hash, key->val.buf);
     return val;
+}
+
+extern void
+Env_copy(Env *src, Env *dst)
+{
+    Sv *val = NULL;
+    char **keys = NULL;
+    int num_keys, i;
+
+    if ((num_keys = Hash_keys(src->hash, &keys)) > 0) {
+        for (i = 0; i < num_keys; i++) {
+            val = Hash_get(src->hash, keys[i]);
+            Hash_put(dst->hash, keys[i], Sv_copy(val));
+        }
+        free(keys);
+    }
 }

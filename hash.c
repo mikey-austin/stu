@@ -124,6 +124,29 @@ Hash_del(Hash *hash, const char *key)
     }
 }
 
+extern int
+Hash_keys(Hash *hash, char ***keys)
+{
+    Hash_ent *entry;
+    char **new_keys = NULL;
+    int num_keys = 0;
+
+    if (hash && (num_keys = hash->num_entries) > 0) {
+        if ((new_keys = calloc(hash->num_entries, sizeof(*new_keys))) == NULL)
+            err(1, "Hash_keys");
+        *keys = new_keys;
+
+        for (int i = 0, j = 0; i < hash->size && j < num_keys; i++) {
+            entry = hash->entries + i;
+            if(entry->k && entry->v != NULL) {
+                new_keys[j++] = strdup(entry->k);
+            }
+        }
+    }
+
+    return num_keys;
+}
+
 static Hash_ent
 *Hash_find_entry(Hash *hash, const char *key)
 {
