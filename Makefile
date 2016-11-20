@@ -2,6 +2,7 @@ CC=cc
 BISON=bison
 CFLAGS=-g -Wall $(shell pkg-config --cflags libedit)
 LDFLAGS=$(shell pkg-config --libs libedit)
+BASH=/bin/bash
 
 all: stutter
 
@@ -11,6 +12,9 @@ with_brew: stutter
 
 stutter: lex.yy.o stutter.tab.o sv.o parse.o main.o hash.o env.o builtins.o utils.o
 	$(CC) -o stutter lex.yy.o stutter.tab.o sv.o parse.o main.o hash.o env.o builtins.o utils.o $(LDFLAGS)
+
+test: stutter
+	cd test; $(BASH) ./runner.sh ../stutter
 
 lex.yy.o: stutter.tab.h stutter.l sv.h
 	flex --header-file=lex.yy.h stutter.l
@@ -48,3 +52,5 @@ macosx_deps:
 
 clean:
 	rm -f lex.yy.[ch] stutter.tab.[ch] stutter *.o
+
+.PHONY: test
