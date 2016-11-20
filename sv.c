@@ -343,8 +343,8 @@ extern Sv
 extern Sv
 *Sv_call(struct Env *env, Sv *f, Sv *a)
 {
-    Sv *formals, *formal, *arg, *args = a;
-    formals = formal = arg = NULL;
+    Sv *formals, *formal, *arg, *partial, *args = a;
+    formals = formal = arg = partial = NULL;
 
     if (!f)
         return f;
@@ -361,7 +361,9 @@ extern Sv
             if (args && (arg = CAR(args))) {
                 Env_put(f->val.ufunc->env, formal, arg);
             } else {
-                return Sv_new_err("missing some arguments");
+                partial = Sv_copy(f);
+                partial->val.ufunc->formals = formals;
+                break;
             }
 
             formals = CDR(formals);
@@ -369,7 +371,11 @@ extern Sv
         }
         f->val.ufunc->env->parent = env;
 
-        return Sv_eval(f->val.ufunc->env, f->val.ufunc->body);
+        if (partial) {
+            return partial;
+        } else {
+            return Sv_eval(f->val.ufunc->env, f->val.ufunc->body);
+        }
     }
 
     return Sv_new_err("can only call functions");
