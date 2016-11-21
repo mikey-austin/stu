@@ -1,0 +1,3 @@
+(def 'a (quote 1))
+(def 'b '1)
+(+ a b)
