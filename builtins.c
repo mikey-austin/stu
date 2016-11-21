@@ -159,14 +159,7 @@ extern Sv
 extern Sv
 *Builtin_list(Env *env, Sv *x)
 {
-    Sv *y = NULL, *z = NULL;
-
-    while (x && (y = CAR(x))) {
-        z = Sv_cons(y, z);
-        x = CDR(x);
-    }
-
-    return Sv_reverse(z);
+    return Sv_list(x);
 }
 
 extern Sv

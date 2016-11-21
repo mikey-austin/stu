@@ -63,6 +63,7 @@ extern void Sv_dump(Sv *sv);
 extern void Sv_destroy(Sv **);
 extern Sv *Sv_cons(Sv *, Sv *);
 extern Sv *Sv_reverse(Sv *);
+extern Sv *Sv_list(Sv *);
 extern Sv *Sv_copy(Sv *);
 
 extern Sv *Sv_eval(struct Env *, Sv *);

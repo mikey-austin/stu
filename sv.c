@@ -283,6 +283,29 @@ extern Sv
 }
 
 extern Sv
+*Sv_list(Sv *x)
+{
+    Sv *y = NULL, *z = NULL;
+
+    if (!x)
+        return x;
+
+    if (x->type != SV_CONS)
+        return Sv_cons(x, NULL);
+
+    while (x && (y = CAR(x))) {
+        z = Sv_cons(y, z);
+        x = CDR(x);
+        if (x && x->type != SV_CONS) {
+            z = Sv_cons(x, z);
+            break;
+        }
+    }
+
+    return Sv_reverse(z);
+}
+
+extern Sv
 *Sv_eval(Env *env, Sv *x)
 {
     Sv *y = NULL;
@@ -343,6 +366,7 @@ extern Sv
 extern Sv
 *Sv_call(struct Env *env, Sv *f, Sv *a)
 {
+    short varargs = 0;
     Sv *formals, *formal, *arg, *partial, *args = a;
     formals = formal = arg = partial = NULL;
 
@@ -357,17 +381,30 @@ extern Sv
         formals = f->val.ufunc->formals;
 
         while (formals && (formal = CAR(formals))) {
-            /* Get the next arg. */
-            if (args && (arg = CAR(args))) {
-                Env_put(f->val.ufunc->env, formal, arg);
+            if (!varargs && formal->type == SV_SYM && *formal->val.buf == '&') {
+                varargs = 1;
             } else {
-                partial = Sv_copy(f);
-                partial->val.ufunc->formals = formals;
-                break;
+                /* Get the next arg. */
+                if (args && (arg = CAR(args))) {
+                    if (varargs) {
+                        Env_put(f->val.ufunc->env, formal, Sv_list(args));
+                        break;
+                    } else {
+                        Env_put(f->val.ufunc->env, formal, arg);
+                    }
+                } else if (varargs) {
+                    /* Variable args not supplied. */
+                    Env_put(f->val.ufunc->env, formal, NULL);
+                    break;
+                } else {
+                    /* No more arguments to consume. */
+                    partial = Sv_copy(f);
+                    partial->val.ufunc->formals = formals;
+                    break;
+                }
+                args = CDR(args);
             }
-
             formals = CDR(formals);
-            args = CDR(args);
         }
         f->val.ufunc->env->parent = env;
 

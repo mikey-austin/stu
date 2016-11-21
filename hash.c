@@ -74,6 +74,9 @@ Hash_put(Hash *hash, const char *key, void *value)
 {
     Hash_ent *entry;
 
+    if (key == NULL)
+        return;
+
     if (hash->entries == NULL) {
         Hash_create_entries(hash);
     }
@@ -100,7 +103,7 @@ extern void
 {
     Hash_ent *entry;
 
-    if (hash->entries == NULL)
+    if (hash->entries == NULL || key == NULL)
         return NULL;
 
     entry = Hash_find_entry(hash, key);
