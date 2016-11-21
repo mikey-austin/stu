@@ -126,7 +126,7 @@ extern Sv
 extern Sv
 *Builtin_quote(Env *env, Sv *x)
 {
-    return x;
+    return CAR(x);
 }
 
 extern Sv

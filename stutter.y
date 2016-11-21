@@ -52,7 +52,7 @@ elements: sexp              { $$ = Sv_cons($1, NULL); }
 
 sexp: atom                  { $$ = $1; }
     | list                  { $$ = $1; }
-    | '\'' sexp             { $$ = Sv_cons(Sv_new_sym("quote"), $2); }
+    | '\'' sexp             { $$ = Sv_cons(Sv_new_sym("quote"), Sv_cons($2, NULL)); }
     ;
 
 atom: INTEGER               { $$ = Sv_new_int($1); }
