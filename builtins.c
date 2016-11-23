@@ -140,7 +140,7 @@ extern Sv
         return Sv_new_err("'def' needs a symbol as the first argument");
 
     /* Def in the top scope. */
-    Env_top_put(env, y, CAR(z));
+    Env_top_put(env, y, Sv_eval(env, CAR(z)));
 
     return NULL;
 }

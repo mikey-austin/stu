@@ -1,4 +1,4 @@
-(def 'make-adder (lambda (a) (lambda (b) (+ a b))))
-(def 'add-two (make-adder 2))
-(def 'add-three (make-adder 3))
+(def make-adder (lambda (a) (lambda (b) (+ a b))))
+(def add-two (make-adder 2))
+(def add-three (make-adder 3))
 (add-two 0)

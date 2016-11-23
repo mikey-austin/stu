@@ -57,6 +57,7 @@ extern Sv
     Sv *x = Sv_new_str(sym);
     x->type = SV_SYM;
     x->special = !strcmp(sym, "quote")
+        || !strcmp(sym, "def")
         || !strcmp(sym, "lambda")
         || !strcmp(sym, "if");
     return x;

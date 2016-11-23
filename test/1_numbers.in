@@ -1,5 +1,5 @@
-(def 'a (+))          ; should be 0
-(def 'b (+ a (/ 10))) ; should be 0
-(def 'c (+ a b 10))
-(def 'd (/ (* (- c) 2) 10))
+(def a (+))          ; should be 0
+(def b (+ a (/ 10))) ; should be 0
+(def c (+ a b 10))
+(def d (/ (* (- c) 2) 10))
 (* (- 5) d)
