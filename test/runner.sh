@@ -8,16 +8,16 @@ FAILED=0
 TEST=1
 
 for t in $TESTS; do
-    echo -n "[$TEST/$TOTAL] Running $t..."
+    printf "($TEST/$TOTAL) Testing %-25s" $t
     tmp=$(mktemp)
     $STUTTER -f $t.in >$tmp
     out=$(diff -Zu $tmp $t.out)
     if [ "x$?" != "x0" ]; then
-        echo "FAILED"
+        echo "[ FAILED ]"
         echo -e "$out"
         let "FAILED++"
     else
-        echo "OK"
+        echo "[ OK ]"
         let "PASSED++"
     fi
     rm -f $tmp
