@@ -1,6 +1,6 @@
 CC=cc
 BISON=bison
-CFLAGS=-g -Wall $(shell pkg-config --cflags libedit)
+CFLAGS=-g -Wall $(shell pkg-config --cflags libedit) -O0
 LDFLAGS=$(shell pkg-config --libs libedit)
 BASH=/bin/bash
 

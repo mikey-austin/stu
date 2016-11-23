@@ -110,6 +110,18 @@ extern void
     return entry->v;
 }
 
+extern int
+Hash_exists(Hash *hash, const char *key)
+{
+    Hash_ent *entry;
+
+    if (hash->entries == NULL || key == NULL)
+        return 0;
+
+    entry = Hash_find_entry(hash, key);
+    return !strcmp(key, entry->k);
+}
+
 extern void
 Hash_del(Hash *hash, const char *key)
 {

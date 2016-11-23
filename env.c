@@ -61,6 +61,12 @@ extern Sv
     return val;
 }
 
+extern int
+Env_exists(Env *env, Sv *key)
+{
+    return Hash_exists(env->hash, key->val.buf);
+}
+
 extern Sv
 *Env_get(Env *env, Sv *key)
 {

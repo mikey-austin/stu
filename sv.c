@@ -57,8 +57,8 @@ extern Sv
     Sv *x = Sv_new_str(sym);
     x->type = SV_SYM;
     x->special = !strcmp(sym, "quote")
-        || !strcmp(sym, "if")
-        || !strcmp(sym, "lambda");
+        || !strcmp(sym, "lambda")
+        || !strcmp(sym, "if");
     return x;
 }
 
@@ -181,7 +181,7 @@ Sv_dump(Sv *sv)
             break;
         }
     } else {
-        printf("nil");
+        printf("()");
     }
 }
 
@@ -315,7 +315,11 @@ extern Sv
 
     switch (x->type) {
     case SV_SYM:
-        if ((y = Env_top_get(env, x)) == NULL) {
+        /*
+         * If the symbol exists but it's value is NULL, then it is
+         * the empty list.
+         */
+        if ((y = Env_top_get(env, x)) == NULL && !Env_exists(env, x)) {
             y = Sv_new_err("possibly unknown symbol");
         }
         return y;

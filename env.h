@@ -16,6 +16,7 @@ extern void Env_top_put(Env *, Sv *, Sv *);
 extern void Env_put(Env *, Sv *, Sv *);
 extern Sv *Env_top_get(Env *, Sv *);
 extern Sv *Env_get(Env *, Sv *);
+extern int Env_exists(Env *, Sv *);
 extern Sv *Env_del(Env *, Sv *);
 extern void Env_copy(Env *, Env *);
 
