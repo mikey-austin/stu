@@ -55,7 +55,7 @@ main(int argc, char **argv)
 
 cleanup:
     Parse_cleanup();
-    Gc_destroy_all();
+    Gc_sweep(0);
 
     return 0;
 }

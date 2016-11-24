@@ -36,7 +36,7 @@ Gc_del(Gc *gc)
 }
 
 extern void
-Gc_destroy_all(void)
+Gc_sweep(int only_marked)
 {
     Sv *sv = NULL;
     Env *env = NULL;
@@ -45,16 +45,18 @@ Gc_destroy_all(void)
     while (cur) {
         Gc_del(cur);
         next = cur->prev;
-        switch (cur->flags >> GC_TYPE_BITS) {
-        case GC_TYPE_SV:
-            sv = (Sv *) cur;
-            Sv_destroy(&sv);
-            break;
+        if (!only_marked || (only_marked && GC_MARKED(cur))) {
+            switch (cur->flags >> GC_TYPE_BITS) {
+            case GC_TYPE_SV:
+                sv = (Sv *) cur;
+                Sv_destroy(&sv);
+                break;
 
-        case GC_TYPE_ENV:
-            env = (Env *) cur;
-            Env_destroy(&env);
-            break;
+            case GC_TYPE_ENV:
+                env = (Env *) cur;
+                Env_destroy(&env);
+                break;
+            }
         }
         cur = next;
     }

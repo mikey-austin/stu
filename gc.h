@@ -7,6 +7,7 @@
 #define GC_TYPE_SV   0x01
 #define GC_TYPE_ENV  0x02
 
+#define GC_MARKED(x)  ((x) ? (((Gc *) x)->flags & GC_MARK_MASK) : 0)
 #define GC_MARK(x)    ((x) ? (((Gc *) x)->flags |= GC_MARK_MASK) : 0)
 #define GC_UNMARK(x)  ((x) ? (((Gc *) x)->flags &= ~GC_MARK_MASK) : 0)
 #define GC_PREV(x)    ((x) ? (((Gc *) x)->prev : NULL))
@@ -26,6 +27,6 @@ typedef struct Gc {
 
 extern void Gc_add(Gc *);
 extern void Gc_del(Gc *);
-extern void Gc_destroy_all(void);
+extern void Gc_sweep(int);
 
 #endif
