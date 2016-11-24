@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "gc.h"
 #include "sv.h"
 #include "env.h"
 
@@ -14,7 +15,8 @@ extern Sv
     Sv *x = NULL;
     int i;
 
-    if ((x = malloc(sizeof(*x))) != NULL) {
+    if ((x = calloc(1, sizeof(*x))) != NULL) {
+        GC_INIT(x, GC_TYPE_SV);
         x->type = type;
         x->special = 0;
         for (i = 0; i < SV_CONS_REGISTERS; i++)
@@ -114,10 +116,9 @@ Sv_destroy(Sv **sv)
             break;
 
         case SV_CONS:
-            for (int i = 0; i < SV_CONS_REGISTERS; i++) {
-                Sv_destroy(&((*sv)->val.reg[i]));
+            /* GC will clean up cons cells. */
+            for (int i = 0; i < SV_CONS_REGISTERS; i++)
                 (*sv)->val.reg[i] = NULL;
-            }
             break;
 
         case SV_FUNC:
@@ -126,10 +127,11 @@ Sv_destroy(Sv **sv)
             break;
 
         case SV_LAMBDA:
+            /* GC will clean up environments and lists. */
             if ((*sv)->val.ufunc) {
-                Env_destroy(&((*sv)->val.ufunc->env));
-                Sv_destroy(&((*sv)->val.ufunc->formals));
-                Sv_destroy(&((*sv)->val.ufunc->body));
+                (*sv)->val.ufunc->env = NULL;
+                (*sv)->val.ufunc->formals = NULL;
+                (*sv)->val.ufunc->body = NULL;
                 free((*sv)->val.ufunc);
                 (*sv)->val.ufunc = NULL;
             }

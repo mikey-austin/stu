@@ -1,5 +1,6 @@
 #include <stdlib.h>
 
+#include "gc.h"
 #include "builtins.h"
 
 struct Builtin {

@@ -21,6 +21,7 @@ enum Sv_type {
 };
 
 /* Forward declarations. */
+struct Gc;
 struct Env;
 struct Sv;
 
@@ -31,7 +32,6 @@ typedef struct Sv_ufunc {
     struct Env *env;
     struct Sv *formals;
     struct Sv *body;
-
 } Sv_ufunc;
 
 /* Actual value container. */
@@ -45,7 +45,8 @@ union Sv_val {
 
 /* Core stutter value. */
 typedef struct Sv {
-    short special;
+    struct Gc gc;
+    unsigned char special;
     enum Sv_type type;
     union Sv_val val;
 } Sv;

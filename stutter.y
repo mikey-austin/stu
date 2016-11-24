@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <err.h>
 
+#include "gc.h"
 #include "sv.h"
 #include "env.h"
 

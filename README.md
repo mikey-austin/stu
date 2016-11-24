@@ -23,9 +23,26 @@ Or you can use the repl by specifying no arguments:
     stutter> ^D
     Bye!
 
+### Tests
+
+The test suite uses valgrind by default. To disable valgrind, use the following:
+
+    $ make WITH_VALGRIND= test
+    cd test; /bin/bash ./runner.sh  -f ../stutter
+    (1/7) Testing 1_curried                [ OK ]
+    (2/7) Testing 1_numbers                [ OK ]
+    (3/7) Testing 1_types                  [ OK ]
+    (4/7) Testing 2_partial_eval           [ OK ]
+    (5/7) Testing 3_quote                  [ OK ]
+    (6/7) Testing 4_var_args               [ OK ]
+    (7/7) Testing 5_var_args               [ OK ]
+    --
+    Passed  7
+    Failed  0
+
 ### Mac OS X build
 
 You should have `homebrew` installed.
 
-    make macosx_deps
-    make with_brew
+    $ make macosx_deps
+    $ make with_brew

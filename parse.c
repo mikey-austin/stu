@@ -3,13 +3,12 @@
 #include <string.h>
 #include <err.h>
 
+#include "gc.h"
 #include "env.h"
 #include "sv.h"
 #include "lex.yy.h"
 #include "stutter.tab.h"
 #include "parse.h"
-
-extern FILE *yyin;
 
 extern Sv
 *Parse_buf(Env *env, const char *buf)
@@ -24,6 +23,7 @@ extern Sv
             errx(1, "Parser memory allocation error");
             break;
         }
+        yy_delete_buffer(bp);
     }
 
     return result;
@@ -47,5 +47,14 @@ extern Sv
         break;
     }
 
+    if (yyin != stdin)
+        fclose(yyin);
+
     return result;
+}
+
+extern void
+Parse_cleanup()
+{
+    yylex_destroy();
 }

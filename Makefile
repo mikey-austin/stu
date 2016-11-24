@@ -3,6 +3,7 @@ BISON=bison
 CFLAGS=-g -Wall $(shell pkg-config --cflags libedit) -O0
 LDFLAGS=$(shell pkg-config --libs libedit)
 BASH=/bin/bash
+WITH_VALGRIND=-m
 
 all: stutter
 
@@ -10,11 +11,11 @@ all: stutter
 with_brew: BISON=$(shell brew --prefix bison)/bin/bison
 with_brew: stutter
 
-stutter: lex.yy.o stutter.tab.o sv.o parse.o main.o hash.o env.o builtins.o utils.o
-	$(CC) -o stutter lex.yy.o stutter.tab.o sv.o parse.o main.o hash.o env.o builtins.o utils.o $(LDFLAGS)
+stutter: lex.yy.o stutter.tab.o sv.o parse.o main.o hash.o env.o builtins.o utils.o gc.o
+	$(CC) -o stutter lex.yy.o stutter.tab.o sv.o parse.o main.o hash.o env.o builtins.o utils.o gc.o $(LDFLAGS)
 
 test: stutter
-	cd test; $(BASH) ./runner.sh ../stutter
+	cd test; $(BASH) ./runner.sh $(WITH_VALGRIND) -f ../stutter
 
 lex.yy.o: stutter.tab.h stutter.l sv.h
 	flex --header-file=lex.yy.h stutter.l
@@ -46,6 +47,9 @@ builtins.o: builtins.c env.h sv.h
 
 utils.o: utils.c utils.h
 	$(CC) $(CFLAGS) -c utils.c
+
+gc.o: gc.c gc.h
+	$(CC) $(CFLAGS) -c gc.c
 
 macosx_deps:
 	brew install bison

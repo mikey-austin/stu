@@ -2,25 +2,49 @@
 
 TESTS=$(ls *.in |while read i; do basename -s\.in $i; done)
 TOTAL=$(ls *.in |wc -l)
-STUTTER=$1
 PASSED=0
 FAILED=0
 TEST=1
+VALGRIND=
+
+while getopts "mf:" opt; do
+    case $opt in
+        f)
+            STUTTER=$OPTARG
+            ;;
+        m)
+            VALGRIND="/usr/bin/valgrind -q --error-exitcode=1 --leak-check=full --errors-for-leak-kinds=all --show-leak-kinds=all --tool=memcheck"
+            ;;
+        \?)
+            echo k"Invalid option: -$OPTARG" >&2
+            ;;
+  esac
+done
 
 for t in $TESTS; do
     printf "($TEST/$TOTAL) Testing %-25s" $t
     tmp=$(mktemp)
-    $STUTTER -f $t.in >$tmp
-    out=$(diff -Zu $tmp $t.out)
+    errtmp=$(mktemp)
+    $VALGRIND $STUTTER -f $t.in >$tmp 2>$errtmp
     if [ "x$?" != "x0" ]; then
         echo "[ FAILED ]"
-        echo -e "$out"
+        echo "--"
+        echo "Valgrind errors:"
+        cat $errtmp
+        echo "--"
         let "FAILED++"
     else
-        echo "[ OK ]"
-        let "PASSED++"
+        out=$(diff -Zu $tmp $t.out)
+        if [ "x$?" != "x0" ]; then
+            echo "[ FAILED ]"
+            echo -e "$out"
+            let "FAILED++"
+        else
+            echo "[ OK ]"
+            let "PASSED++"
+        fi
     fi
-    rm -f $tmp
+    rm -f $tmp $errtmp
     let "TEST++"
 done
 

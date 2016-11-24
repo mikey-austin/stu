@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <string.h>
 
+#include "gc.h"
 #include "sv.h"
 #include "env.h"
 #include "parse.h"
@@ -31,7 +32,7 @@ main(int argc, char **argv)
             result = Parse_file(env, optarg);
             Sv_dump(Sv_eval(env, result));
             printf("\n");
-            return 0;
+            goto cleanup;
         }
     }
 
@@ -42,17 +43,19 @@ main(int argc, char **argv)
             break;
         }
 
-        if (!strcmp(input, ""))
-            goto next;
-        add_history(input);
+        if (*input != '\0') {
+            add_history(input);
+            result = Parse_buf(env, input);
+            Sv_dump(Sv_eval(env, result));
+            printf("\n");
+        }
 
-        result = Parse_buf(env, input);
-        Sv_dump(Sv_eval(env, result));
-        printf("\n");
-
-    next:
         free(input);
     }
+
+cleanup:
+    Parse_cleanup();
+    Gc_destroy_all();
 
     return 0;
 }

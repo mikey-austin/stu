@@ -6,6 +6,7 @@
 %{
 #include <stdio.h>
 
+#include "gc.h"
 #include "sv.h"
 #include "env.h"
 #include "stutter.tab.h"

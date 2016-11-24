@@ -4,8 +4,12 @@
 #include "hash.h"
 #include "sv.h"
 
+/* Forward declarations. */
+struct Gc;
 struct Env;
+
 typedef struct Env {
+    struct Gc gc;
     struct Env *parent;
     Hash *hash;
 } Env;
