@@ -27,7 +27,7 @@ extern void Hash_reset(Hash *hash);
 extern void Hash_put(Hash *hash, const char *key, void *value);
 extern void *Hash_get(Hash *hash, const char *key);
 extern void Hash_del(Hash *hash, const char *key);
-extern int Hash_keys(Hash *hash, char ***keys);
+extern int Hash_entries(Hash *hash, Hash_ent ***entries);
 extern int Hash_exists(Hash *hash, const char *key);
 
 #endif

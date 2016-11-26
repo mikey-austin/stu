@@ -86,16 +86,32 @@ extern Sv
 extern void
 Env_copy(Env *src, Env *dst)
 {
-    Sv *val = NULL;
-    char **keys = NULL;
-    int num_keys, i;
+    Hash_ent **entries = NULL;
+    int num_entries, i;
 
-    if ((num_keys = Hash_keys(src->hash, &keys)) > 0) {
-        for (i = 0; i < num_keys; i++) {
-            val = Hash_get(src->hash, keys[i]);
-            Hash_put(dst->hash, keys[i], Sv_copy(val));
-            free(keys[i]);
-        }
-        free(keys);
+    if ((num_entries = Hash_entries(src->hash, &entries)) > 0) {
+        for (i = 0; i < num_entries; i++)
+            Hash_put(dst->hash, entries[i]->k, Sv_copy((Sv *) entries[i]->v));
+        free(entries);
     }
+}
+
+extern int
+Env_contents(Env *env, Sv ***contents)
+{
+    Hash_ent **entries = NULL;
+    Sv **new_contents = NULL;
+    int num_entries, i;
+
+    if ((num_entries = Hash_entries(env->hash, &entries)) > 0) {
+        if ((new_contents = calloc(num_entries, sizeof(*new_contents))) == NULL)
+            err(1, "Env_entries");
+        *contents = new_contents;
+
+        for (i = 0; i < num_entries; i++)
+            new_contents[i] = entries[i]->v;
+        free(entries);
+    }
+
+    return num_entries;
 }

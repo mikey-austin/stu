@@ -140,26 +140,26 @@ Hash_del(Hash *hash, const char *key)
 }
 
 extern int
-Hash_keys(Hash *hash, char ***keys)
+Hash_entries(Hash *hash, Hash_ent ***entries)
 {
     Hash_ent *entry;
-    char **new_keys = NULL;
-    int num_keys = 0;
+    Hash_ent **new_entries = NULL;
+    int num_entries = 0;
 
-    if (hash && (num_keys = hash->num_entries) > 0) {
-        if ((new_keys = calloc(hash->num_entries, sizeof(*new_keys))) == NULL)
+    if (hash && (num_entries = hash->num_entries) > 0) {
+        if ((new_entries = calloc(hash->num_entries, sizeof(*new_entries))) == NULL)
             err(1, "Hash_keys");
-        *keys = new_keys;
+        *entries = new_entries;
 
-        for (int i = 0, j = 0; i < hash->size && j < num_keys; i++) {
+        for (int i = 0, j = 0; i < hash->size && j < num_entries; i++) {
             entry = hash->entries + i;
-            if(entry->k && entry->v != NULL) {
-                new_keys[j++] = strdup(entry->k);
+            if(entry->k) {
+                new_entries[j++] = entry;
             }
         }
     }
 
-    return num_keys;
+    return num_entries;
 }
 
 static Hash_ent

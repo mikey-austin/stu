@@ -23,5 +23,6 @@ extern Sv *Env_get(Env *, Sv *);
 extern int Env_exists(Env *, Sv *);
 extern Sv *Env_del(Env *, Sv *);
 extern void Env_copy(Env *, Env *);
+extern int Env_contents(Env *, Sv ***);
 
 #endif

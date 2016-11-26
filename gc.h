@@ -27,6 +27,7 @@ typedef struct Gc {
 
 extern void Gc_add(Gc *);
 extern void Gc_del(Gc *);
+extern void Gc_mark(Gc *);
 extern void Gc_sweep(int);
 
 #endif
