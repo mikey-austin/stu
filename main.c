@@ -16,7 +16,7 @@ extern int optind, opterr, optopt;
 int
 main(int argc, char **argv)
 {
-    int option;
+    int option = 0;
     Env *env = Env_new();
     Sv *result = NULL;
 
@@ -29,29 +29,29 @@ main(int argc, char **argv)
             result = Parse_file(env, optarg);
             Sv_dump(Sv_eval(env, result));
             printf("\n");
-            goto cleanup;
         }
     }
 
-    for (;;) {
-        char *input = readline("stutter> ");
-        if (input == NULL) {
-            printf("\nBye!\n");
-            break;
-        }
+    if (!option) {
+        for (;;) {
+            char *input = readline("stutter> ");
+            if (input == NULL) {
+                printf("\nBye!\n");
+                break;
+            }
 
-        if (*input != '\0') {
-            add_history(input);
-            result = Parse_buf(env, input);
-            Sv_dump(Sv_eval(env, result));
-            printf("\n");
-        }
+            if (*input != '\0') {
+                add_history(input);
+                result = Parse_buf(env, input);
+                Sv_dump(Sv_eval(env, result));
+                printf("\n");
+            }
 
-        free(input);
-        Gc_collect();
+            free(input);
+            Gc_collect();
+        }
     }
 
-cleanup:
     Parse_cleanup();
     Gc_sweep(0);
     Gc_dump_stats();
