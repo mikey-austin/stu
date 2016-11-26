@@ -6,6 +6,7 @@
 #define GC_TYPE_BITS 4
 #define GC_TYPE_SV   0x01
 #define GC_TYPE_ENV  0x02
+#define GC_THRESHOLD  2
 
 #define GC_MARKED(x)  ((x) ? (((Gc *) x)->flags & GC_MARK_MASK) : 0)
 #define GC_MARK(x)    ((x) ? (((Gc *) x)->flags |= GC_MARK_MASK) : 0)
@@ -25,6 +26,9 @@ typedef struct Gc {
     unsigned char flags; /* Contains "mark" & object type. */
 } Gc;
 
+extern void Gc_init(Gc *);
+extern void Gc_dump_stats(void);
+extern void Gc_collect(void);
 extern void Gc_add(Gc *);
 extern void Gc_del(Gc *);
 extern void Gc_mark(Gc *);

@@ -8,10 +8,52 @@
 /* Entry points of global gc-managed structure list. */
 static Gc *Gc_head = NULL;
 static Gc *Gc_tail = NULL;
+static Env *Gc_top_env = NULL;
+static int Gc_allocs = 0;
+
+static int Stats_managed_objects = 0;
+static int Stats_collections = 0;
+static int Stats_frees = 0;
+static int Stats_allocs = 0;
+static int Stats_cleaned = 0;
+
+extern void
+Gc_init(Gc *gc)
+{
+    if (gc->flags >> GC_TYPE_BITS == GC_TYPE_ENV)
+        Gc_top_env = (Env *) gc;
+}
+
+extern void
+Gc_dump_stats(void)
+{
+    fprintf(stderr, "--\n");
+    fprintf(stderr, "Avg cleanups per gc: %.2f\n", Stats_cleaned / (Stats_collections + 1.0));
+    fprintf(stderr, "Number of gc:        %d\n", Stats_collections);
+    fprintf(stderr, "Number of allocs:    %d\n", Stats_allocs);
+    fprintf(stderr, "Number of frees:     %d\n", Stats_frees);
+}
+
+extern void
+Gc_collect(void)
+{
+    int before_collect = Stats_managed_objects;
+
+    if (Gc_allocs > GC_THRESHOLD) {
+        Gc_mark((Gc *) Gc_top_env);
+        Gc_sweep(1);
+        Gc_allocs = 0;
+        Stats_cleaned += before_collect - Stats_managed_objects;
+        Stats_collections++;
+    }
+}
 
 extern void
 Gc_add(Gc *gc)
 {
+    Stats_managed_objects++;
+    Stats_allocs++;
+    Gc_allocs++;
     if (Gc_head == NULL) {
         Gc_head = Gc_tail = gc;
     } else {
@@ -25,6 +67,8 @@ Gc_add(Gc *gc)
 extern void
 Gc_del(Gc *gc)
 {
+    Stats_managed_objects--;
+    Stats_frees++;
     if (gc->prev == NULL)
         Gc_tail = gc->next;
     else
@@ -75,7 +119,7 @@ Gc_mark_env(Env *env) {
 extern void
 Gc_mark(Gc *gc)
 {
-    if (gc) {
+    if (gc && !GC_MARKED(gc)) {
         GC_MARK(gc);
         switch (gc->flags >> GC_TYPE_BITS) {
         case GC_TYPE_SV:
@@ -97,9 +141,9 @@ Gc_sweep(int only_unmarked)
     Gc *cur = Gc_head, *next = NULL;
 
     while (cur) {
-        Gc_del(cur);
         next = cur->prev;
         if (!only_unmarked || (only_unmarked && !GC_MARKED(cur))) {
+            Gc_del(cur);
             switch (cur->flags >> GC_TYPE_BITS) {
             case GC_TYPE_SV:
                 sv = (Sv *) cur;
@@ -111,6 +155,8 @@ Gc_sweep(int only_unmarked)
                 Env_destroy(&env);
                 break;
             }
+        } else {
+            GC_UNMARK(cur);
         }
         cur = next;
     }

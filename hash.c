@@ -153,7 +153,7 @@ Hash_entries(Hash *hash, Hash_ent ***entries)
 
         for (int i = 0, j = 0; i < hash->size && j < num_entries; i++) {
             entry = hash->entries + i;
-            if(entry->k) {
+            if (*(entry->k) != '\0') {
                 new_entries[j++] = entry;
             }
         }
