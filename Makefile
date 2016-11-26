@@ -17,6 +17,9 @@ stutter: lex.yy.o stutter.tab.o sv.o parse.o main.o hash.o env.o builtins.o util
 test: stutter
 	cd test; $(BASH) ./runner.sh $(WITH_VALGRIND) -f ../stutter
 
+repl: stutter
+	valgrind -q --error-exitcode=1 --leak-check=full --show-leak-kinds=definite,possible --tool=memcheck ./stutter
+
 lex.yy.o: stutter.tab.h stutter.l sv.h
 	flex --header-file=lex.yy.h stutter.l
 	$(CC) $(CFLAGS) -c lex.yy.c
@@ -57,4 +60,4 @@ macosx_deps:
 clean:
 	rm -f lex.yy.[ch] stutter.tab.[ch] stutter *.o
 
-.PHONY: test
+.PHONY: test repl

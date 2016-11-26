@@ -52,10 +52,9 @@ main(int argc, char **argv)
     }
 
 cleanup:
-    rl_free_line_state();
     Parse_cleanup();
-    Gc_dump_stats();
     Gc_sweep(0);
+    Gc_dump_stats();
 
     return 0;
 }
