@@ -90,8 +90,10 @@ Env_copy(Env *src, Env *dst)
     int num_entries, i;
 
     if ((num_entries = Hash_entries(src->hash, &entries)) > 0) {
-        for (i = 0; i < num_entries; i++)
-            Hash_put(dst->hash, entries[i]->k, Sv_copy((Sv *) entries[i]->v));
+        for (i = 0; i < num_entries; i++) {
+            if (entries[i])
+                Hash_put(dst->hash, entries[i]->k, Sv_copy((Sv *) entries[i]->v));
+        }
         free(entries);
     }
 }
@@ -108,8 +110,10 @@ Env_contents(Env *env, Sv ***contents)
             err(1, "Env_entries");
         *contents = new_contents;
 
-        for (i = 0; i < num_entries; i++)
-            new_contents[i] = entries[i]->v;
+        for (i = 0; i < num_entries; i++) {
+            if (entries[i] != NULL)
+                new_contents[i] = entries[i]->v;
+        }
         free(entries);
     }
 
