@@ -1,0 +1,5 @@
+(list
+ (not #t)
+ (not #f)
+ (not (> 1 2))
+ (not (not (> 1 2))))
