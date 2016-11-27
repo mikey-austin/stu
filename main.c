@@ -16,7 +16,7 @@ extern int optind, opterr, optopt;
 int
 main(int argc, char **argv)
 {
-    int option = 0;
+    int option = 0, repl = 1;
     Env *env = Env_new();
     Sv *result = NULL;
 
@@ -26,13 +26,14 @@ main(int argc, char **argv)
     while((option = getopt(argc, argv, "f:")) != -1) {
         switch(option) {
         case 'f':
+            repl = 0;
             result = Parse_file(env, optarg);
             Sv_dump(Sv_eval(env, result));
             printf("\n");
         }
     }
 
-    if (!option) {
+    if (repl) {
         for (;;) {
             char *input = readline("stutter> ");
             if (input == NULL) {

@@ -19,5 +19,11 @@ extern Sv *Builtin_eval(Env *, Sv *);
 extern Sv *Builtin_car(Env *, Sv *);
 extern Sv *Builtin_cdr(Env *, Sv *);
 extern Sv *Builtin_reverse(Env *, Sv *);
+extern Sv *Builtin_if(Env *, Sv*);
+extern Sv *Builtin_eq(Env *, Sv*);
+extern Sv *Builtin_gt(Env *, Sv*);
+extern Sv *Builtin_lt(Env *, Sv*);
+extern Sv *Builtin_gte(Env *, Sv*);
+extern Sv *Builtin_lte(Env *, Sv*);
 
 #endif

@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 
 #include "gc.h"
 #include "builtins.h"
@@ -26,6 +27,12 @@ Builtin_install(Env *env)
         { "car",     Builtin_car },
         { "cdr",     Builtin_cdr },
         { "reverse", Builtin_reverse },
+        { "if",      Builtin_if },
+        { "=",       Builtin_eq },
+        { ">",       Builtin_gt },
+        { "<",       Builtin_lt },
+        { ">=",      Builtin_gte },
+        { "<=",      Builtin_lte },
         { NULL }
     };
 
@@ -221,4 +228,115 @@ extern Sv
     if (!(x = CAR(x)) || x->type != SV_CONS)
         return Sv_new_err("'reverse' needs a single list argument");
     return Sv_reverse(x);
+}
+
+extern Sv
+*Builtin_if(Env *env, Sv* sv)
+{
+    return NULL;
+}
+
+/*
+ * Generate comparison functions using a macro.
+ */
+
+#define OP_EQ  1
+#define OP_GT  2
+#define OP_LT  3
+#define OP_GTE 4
+#define OP_LTE 5
+
+#define CMP_SV(op) \
+    Sv *x = CAR(sv), *y = CADR(sv); \
+    if (x && y && x->type == y->type) { \
+        switch (x->type) { \
+        case SV_INT: \
+        case SV_BOOL: \
+            return Sv_new_bool(compare_numbers(op, x->val.i, y->val.i)); \
+        case SV_STR: \
+        case SV_ERR: \
+        case SV_SYM: \
+            return Sv_new_bool(compare_strings(op, x->val.buf, y->val.buf)); \
+        default: \
+            return Sv_new_err("'eq' does not support these types"); \
+        } \
+    } \
+    return Sv_new_bool(0);
+
+static int
+compare_numbers(int op, int x, int y)
+{
+    switch (op) {
+    case OP_EQ:
+        return x == y ? 1 : 0;
+
+    case OP_GT:
+        return x > y ? 1 : 0;
+
+    case OP_LT:
+        return x < y ? 1 : 0;
+
+    case OP_GTE:
+        return x >= y ? 1 : 0;
+
+    case OP_LTE:
+        return x <= y ? 1 : 0;
+
+    default:
+        return 0;
+    }
+}
+
+static int
+compare_strings(int op, const char *x, const char *y)
+{
+    switch (op) {
+    case OP_EQ:
+        return !strcmp(x, y) ? 1 : 0;
+
+    case OP_GT:
+        return strcmp(x, y) > 0 ? 1 : 0;
+
+    case OP_LT:
+        return strcmp(x, y) < 0 ? 1 : 0;
+
+    case OP_GTE:
+        return strcmp(x, y) >= 0 ? 1 : 0;
+
+    case OP_LTE:
+        return strcmp(x, y) <= 0 ? 1 : 0;
+
+    default:
+        return 0;
+    }
+}
+
+extern Sv
+*Builtin_eq(Env *env, Sv* sv)
+{
+    CMP_SV(OP_EQ);
+}
+
+extern Sv
+*Builtin_gt(Env *env, Sv* sv)
+{
+    CMP_SV(OP_GT);
+}
+
+extern Sv
+*Builtin_lt(Env *env, Sv* sv)
+{
+    CMP_SV(OP_LT);
+}
+
+extern Sv
+*Builtin_gte(Env *env, Sv* sv)
+{
+    CMP_SV(OP_GTE);
+}
+
+extern Sv
+*Builtin_lte(Env *env, Sv* sv)
+{
+    CMP_SV(OP_LTE);
 }
