@@ -16,24 +16,29 @@ extern int optind, opterr, optopt;
 int
 main(int argc, char **argv)
 {
-    int option = 0, repl = 1;
+    int option = 0, repl = 0, files = 0;
     Env *env = Env_new();
     Sv *result = NULL;
 
     Gc_init((Gc *) env);
     Builtin_install(env);
 
-    while((option = getopt(argc, argv, "f:")) != -1) {
+    while((option = getopt(argc, argv, "rf:")) != -1) {
         switch(option) {
         case 'f':
-            repl = 0;
+            files = 1;
             result = Parse_file(env, optarg);
             Sv_dump(Sv_eval(env, result));
             printf("\n");
+            break;
+
+        case 'r':
+            repl = 1;
+            break;
         }
     }
 
-    if (repl) {
+    if (!files || repl) {
         for (;;) {
             char *input = readline("stutter> ");
             if (input == NULL) {

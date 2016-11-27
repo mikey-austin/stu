@@ -22,7 +22,7 @@ while getopts "mf:" opt; do
 done
 
 for t in $TESTS; do
-    printf "($TEST/$TOTAL) Testing %-25s" $t
+    printf "(%2s/$TOTAL) Testing %-25s" $TEST $t
     tmp=$(mktemp)
     errtmp=$(mktemp)
     $VALGRIND $STUTTER -f $t.in >$tmp 2>$errtmp
