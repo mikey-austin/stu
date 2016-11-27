@@ -29,6 +29,7 @@ Builtin_install(Env *env)
         { "reverse", Builtin_reverse },
         { "if",      Builtin_if },
         { "not",     Builtin_not },
+        { "nilp",    Builtin_nilp },
         { "=",       Builtin_eq },
         { ">",       Builtin_gt },
         { "<",       Builtin_lt },
@@ -262,6 +263,13 @@ extern Sv
     return Sv_new_bool(0);
 }
 
+extern Sv
+*Builtin_nilp(Env *env, Sv *sv)
+{
+    Sv *x = CAR(sv);
+    return Sv_new_bool(x ? 0 : 1);
+}
+
 /*
  * Generate comparison functions using a macro.
  */
@@ -274,7 +282,8 @@ extern Sv
 
 #define CMP_SV(op) \
     Sv *x = CAR(sv), *y = CADR(sv); \
-    if (x && y && x->type == y->type) { \
+    if (!x && !y) return Sv_new_bool(1); \
+    if (x->type == y->type) { \
         switch (x->type) { \
         case SV_INT: \
         case SV_BOOL: \

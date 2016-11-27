@@ -23,13 +23,18 @@ main(int argc, char **argv)
     Gc_init((Gc *) env);
     Builtin_install(env);
 
-    while((option = getopt(argc, argv, "rf:")) != -1) {
+    while((option = getopt(argc, argv, "rl:f:")) != -1) {
         switch(option) {
         case 'f':
             files = 1;
             result = Parse_file(env, optarg);
             Sv_dump(Sv_eval(env, result));
             printf("\n");
+            break;
+
+        case 'l':
+            files = 1;
+            Sv_eval(env, Parse_file(env, optarg));
             break;
 
         case 'r':

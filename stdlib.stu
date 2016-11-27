@@ -1,0 +1,4 @@
+(def map (lambda (f l)
+           (if (nilp l)
+               (list)
+             (cons (f (car l)) (map f (cdr l))))))
