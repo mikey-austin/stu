@@ -233,7 +233,20 @@ extern Sv
 extern Sv
 *Builtin_if(Env *env, Sv* sv)
 {
-    return NULL;
+    Sv *cond = CAR(sv), *first = CADR(sv), *second = CADDR(sv);
+
+    if (!cond || !first)
+        return NULL;
+
+    cond = Sv_eval(env, cond);
+    if (!cond || cond->type != SV_BOOL)
+        return Sv_new_err("'if' condition must evaluate to a bool");
+
+    if (cond->val.i) {
+        return Sv_eval(env, first);
+    } else {
+        return second ? Sv_eval(env, second) : NULL;
+    }
 }
 
 /*
