@@ -20,6 +20,7 @@ main(int argc, char **argv)
     Env *env = Env_new();
     Sv *result = NULL;
 
+    env->top = 1;
     Gc_init((Gc *) env);
     Builtin_install(env);
 

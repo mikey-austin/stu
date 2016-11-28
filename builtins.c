@@ -283,7 +283,7 @@ extern Sv
 #define CMP_SV(op) \
     Sv *x = CAR(sv), *y = CADR(sv); \
     if (!x && !y) return Sv_new_bool(1); \
-    if (x->type == y->type) { \
+    if (x && y && x->type == y->type) { \
         switch (x->type) { \
         case SV_INT: \
         case SV_BOOL: \

@@ -37,6 +37,7 @@ for t in $TESTS; do
         out=$(diff -Zu $tmp $t.out)
         if [ "x$?" != "x0" ]; then
             echo "[ FAILED ]"
+            echo -e "Command: $VALGRIND $STUTTER -f $t.in"
             echo -e "$out"
             let "FAILED++"
         else

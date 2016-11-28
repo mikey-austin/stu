@@ -4,8 +4,6 @@
 #include "gc.h"
 #include "env.h"
 
-#define INIT_ENV_SIZE 27
-
 extern Env
 *Env_new(void)
 {
@@ -16,7 +14,8 @@ extern Env
 
     GC_INIT(new, GC_TYPE_ENV);
     new->parent = NULL;
-    new->hash = Hash_new(INIT_ENV_SIZE, NULL);
+    new->top = 0;
+    new->hash = Hash_new(NULL);
 
     return new;
 }
@@ -51,70 +50,80 @@ Env_top_put(Env *env, Sv *key, Sv *val)
 extern Sv
 *Env_top_get(Env *env, Sv *key)
 {
-    Sv *val = NULL;
+    Hash_ent *ent = NULL;
 
-    if ((val = Hash_get(env->hash, key->val.buf)) == NULL
+    if ((ent = Hash_get(env->hash, key->val.buf)) == NULL
         && env->parent)
     {
         /* Check parent environment. */
-        return Env_get(env->parent, key);
+        return Env_top_get(env->parent, key);
     }
 
-    return val;
+    return ent ? ent->v : NULL;
 }
 
 extern int
 Env_exists(Env *env, Sv *key)
 {
-    return Hash_exists(env->hash, key->val.buf);
+    Hash_ent *ent = Hash_get(env->hash, key->val.buf);
+    return ent != NULL;
+}
+
+extern int
+Env_top_exists(Env *env, Sv *key)
+{
+    Hash_ent *ent = NULL;
+
+    if ((ent = Hash_get(env->hash, key->val.buf)) == NULL
+        && env->parent)
+    {
+        /* Check parent environment. */
+        return Env_top_exists(env->parent, key);
+    }
+
+    return ent != NULL;
 }
 
 extern Sv
 *Env_get(Env *env, Sv *key)
 {
-    return Hash_get(env->hash, key->val.buf);
+    Hash_ent *ent = Hash_get(env->hash, key->val.buf);
+    return ent ? ent->v : NULL;
 }
 
-extern Sv
-*Env_del(Env *env, Sv *key)
+extern void
+Env_del(Env *env, Sv *key)
 {
-    Sv *val = Env_get(env, key);
     Hash_del(env->hash, key->val.buf);
-    return val;
 }
 
 extern void
 Env_copy(Env *src, Env *dst)
 {
-    Hash_ent **entries = NULL;
-    int num_entries, i;
-
-    if ((num_entries = Hash_entries(src->hash, &entries)) > 0) {
-        for (i = 0; i < num_entries; i++) {
-            if (entries[i])
-                Hash_put(dst->hash, entries[i]->k, Sv_copy((Sv *) entries[i]->v));
-        }
-        free(entries);
+    Hash_ent *cur = Hash_entries(src->hash);
+    while (cur) {
+        Hash_put(dst->hash, cur->k, Sv_copy((Sv *) cur->v));
+        cur = NEXT_ENTRY(cur);
     }
 }
 
 extern int
 Env_contents(Env *env, Sv ***contents)
 {
-    Hash_ent **entries = NULL;
     Sv **new_contents = NULL;
-    int num_entries, i;
+    int num_entries, i = 0;
+    Hash_ent *cur = NULL;
 
-    if ((num_entries = Hash_entries(env->hash, &entries)) > 0) {
+    if ((num_entries = HASH_NUM_ENTRIES(env->hash)) > 0) {
+        cur = Hash_entries(env->hash);
         if ((new_contents = calloc(num_entries, sizeof(*new_contents))) == NULL)
             err(1, "Env_entries");
         *contents = new_contents;
 
-        for (i = 0; i < num_entries; i++) {
-            if (entries[i] != NULL)
-                new_contents[i] = entries[i]->v;
+        while (cur && i < num_entries) {
+            new_contents[i++] = cur->v;
+            cur = NEXT_ENTRY(cur);
         }
-        free(entries);
     }
 
     return num_entries;

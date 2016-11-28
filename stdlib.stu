@@ -1,4 +1,8 @@
+(def nil ())
 (def map (lambda (f l)
            (if (nilp l)
-               (list)
+               (nil)
              (cons (f (car l)) (map f (cdr l))))))
+
+;; Test invocation...
+;; (map (lambda (a) (+ 1 a)) '(1 2 3 4))

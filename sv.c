@@ -89,7 +89,7 @@ extern Sv
 
     if ((f = malloc(sizeof(*f))) != NULL) {
         f->env = Env_new();
-        if (env)
+        if (env && !env->top)
             Env_copy(env, f->env);
         f->formals = formals;
         f->body = body;
@@ -322,7 +322,7 @@ extern Sv
          * If the symbol exists but it's value is NULL, then it is
          * the empty list.
          */
-        if ((y = Env_top_get(env, x)) == NULL && !Env_exists(env, x)) {
+        if ((y = Env_top_get(env, x)) == NULL && !Env_top_exists(env, x)) {
             y = Sv_new_err("possibly unknown symbol");
         }
         return y;
@@ -363,7 +363,7 @@ extern Sv
     }
 
     /* The car should now be a function. */
-    if (y->type == SV_FUNC || y->type == SV_LAMBDA) {
+    if (y && (y->type == SV_FUNC || y->type == SV_LAMBDA)) {
         return Sv_call(env, y, CDR(x));
     }
 

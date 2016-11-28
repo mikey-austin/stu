@@ -2,32 +2,35 @@
 #define HASH_DEFINED
 
 #define MAX_KEY_LEN 255
+#define HASH_SIZE   97
+#define PREV        0
+#define NEXT        1
+#define HEAD        0
+#define TAIL        1
 
-/**
- * A struct to contain a hash entry's key and value pair.
- */
+#define NEXT_ENTRY(e)       ((e) ? (e)->entries[PREV] : NULL)
+#define HASH_NUM_ENTRIES(h) ((h) ? (h)->num_entries : 0)
+
+struct Hash_ent;
 typedef struct Hash_ent {
-    char  k[MAX_KEY_LEN + 1]; /**< Hash entry key */
-    void *v;                  /**< Hash entry value */
+    struct Hash_ent *entries[2];
+    struct Hash_ent *collisions[2];
+    char  k[MAX_KEY_LEN + 1];
+    void *v;
 } Hash_ent;
 
-/**
- * The main hash table structure.
- */
 typedef struct Hash {
-    int  size;        /**< The initial hash size. */
-    int  num_entries; /**< The number of set elements. */
+    int  num_entries;
     void (*destroy)(struct Hash_ent *entry);
-    struct Hash_ent  *entries;
+    struct Hash_ent *entries[2];
+    struct Hash_ent *buckets[HASH_SIZE];
 } Hash;
 
-extern Hash *Hash_new(int size, void (*destroy)(Hash_ent *entry));
+extern Hash *Hash_new(void (*destroy)(Hash_ent *entry));
 extern void Hash_destroy(Hash **hash);
-extern void Hash_reset(Hash *hash);
 extern void Hash_put(Hash *hash, const char *key, void *value);
-extern void *Hash_get(Hash *hash, const char *key);
+extern Hash_ent *Hash_get(Hash *hash, const char *key);
 extern void Hash_del(Hash *hash, const char *key);
-extern int Hash_entries(Hash *hash, Hash_ent ***entries);
-extern int Hash_exists(Hash *hash, const char *key);
+extern Hash_ent *Hash_entries(Hash *hash);
 
 #endif

@@ -5,250 +5,142 @@
 #include "utils.h"
 #include "hash.h"
 
-static Hash_ent *Hash_find_entry(Hash *hash, const char *key);
-static void Hash_resize(Hash *hash, int new_size);
-static unsigned int Hash_lookup(const char *key);
-static void Hash_create_entries(Hash *hash);
-static void Hash_default_destroy(Hash_ent *entry);
+unsigned int
+hash_key(const char *key)
+{
+    int c;
+    unsigned int h = 5381;
+
+    while((c = *key++))
+        h = ((h << 5) + h) + c;
+
+    return h % HASH_SIZE;
+}
 
 extern Hash
-*Hash_new(int size, void (*destroy)(Hash_ent *entry))
+*Hash_new(void (*destroy)(Hash_ent *entry))
 {
     Hash *new = NULL;
 
-    if ((new = malloc(sizeof(*new))) == NULL)
+    if ((new = calloc(1, sizeof(*new))) == NULL)
         err(1, "Hash_create");
-
-    new->size = size;
-    if (destroy)
-        new->destroy = destroy;
-    else
-        new->destroy = Hash_default_destroy;
-
-    /* Leave the entries uninitialized until the first insert. */
-    new->entries     = NULL;
-    new->num_entries = 0;
+    new->destroy = destroy;
 
     return new;
 }
 
 extern void
-Hash_destroy(Hash **hash)
+Hash_destroy(Hash **to_destroy)
 {
-    if (hash == NULL || *hash == NULL)
+    Hash *hash = NULL;
+    Hash_ent *cur = NULL, *next = NULL;
+
+    if (to_destroy == NULL || (hash = *to_destroy) == NULL)
         return;
 
-    if ((*hash)->destroy && (*hash)->num_entries > 0) {
-        for (int i = 0; i < (*hash)->size; i++) {
-            (*hash)->destroy(((*hash)->entries + i));
-        }
+    for (cur = hash->entries[HEAD]; cur; cur = next) {
+        next = NEXT_ENTRY(cur);
+        if (hash->destroy)
+            hash->destroy(cur);
+        free(cur);
     }
 
-    if (*hash) {
-        if ((*hash)->entries) {
-            free((*hash)->entries);
-            (*hash)->entries = NULL;
-        }
-        free(*hash);
-        *hash = NULL;
-    }
-}
-
-extern void
-Hash_reset(Hash *hash)
-{
-    if (hash->num_entries == 0)
-        return;
-
-    for (int i = 0; i < hash->size; i++) {
-        hash->destroy((hash->entries + i));
-        hash->entries[i].v = NULL;
-    }
-
-    /* Reset the number of entries counter. */
-    hash->num_entries = 0;
+    free(hash);
+    *to_destroy = NULL;
 }
 
 extern void
 Hash_put(Hash *hash, const char *key, void *value)
 {
-    Hash_ent *entry;
+    Hash_ent *new;
 
     if (key == NULL)
         return;
 
-    if (hash->entries == NULL) {
-        Hash_create_entries(hash);
-    }
-    else if (hash->num_entries >= hash->size) {
-        Hash_resize(hash, (2 * hash->size));
-    }
+    Hash_del(hash, key);
+    hash->num_entries++;
+    if ((new = calloc(1, sizeof(*new))) == NULL)
+        err(1, "Hash_put");
 
-    entry = Hash_find_entry(hash, key);
-    if (entry->v != NULL) {
-        /* An entry exists, clear contents before overwriting. */
-        hash->destroy(entry);
+    sstrncpy(new->k, key, MAX_KEY_LEN);
+    new->v = value;
+
+    /* Add to the end of the entries list.  */
+    if (hash->entries[HEAD] == NULL) {
+        hash->entries[HEAD] = hash->entries[TAIL] = new;
     } else {
-        /* As nothing was over written, increment the number of entries. */
-        hash->num_entries++;
+        new->entries[NEXT] = hash->entries[TAIL];
+        hash->entries[TAIL]->entries[PREV] = new;
+        hash->entries[TAIL] = new;
     }
 
-    /* Setup the new entry. */
-    sstrncpy(entry->k, key, MAX_KEY_LEN);
-    entry->v = value;
+    /* Finally add to the relevant bucket. */
+    long i = hash_key(key);
+    if (hash->buckets[i] == NULL) {
+        hash->buckets[i] = new;
+    } else {
+        /* Collision, prepend new entry. */
+        new->collisions[PREV] = hash->buckets[i];
+        hash->buckets[i]->collisions[NEXT] = new;
+        hash->buckets[i] = new;
+    }
 }
 
-extern void
+extern Hash_ent
 *Hash_get(Hash *hash, const char *key)
 {
-    Hash_ent *entry;
+    Hash_ent *ent = NULL;
 
-    if (hash->entries == NULL || key == NULL)
+    if (key == NULL)
         return NULL;
 
-    entry = Hash_find_entry(hash, key);
-    return entry->v;
-}
+    long i = hash_key(key);
+    for (ent = hash->buckets[i]; ent; ent = ent->collisions[PREV]) {
+        if (!strcmp(ent->k, key))
+            break;
+    }
 
-extern int
-Hash_exists(Hash *hash, const char *key)
-{
-    Hash_ent *entry;
-
-    if (hash->entries == NULL || key == NULL)
-        return 0;
-
-    entry = Hash_find_entry(hash, key);
-    return !strcmp(key, entry->k);
+    return ent;
 }
 
 extern void
 Hash_del(Hash *hash, const char *key)
 {
-    Hash_ent *entry;
+    Hash_ent *ent;
 
-    if (hash->entries == NULL)
-        return;
-
-    entry = Hash_find_entry(hash, key);
-    if (entry->v != NULL) {
-        hash->destroy(entry);
-        *(entry->k) = '\0';
-        entry->v    = NULL;
+    ent = Hash_get(hash, key);
+    if (ent != NULL) {
         hash->num_entries--;
+        if (hash->destroy)
+            hash->destroy(ent);
+
+        /* Remove from entries list. */
+        if (ent->entries[PREV] == NULL)
+            hash->entries[TAIL] = ent->entries[NEXT];
+        else
+            ent->entries[PREV]->entries[NEXT] = ent->entries[NEXT];
+
+        if (ent->entries[NEXT] == NULL)
+            hash->entries[HEAD] = ent->entries[PREV];
+        else
+            ent->entries[NEXT]->entries[PREV] = ent->entries[PREV];
+
+        /* Remove from collisions list. */
+        long i = hash_key(key);
+        if (ent->collisions[PREV] != NULL)
+            ent->collisions[PREV]->collisions[NEXT] = ent->collisions[NEXT];
+
+        if (ent->collisions[NEXT] == NULL)
+            hash->buckets[i] = ent->collisions[PREV];
+        else
+            ent->collisions[NEXT]->collisions[PREV] = ent->collisions[PREV];
+
+        free(ent);
     }
 }
 
-extern int
-Hash_entries(Hash *hash, Hash_ent ***entries)
+extern Hash_ent
+*Hash_entries(Hash *hash)
 {
-    Hash_ent *entry;
-    Hash_ent **new_entries = NULL;
-    int num_entries = 0;
-
-    if (hash && (num_entries = hash->num_entries) > 0) {
-        if ((new_entries = calloc(hash->num_entries, sizeof(*new_entries))) == NULL)
-            err(1, "Hash_keys");
-        *entries = new_entries;
-
-        for (int i = 0, j = 0; i < hash->size && j < num_entries; i++) {
-            entry = hash->entries + i;
-            if (*(entry->k) != '\0') {
-                new_entries[j++] = entry;
-            }
-        }
-    }
-
-    return num_entries;
-}
-
-static Hash_ent
-*Hash_find_entry(Hash *hash, const char *key)
-{
-    unsigned int i, j;
-    Hash_ent *curr;
-
-    i = j = (Hash_lookup(key) % hash->size);
-    do {
-        curr = hash->entries + i;
-        if ((strcmp(key, curr->k) == 0) || (curr->v == NULL))
-            break;
-
-        i = ((i + 1) % hash->size);
-    } while (i != j);
-
-    return curr;
-}
-
-static void
-Hash_resize(Hash *hash, int new_size)
-{
-    int i, old_size = hash->size;
-    Hash_ent *old_entries = hash->entries;
-
-    if (new_size <= hash->size) {
-        warnx("Refusing to resize a hash of %d elements to %d",
-              hash->size, new_size);
-        return;
-    }
-
-    /*
-     * We must create a whole new larger area and re-hash each element as
-     * the hash function depends on the size, which is changing. This is
-     * not very efficient for large hashes, so best to choose an
-     * appropriate starting size.
-     */
-    hash->entries = (Hash_ent*) calloc(
-        new_size, sizeof(*(hash->entries)));
-
-    if (!hash->entries)
-        errx(1, "Could not resize hash entries of size %d to %d",
-             hash->size, new_size);
-
-    /* Re-initialize the hash entries. */
-    hash->size = new_size;
-    hash->num_entries = 0;
-
-    /* For each non-NULL entry, re-hash into the new entries array. */
-    for (i = 0; i < old_size; i++) {
-        if(old_entries[i].v != NULL) {
-            Hash_put(hash, old_entries[i].k, old_entries[i].v);
-        }
-    }
-
-    /* Cleanup the old entries. */
-    free(old_entries);
-    old_entries = NULL;
-}
-
-static void
-Hash_create_entries(Hash *hash)
-{
-    hash->num_entries = 0;
-    hash->entries = (Hash_ent*) calloc(
-        hash->size, sizeof(*(hash->entries)));
-    if (!hash->entries)
-        err(1, "Could not allocate hash entries of size %d", hash->size);
-}
-
-/*
- * Use the djb2 string hash function.
- */
-static unsigned int
-Hash_lookup(const char *key)
-{
-    int c;
-    unsigned int hash = 5381;
-
-    while((c = *key++))
-        hash = ((hash << 5) + hash) + c;
-
-    return hash;
-}
-
-static void
-Hash_default_destroy(Hash_ent *entry)
-{
-    if (entry)
-        entry->v = NULL;
+    return hash->entries[HEAD];
 }
