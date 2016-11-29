@@ -1,8 +1,14 @@
+;;
+;; Stdlib functions and definitions.
+;;
+
+;; Our nil symbol.
 (def nil ())
+
+;; nil predicate.
+(def nilp (lambda (a) (= a nil)))
+
 (def map (lambda (f l)
            (if (nilp l)
-               (nil)
+               nil
              (cons (f (car l)) (map f (cdr l))))))
-
-;; Test invocation...
-;; (map (lambda (a) (+ 1 a)) '(1 2 3 4))

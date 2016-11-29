@@ -29,7 +29,6 @@ Builtin_install(Env *env)
         { "reverse", Builtin_reverse },
         { "if",      Builtin_if },
         { "not",     Builtin_not },
-        { "nilp",    Builtin_nilp },
         { "=",       Builtin_eq },
         { ">",       Builtin_gt },
         { "<",       Builtin_lt },
@@ -158,9 +157,9 @@ extern Sv
 extern Sv
 *Builtin_cons(Env *env, Sv *x)
 {
-    Sv *y = CAR(x), *z = CDR(x);
+    Sv *y = CAR(x), *z = CADR(x);
 
-    if (!y || !z || !(z = CAR(z)))
+    if (!x || !y)
         return Sv_new_err("'cons' needs two arguments");
 
     return Sv_cons(y, z);
@@ -261,13 +260,6 @@ extern Sv
     }
 
     return Sv_new_bool(0);
-}
-
-extern Sv
-*Builtin_nilp(Env *env, Sv *sv)
-{
-    Sv *x = CAR(sv);
-    return Sv_new_bool(x ? 0 : 1);
 }
 
 /*

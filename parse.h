@@ -6,6 +6,5 @@
 
 extern Sv *Parse_buf(Env *, const char *);
 extern Sv *Parse_file(Env *, const char *);
-extern void Parse_cleanup(void);
 
 #endif

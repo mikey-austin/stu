@@ -1,0 +1,7 @@
+(def nil ())
+(def map (lambda (f l)
+           (if (= l nil)
+               nil
+             (cons (f (car l)) (map f (cdr l))))))
+
+(map (lambda (a) (* 2 a)) '(1 2 3 4))

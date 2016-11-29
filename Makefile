@@ -18,7 +18,7 @@ test: stutter
 	cd test; $(BASH) ./runner.sh $(WITH_VALGRIND) -f ../stutter
 
 repl: stutter
-	valgrind -q --error-exitcode=1 --leak-check=full --show-leak-kinds=definite,possible --tool=memcheck ./stutter
+	valgrind -q --error-exitcode=1 --leak-check=full --show-leak-kinds=definite,possible --tool=memcheck ./stutter -l stdlib.stu -r
 
 lex.yy.o: stutter.tab.h stutter.l sv.h
 	flex --header-file=lex.yy.h stutter.l

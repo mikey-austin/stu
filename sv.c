@@ -373,7 +373,7 @@ extern Sv
 extern Sv
 *Sv_call(struct Env *env, Sv *f, Sv *a)
 {
-    short varargs = 0;
+    short varargs = 0, enable_partial = 0;
     Sv *formals, *formal, *arg, *partial, *args = a;
     formals = formal = arg = partial = NULL;
 
@@ -388,7 +388,9 @@ extern Sv
         formals = f->val.ufunc->formals;
 
         while (formals && (formal = CAR(formals))) {
-            if (!varargs && formal->type == SV_SYM && *formal->val.buf == '&') {
+            if (formal->type == SV_SYM && !strcmp(formal->val.buf, "~")) {
+                enable_partial = 1;
+            } else if (!varargs && formal->type == SV_SYM && !strcmp(formal->val.buf, "&")) {
                 varargs = 1;
             } else {
                 /* Get the next arg. */
@@ -399,7 +401,7 @@ extern Sv
                     } else {
                         Env_put(f->val.ufunc->env, formal, arg);
                     }
-                } else if (varargs) {
+                } else if (varargs || !enable_partial) {
                     /* Variable args not supplied. */
                     Env_put(f->val.ufunc->env, formal, NULL);
                     break;
@@ -413,7 +415,9 @@ extern Sv
             }
             formals = CDR(formals);
         }
-        f->val.ufunc->env->parent = env;
+
+        if (f->val.ufunc->env != env)
+            f->val.ufunc->env->parent = env;
 
         if (partial) {
             return partial;

@@ -64,7 +64,6 @@ main(int argc, char **argv)
         }
     }
 
-    Parse_cleanup();
     Gc_sweep(0);
     Gc_dump_stats();
 

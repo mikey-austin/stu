@@ -47,14 +47,9 @@ extern Sv
         break;
     }
 
-    if (yyin != stdin)
+    if (yyin && yyin != stdin)
         fclose(yyin);
+    yylex_destroy();
 
     return result;
-}
-
-extern void
-Parse_cleanup()
-{
-    yylex_destroy();
 }

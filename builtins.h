@@ -26,6 +26,5 @@ extern Sv *Builtin_gt(Env *, Sv*);
 extern Sv *Builtin_lt(Env *, Sv*);
 extern Sv *Builtin_gte(Env *, Sv*);
 extern Sv *Builtin_lte(Env *, Sv*);
-extern Sv *Builtin_nilp(Env *, Sv*);
 
 #endif

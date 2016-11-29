@@ -25,7 +25,7 @@
 "#t"     { yylval.i = 1; return BOOLEAN; }
 "#f"     { yylval.i = 0; return BOOLEAN; }
 
-[a-zA-Z0-9._*+-/=<>?!&]+ { yylval.str = yytext; return SYMBOL; }
+[a-zA-Z0-9._*+-~#/=<>?!&]+ { yylval.str = yytext; return SYMBOL; }
 
 ";".*
 
