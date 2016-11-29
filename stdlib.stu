@@ -23,6 +23,10 @@
                  acc
                (foldl f (f acc (car lst)) (cdr lst)))))
 
+;; Some aliases.
+(def fold foldl)
+(def reduce foldr)
+
 ;; Standard map.
 (def map (lambda (f lst)
            (if (nil? lst)
