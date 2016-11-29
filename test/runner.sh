@@ -6,11 +6,15 @@ PASSED=0
 FAILED=0
 TEST=1
 VALGRIND=
+STULIB=
 
-while getopts "mf:" opt; do
+while getopts "mf:l:" opt; do
     case $opt in
         f)
             STUTTER=$OPTARG
+            ;;
+        l)
+            STULIB="$STULIB -l $OPTARG"
             ;;
         m)
             VALGRIND="/usr/bin/valgrind -q --error-exitcode=1 --leak-check=full --errors-for-leak-kinds=all --show-leak-kinds=all --tool=memcheck"
@@ -25,7 +29,7 @@ for t in $TESTS; do
     printf "(%2s/$TOTAL) Testing %-25s" $TEST $t
     tmp=$(mktemp)
     errtmp=$(mktemp)
-    $VALGRIND $STUTTER -f $t.in >$tmp 2>$errtmp
+    $VALGRIND $STUTTER $STULIB -f $t.in >$tmp 2>$errtmp
     if [ "x$?" != "x0" ]; then
         echo "[ FAILED ]"
         echo "--"
@@ -37,7 +41,7 @@ for t in $TESTS; do
         out=$(diff -Zu $tmp $t.out)
         if [ "x$?" != "x0" ]; then
             echo "[ FAILED ]"
-            echo -e "Command: $VALGRIND $STUTTER -f $t.in"
+            echo -e "Command: $VALGRIND $STUTTER $STULIB -f $t.in"
             echo -e "$out"
             let "FAILED++"
         else

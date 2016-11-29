@@ -15,7 +15,7 @@ stutter: lex.yy.o stutter.tab.o sv.o parse.o main.o hash.o env.o builtins.o util
 	$(CC) -o stutter lex.yy.o stutter.tab.o sv.o parse.o main.o hash.o env.o builtins.o utils.o gc.o $(LDFLAGS)
 
 test: stutter
-	cd test; $(BASH) ./runner.sh $(WITH_VALGRIND) -f ../stutter
+	cd test; $(BASH) ./runner.sh $(WITH_VALGRIND) -f ../stutter -l ../stdlib.stu
 
 repl: stutter
 	valgrind -q --error-exitcode=1 --leak-check=full --show-leak-kinds=definite,possible --tool=memcheck ./stutter -l stdlib.stu -r

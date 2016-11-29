@@ -5,19 +5,28 @@
 ;; Our nil symbol.
 (def nil ())
 
+;; Boolean negation.
+(def not (lambda (a) (if a #f #t)))
+
 ;; nil predicate.
-(def nilp (lambda (a) (= a nil)))
+(def nil? (lambda (a) (= a nil)))
+
+;; Fold-right.
+(def foldr (lambda (f end lst)
+             (if (nil? lst)
+                 end
+               (f (car lst) (foldr f end (cdr lst))))))
 
 ;; Standard map.
-(def map (lambda (f l)
-           (if (nilp l)
+(def map (lambda (f lst)
+           (if (nil? lst)
                nil
-             (cons (f (car l)) (map f (cdr l))))))
+             (cons (f (car lst)) (map f (cdr lst))))))
 
 ;; Perl-style grep.
-(def grep (lambda (p l)
-            (if (nilp l)
+(def grep (lambda (p lst)
+            (if (nil? lst)
                 nil
-              (if (p (car l))
-                  (cons (car l) (grep p (cdr l)))
-                (grep p (cdr l))))))
+              (if (p (car lst))
+                  (cons (car lst) (grep p (cdr lst)))
+                (grep p (cdr lst))))))

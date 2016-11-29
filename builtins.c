@@ -28,7 +28,6 @@ Builtin_install(Env *env)
         { "cdr",     Builtin_cdr },
         { "reverse", Builtin_reverse },
         { "if",      Builtin_if },
-        { "not",     Builtin_not },
         { "=",       Builtin_eq },
         { ">",       Builtin_gt },
         { "<",       Builtin_lt },
@@ -248,18 +247,6 @@ extern Sv
     } else {
         return second ? Sv_eval(env, second) : NULL;
     }
-}
-
-extern Sv
-*Builtin_not(Env *env, Sv *sv)
-{
-    Sv *x = Sv_eval(env, CAR(sv));
-
-    if (x->type == SV_BOOL) {
-        return Sv_new_bool(x->val.i ? 0 : 1);
-    }
-
-    return Sv_new_bool(0);
 }
 
 /*
