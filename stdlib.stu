@@ -5,6 +5,10 @@
 ;; Our nil symbol.
 (def nil ())
 
+;; Better function definition syntax.
+(def defun (lambda (name args body)
+             (def (eval 'name) (eval (list 'lambda args body)))))
+
 ;; Boolean negation.
 (def not (lambda (a) (if a #f #t)))
 

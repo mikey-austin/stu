@@ -143,6 +143,9 @@ extern Sv
     Sv *y = CAR(x);
     Sv *z = CDR(x);
 
+    if (y && y->type != SV_SYM)
+        y = Sv_eval(env, y);
+
     /* We need a symbol in the head. */
     if (!y || y->type != SV_SYM)
         return Sv_new_err("'def' needs a symbol as the first argument");
@@ -150,7 +153,7 @@ extern Sv
     /* Def in the top scope. */
     Env_top_put(env, y, Sv_eval(env, CAR(z)));
 
-    return NULL;
+    return NIL;
 }
 
 extern Sv
