@@ -44,3 +44,13 @@
               (if (p (car lst))
                   (cons (car lst) (grep p (cdr lst)))
                 (grep p (cdr lst))))))
+
+;; Max & min
+(def max (lambda (a b) (if (> a b) a b)))
+(def min (lambda (a b) (if (< a b) a b)))
+
+;; List max & min.
+(def list-max (lambda (lst)
+                (fold max 0 lst)))
+(def list-min (lambda (lst)
+                (fold min (car lst) lst)))
