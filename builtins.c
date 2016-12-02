@@ -70,7 +70,7 @@ extern Sv
         x = CDR(x);
 
         if (x) {
-            while (x && (cur = CAR(x))) {
+            while (!IS_NIL(x) && (cur = CAR(x))) {
                 if (cur->type != SV_INT)
                     return Sv_new_err("'-' can operate on numbers only");
                 acc -= cur->val.i;
@@ -90,7 +90,7 @@ extern Sv
     Sv *cur = NULL;
     long acc = 1;
 
-    while (x && (cur = CAR(x))) {
+    while (!IS_NIL(x) && (cur = CAR(x))) {
         if (cur->type != SV_INT)
             return Sv_new_err("'*' can operate on numbers only");
         acc *= cur->val.i;
@@ -106,14 +106,14 @@ extern Sv
     Sv *cur = NULL;
     long acc = 0;
 
-    if (x && (cur = CAR(x))) {
+    if (!IS_NIL(x) && (cur = CAR(x))) {
         if (cur->type != SV_INT)
             return Sv_new_err("'/' can operate on numbers only");
         acc = cur->val.i;
         x = CDR(x);
 
         if (x) {
-            while (x && (cur = CAR(x))) {
+            while (!IS_NIL(x) && (cur = CAR(x))) {
                 if (cur->type != SV_INT)
                     return Sv_new_err("'/' can operate on numbers only");
                 if (cur->val.i == 0)
@@ -181,7 +181,7 @@ extern Sv
     /* All formals should be symbols. */
     formals = CAR(x);
     if (formals->type == SV_CONS) {
-        while (formals && formals->type == SV_CONS && (cur = CAR(formals))) {
+        while (!IS_NIL(formals) && formals->type == SV_CONS && (cur = CAR(formals))) {
             if (cur->type != SV_SYM) {
                 return Sv_new_err(
                     "'lambda' formals need to be symbols");
@@ -264,6 +264,8 @@ extern Sv
     if (!x && !y) return Sv_new_bool(1); \
     if (x && y && x->type == y->type) { \
         switch (x->type) { \
+        case SV_NIL: \
+            return Sv_new_bool(1); \
         case SV_INT: \
         case SV_BOOL: \
             return Sv_new_bool(compare_numbers(op, x->val.i, y->val.i)); \

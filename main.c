@@ -23,6 +23,7 @@ main(int argc, char **argv)
     env->top = 1;
     Gc_init((Gc *) env);
     Builtin_install(env);
+    Sv_init();
 
     while((option = getopt(argc, argv, "rl:f:")) != -1) {
         switch(option) {

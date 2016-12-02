@@ -7,7 +7,14 @@
 #include "sv.h"
 #include "env.h"
 
-static void Sv_cons_dump(Sv *);
+Sv *Sv_nil = NULL;
+
+extern
+void Sv_init(void)
+{
+    /* Initialize global nil object. */
+    Sv_nil = Sv_new(SV_NIL);
+}
 
 extern Sv
 *Sv_new(enum Sv_type type)
@@ -122,6 +129,7 @@ Sv_destroy(Sv **sv)
             break;
 
         case SV_FUNC:
+        case SV_NIL:
         case SV_BOOL:
         case SV_INT:
             break;
@@ -140,6 +148,31 @@ Sv_destroy(Sv **sv)
 
         free(*sv);
         *sv = NULL;
+    }
+}
+
+static void
+Sv_cons_dump(Sv *sv)
+{
+    Sv *car = CAR(sv);
+    Sv *cdr = CDR(sv);
+    Sv_dump(car);
+    if (cdr) {
+        switch (cdr->type) {
+        case SV_CONS:
+            printf(" ");
+            Sv_cons_dump(cdr);
+            break;
+
+        case SV_NIL:
+            /* Don't print terminating nil. */
+            break;
+
+        default:
+            printf(" . ");
+            Sv_dump(cdr);
+            break;
+        }
     }
 }
 
@@ -182,25 +215,10 @@ Sv_dump(Sv *sv)
                 putchar(')');
             }
             break;
-        }
-    } else {
-        printf("()");
-    }
-}
 
-static void
-Sv_cons_dump(Sv *sv)
-{
-    Sv *car = CAR(sv);
-    Sv *cdr = CDR(sv);
-    Sv_dump(car);
-    if (cdr) {
-        if (cdr->type == SV_CONS) {
-            printf(" ");
-            Sv_cons_dump(cdr);
-        } else {
-            printf(" . ");
-            Sv_dump(cdr);
+        case SV_NIL:
+            printf("nil");
+            break;
         }
     }
 }
@@ -212,6 +230,10 @@ extern Sv
 
     if (x) {
         switch (x->type) {
+        case SV_NIL:
+            y = x;
+            break;
+
         case SV_SYM:
             if (x->val.buf)
                 y = Sv_new_sym(x->val.buf);
@@ -277,7 +299,7 @@ extern Sv
 {
     Sv *y = NULL;
 
-    while (x && x->type == SV_CONS) {
+    while (!IS_NIL(x) && x->type == SV_CONS) {
         y = Sv_cons(CAR(x), y);
         x = CDR(x);
     }
@@ -296,7 +318,7 @@ extern Sv
     if (x->type != SV_CONS)
         return Sv_cons(x, NULL);
 
-    while (x && (y = CAR(x))) {
+    while (!IS_NIL(x) && (y = CAR(x))) {
         z = Sv_cons(y, z);
         x = CDR(x);
         if (x && x->type != SV_CONS) {
@@ -349,7 +371,7 @@ extern Sv
         y = Sv_eval(env, z);
     } else {
         /* Evaluate all arguments. */
-        do {
+         while (!IS_NIL(cur)) {
             if (cur->type == SV_CONS) {
                 y = Sv_cons(Sv_eval(env, CAR(cur)), y);
                 cur = CDR(cur);
@@ -357,7 +379,7 @@ extern Sv
                 y = Sv_cons(cur, y);
                 break;
             }
-        } while (cur);
+        }
         x = Sv_reverse(y);
         y = CAR(x);
     }
@@ -373,7 +395,7 @@ extern Sv
 extern Sv
 *Sv_call(struct Env *env, Sv *f, Sv *a)
 {
-    short varargs = 0, enable_partial = 0;
+    short varargs = 0;
     Sv *formals, *formal, *arg, *partial, *args = a;
     formals = formal = arg = partial = NULL;
 
@@ -387,10 +409,8 @@ extern Sv
         /* Bind the formals to the arguments. */
         formals = f->val.ufunc->formals;
 
-        while (formals && (formal = CAR(formals))) {
-            if (formal->type == SV_SYM && !strcmp(formal->val.buf, "~")) {
-                enable_partial = 1;
-            } else if (!varargs && formal->type == SV_SYM && !strcmp(formal->val.buf, "&")) {
+        while (!IS_NIL(formals) && (formal = CAR(formals))) {
+            if (!varargs && formal->type == SV_SYM && !strcmp(formal->val.buf, "&")) {
                 varargs = 1;
             } else {
                 /* Get the next arg. */
@@ -401,7 +421,7 @@ extern Sv
                     } else {
                         Env_put(f->val.ufunc->env, formal, arg);
                     }
-                } else if (varargs || !enable_partial) {
+                } else if (varargs) {
                     /* Variable args not supplied. */
                     Env_put(f->val.ufunc->env, formal, NULL);
                     break;

@@ -4,14 +4,17 @@
 #define SV_CONS_REGISTERS 2
 #define SV_CAR_REG 0
 #define SV_CDR_REG 1
+#define NIL        Sv_nil
 
-#define CAR(sv)   ((sv) && (sv)->type == SV_CONS ? (sv)->val.reg[SV_CAR_REG] : NULL)
-#define CDR(sv)   ((sv) && (sv)->type == SV_CONS ? (sv)->val.reg[SV_CDR_REG] : NULL)
-#define CADR(sv)  ((sv) ? CAR(CDR((sv))) : NULL)
-#define CADDR(sv) ((sv) ? CAR(CDR(CDR((sv)))) : NULL)
+#define IS_NIL(sv) ((sv) && (sv)->type == SV_NIL ? 1 : ((sv) ? 0 : 1))
+#define CAR(sv)    ((sv) && (sv)->type == SV_CONS ? (sv)->val.reg[SV_CAR_REG] : NULL)
+#define CDR(sv)    ((sv) && (sv)->type == SV_CONS ? (sv)->val.reg[SV_CDR_REG] : NULL)
+#define CADR(sv)   ((sv) ? CAR(CDR((sv))) : NULL)
+#define CADDR(sv)  ((sv) ? CAR(CDR(CDR((sv)))) : NULL)
 
 /* Types of stutter values. */
 enum Sv_type {
+    SV_NIL,
     SV_ERR,
     SV_SYM,
     SV_INT,
@@ -53,6 +56,10 @@ typedef struct Sv {
     union Sv_val val;
 } Sv;
 
+/* Global nil object. */
+extern Sv *Sv_nil;
+
+extern void Sv_init(void);
 extern Sv *Sv_new(enum Sv_type);
 extern Sv *Sv_new_int(long);
 extern Sv *Sv_new_bool(short);

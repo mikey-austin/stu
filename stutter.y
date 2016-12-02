@@ -42,18 +42,18 @@ forms: forms sexp           { if (env) Sv_eval(env, $1); $$ = $2; }
     | sexp                  { $$ = $1; }
     ;
 
-list: '(' ')'               { $$ = NULL; }
+list: '(' ')'               { $$ = NIL; }
     | '(' elements ')'      { $$ = $2; }
     | '(' sexp '.' sexp ')' { $$ = Sv_cons($2, $4); }
     ;
 
-elements: sexp              { $$ = Sv_cons($1, NULL); }
+elements: sexp              { $$ = Sv_cons($1, NIL); }
     | sexp elements         { $$ = Sv_cons($1, $2); }
     ;
 
 sexp: atom                  { $$ = $1; }
     | list                  { $$ = $1; }
-    | '\'' sexp             { $$ = Sv_cons(Sv_new_sym("quote"), Sv_cons($2, NULL)); }
+    | '\'' sexp             { $$ = Sv_cons(Sv_new_sym("quote"), Sv_cons($2, NIL)); }
     ;
 
 atom: INTEGER               { $$ = Sv_new_int($1); }

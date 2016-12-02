@@ -1,4 +1,4 @@
-(def my-func (lambda (~ a b & rest) (list a b rest)))
+(def my-func (lambda (a b & rest) (list a b rest)))
 (list
  (my-func 1 2 3 4 5) ; bound a & b, with remaining in rest
  (my-func 1 2)       ; with rest as an empty list
