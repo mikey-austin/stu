@@ -1,0 +1,7 @@
+(def lst '(1 2 3 4 5))
+(list
+    (car lst)
+    (cadr lst)
+    (caddr lst)
+    (cadddr lst)
+    (caddddr lst))

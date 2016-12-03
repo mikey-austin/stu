@@ -52,3 +52,9 @@
                 (fold max 0 lst)))
 (def list-min (lambda (lst)
                 (fold min (car lst) lst)))
+
+;; The various list accessors.
+(def cadr (lambda (a) (car (cdr a))))
+(def caddr (lambda (a) (car (cdr (cdr a)))))
+(def cadddr (lambda (a) (car (cdr (cdr (cdr a))))))
+(def caddddr (lambda (a) (car (cdr (cdr (cdr (cdr a)))))))
