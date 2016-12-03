@@ -19,17 +19,15 @@
 (def foldr (lambda (f end lst)
              (if (nil? lst)
                  end
-               (f (car lst) (foldr f (cdr lst) end)))))
+               (f (car lst) (foldr f end (cdr lst))))))
+(def reduce foldr)
 
 ;; Fold left.
 (def foldl (lambda (f acc lst)
              (if (nil? lst)
                  acc
                (foldl f (f (car lst) acc) (cdr lst)))))
-
-;; Some aliases.
 (def fold foldl)
-(def reduce foldr)
 
 ;; Length of a list.
 (def length (lambda (lst)
@@ -37,17 +35,13 @@
 
 ;; Standard map.
 (def map (lambda (f lst)
-           (if (nil? lst)
-               nil
-             (cons (f (car lst)) (map f (cdr lst))))))
+           (reduce (lambda (a b) (cons (f a) b)) nil lst)))
 
 ;; Perl-style grep.
 (def grep (lambda (p lst)
-            (if (nil? lst)
-                nil
-              (if (p (car lst))
-                  (cons (car lst) (grep p (cdr lst)))
-                (grep p (cdr lst))))))
+            (reduce (lambda (a b)
+                     (if (p a) (cons a b) b)) nil lst)))
+(def filter grep)
 
 ;; Max & min
 (def max (lambda (a b) (if (> a b) a b)))

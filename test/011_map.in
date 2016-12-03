@@ -1,7 +1,3 @@
-(def nil ())
-(def map (lambda (f l)
-           (if (= l nil)
-               nil
-             (cons (f (car l)) (map f (cdr l))))))
-
-(map (lambda (a) (* 2 a)) '(1 2 3 4))
+;; Requires stdlib.stu to be loaded.
+(grep (lambda (a) (< a 100))
+      (map (lambda (a) (* 2 a)) '(1 2 1000 3 4)))
