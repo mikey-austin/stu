@@ -7,6 +7,7 @@
 #include "gc.h"
 #include "sv.h"
 #include "env.h"
+#include "symtab.h"
 #include "parse.h"
 #include "builtins.h"
 
@@ -20,6 +21,7 @@ main(int argc, char **argv)
     Env *env = Env_new();
     Sv *result = NULL;
 
+    Symtab_init();
     env->top = 1;
     Gc_init((Gc *) env);
     Builtin_install(env);
@@ -67,6 +69,7 @@ main(int argc, char **argv)
 
     Gc_sweep(0);
     Gc_dump_stats();
+    Symtab_destroy();
 
     return 0;
 }

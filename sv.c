@@ -6,6 +6,7 @@
 #include "gc.h"
 #include "sv.h"
 #include "env.h"
+#include "symtab.h"
 
 Sv *Sv_nil = NULL;
 
@@ -63,12 +64,12 @@ extern Sv
 extern Sv
 *Sv_new_sym(const char *sym)
 {
-    Sv *x = Sv_new_str(sym);
-    x->type = SV_SYM;
+    Sv *x = Sv_new(SV_SYM);
     x->special = !strcmp(sym, "quote")
         || !strcmp(sym, "def")
         || !strcmp(sym, "lambda")
         || !strcmp(sym, "if");
+    x->val.i = Symtab_get_id(sym);
     return x;
 }
 
@@ -114,7 +115,6 @@ Sv_destroy(Sv **sv)
     if (sv && *sv) {
         switch ((*sv)->type) {
         case SV_ERR:
-        case SV_SYM:
         case SV_STR:
             if ((*sv)->val.buf) {
                 free((*sv)->val.buf);
@@ -128,6 +128,7 @@ Sv_destroy(Sv **sv)
                 (*sv)->val.reg[i] = NULL;
             break;
 
+        case SV_SYM:
         case SV_FUNC:
         case SV_NIL:
         case SV_BOOL:
@@ -182,6 +183,10 @@ Sv_dump(Sv *sv)
     if (sv) {
         switch (sv->type) {
         case SV_SYM:
+            if (sv->val.buf)
+                printf("%s", Symtab_get_name(sv->val.i));
+            break;
+
         case SV_ERR:
         case SV_STR:
             if (sv->val.buf)
@@ -223,6 +228,15 @@ Sv_dump(Sv *sv)
     }
 }
 
+static Sv
+*Sv_copy_sym(Sv *x)
+{
+    Sv *y = Sv_new(SV_SYM);
+    y->special = x->special;
+    y->val.i = x->val.i;
+    return y;
+}
+
 extern Sv
 *Sv_copy(Sv *x)
 {
@@ -235,8 +249,7 @@ extern Sv
             break;
 
         case SV_SYM:
-            if (x->val.buf)
-                y = Sv_new_sym(x->val.buf);
+            y = Sv_copy_sym(x);
             break;
 
         case SV_ERR:
@@ -397,6 +410,7 @@ extern Sv
 {
     short varargs = 0;
     Sv *formals, *formal, *arg, *partial, *args = a;
+    Sv *varsym = Sv_new_sym("&");
     formals = formal = arg = partial = NULL;
 
     if (!f)
@@ -410,7 +424,7 @@ extern Sv
         formals = f->val.ufunc->formals;
 
         while (!IS_NIL(formals) && (formal = CAR(formals))) {
-            if (!varargs && formal->type == SV_SYM && !strcmp(formal->val.buf, "&")) {
+            if (!varargs && formal->type == SV_SYM && formal->val.i == varsym->val.i) {
                 varargs = 1;
             } else {
                 /* Get the next arg. */

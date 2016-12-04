@@ -11,8 +11,8 @@ all: stutter
 with_brew: BISON=$(shell brew --prefix bison)/bin/bison
 with_brew: stutter
 
-stutter: lex.yy.o stutter.tab.o sv.o parse.o main.o hash.o env.o builtins.o utils.o gc.o
-	$(CC) -o stutter lex.yy.o stutter.tab.o sv.o parse.o main.o hash.o env.o builtins.o utils.o gc.o $(LDFLAGS)
+stutter: lex.yy.o stutter.tab.o sv.o parse.o main.o hash.o env.o builtins.o utils.o gc.o symtab.o
+	$(CC) -o stutter lex.yy.o stutter.tab.o sv.o parse.o main.o hash.o env.o builtins.o utils.o gc.o symtab.o $(LDFLAGS)
 
 test: stutter
 	cd test; $(BASH) ./runner.sh $(WITH_VALGRIND) -f ../stutter -l ../stdlib.stu
@@ -53,6 +53,9 @@ utils.o: utils.c utils.h
 
 gc.o: gc.c gc.h
 	$(CC) $(CFLAGS) -c gc.c
+
+symtab.o: symtab.c symtab.h hash.h
+	$(CC) $(CFLAGS) -c symtab.c
 
 macosx_deps:
 	brew install bison

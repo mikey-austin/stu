@@ -3,6 +3,7 @@
 
 #include "gc.h"
 #include "env.h"
+#include "symtab.h"
 
 extern Env
 *Env_new(void)
@@ -35,7 +36,7 @@ Env_destroy(Env **env)
 extern void
 Env_put(Env *env, Sv *key, Sv *val)
 {
-    Hash_put(env->hash, key->val.buf, (void *) val);
+    Hash_put(env->hash, Symtab_get_name(key->val.i), (void *) val);
 }
 
 extern void
@@ -44,7 +45,7 @@ Env_top_put(Env *env, Sv *key, Sv *val)
     Env *top = env;
     while (top && top->parent)
         top = top->parent;
-    Hash_put(top->hash, key->val.buf, (void *) val);
+    Hash_put(top->hash, Symtab_get_name(key->val.i), (void *) val);
 }
 
 extern Sv
@@ -52,7 +53,7 @@ extern Sv
 {
     Hash_ent *ent = NULL;
 
-    if ((ent = Hash_get(env->hash, key->val.buf)) == NULL
+    if ((ent = Hash_get(env->hash, Symtab_get_name(key->val.i))) == NULL
         && env->parent)
     {
         /* Check parent environment. */
@@ -65,7 +66,7 @@ extern Sv
 extern int
 Env_exists(Env *env, Sv *key)
 {
-    Hash_ent *ent = Hash_get(env->hash, key->val.buf);
+    Hash_ent *ent = Hash_get(env->hash, Symtab_get_name(key->val.i));
     return ent != NULL;
 }
 
@@ -74,7 +75,7 @@ Env_top_exists(Env *env, Sv *key)
 {
     Hash_ent *ent = NULL;
 
-    if ((ent = Hash_get(env->hash, key->val.buf)) == NULL
+    if ((ent = Hash_get(env->hash, Symtab_get_name(key->val.i))) == NULL
         && env->parent)
     {
         /* Check parent environment. */
@@ -87,14 +88,14 @@ Env_top_exists(Env *env, Sv *key)
 extern Sv
 *Env_get(Env *env, Sv *key)
 {
-    Hash_ent *ent = Hash_get(env->hash, key->val.buf);
+    Hash_ent *ent = Hash_get(env->hash, Symtab_get_name(key->val.i));
     return ent ? ent->v : NULL;
 }
 
 extern void
 Env_del(Env *env, Sv *key)
 {
-    Hash_del(env->hash, key->val.buf);
+    Hash_del(env->hash, Symtab_get_name(key->val.i));
 }
 
 extern void
