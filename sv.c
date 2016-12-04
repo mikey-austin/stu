@@ -410,7 +410,6 @@ extern Sv
 {
     short varargs = 0;
     Sv *formals, *formal, *arg, *partial, *args = a;
-    Sv *varsym = Sv_new_sym("&");
     formals = formal = arg = partial = NULL;
 
     if (!f)
@@ -424,7 +423,7 @@ extern Sv
         formals = f->val.ufunc->formals;
 
         while (!IS_NIL(formals) && (formal = CAR(formals))) {
-            if (!varargs && formal->type == SV_SYM && formal->val.i == varsym->val.i) {
+            if (!varargs && formal->type == SV_SYM && formal->val.i == Symtab_get_id("&")) {
                 varargs = 1;
             } else {
                 /* Get the next arg. */
