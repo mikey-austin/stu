@@ -8,9 +8,9 @@
 #include "env.h"
 
 extern int yylex(void);
-extern void yyerror(Env *, Sv **, char const *);
+extern void yyerror(Sv **, char const *);
 
-void yyerror (Env *env, Sv **result, char const *s)
+void yyerror (Sv **result, char const *s)
 {
     warnx("%s", s);
 }
@@ -28,7 +28,7 @@ void yyerror (Env *env, Sv **result, char const *s)
 %type <sv> list sexp forms atom elements
 
 %start stutter
-%parse-param { Env *env } { Sv **result }
+%parse-param { Sv **result }
 
 %%
 
@@ -38,7 +38,7 @@ stutter:
     ;
 
 /* Eval every form in the order received except the last form. */
-forms: forms sexp           { if (env) Sv_eval(env, $1); $$ = $2; }
+forms: forms sexp           { Sv_eval(MAIN_ENV, $1); $$ = $2; }
     | sexp                  { $$ = $1; }
     ;
 

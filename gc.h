@@ -26,7 +26,6 @@ typedef struct Gc {
     unsigned char flags; /* Contains "mark" & object type. */
 } Gc;
 
-extern void Gc_init(Gc *);
 extern void Gc_dump_stats(void);
 extern void Gc_collect(void);
 extern void Gc_add(Gc *);

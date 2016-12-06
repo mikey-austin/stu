@@ -18,27 +18,24 @@ int
 main(int argc, char **argv)
 {
     int option = 0, repl = 0, files = 0;
-    Env *env = Env_new();
     Sv *result = NULL;
 
     Symtab_init();
-    env->top = 1;
-    Gc_init((Gc *) env);
-    Builtin_install(env);
+    Builtin_init();
     Sv_init();
 
     while((option = getopt(argc, argv, "rl:f:")) != -1) {
         switch(option) {
         case 'f':
             files = 1;
-            result = Parse_file(env, optarg);
-            Sv_dump(Sv_eval(env, result));
+            result = Parse_file(optarg);
+            Sv_dump(Sv_eval(MAIN_ENV, result));
             printf("\n");
             break;
 
         case 'l':
             files = 1;
-            Sv_eval(env, Parse_file(env, optarg));
+            Sv_eval(MAIN_ENV, Parse_file(optarg));
             break;
 
         case 'r':
@@ -57,8 +54,8 @@ main(int argc, char **argv)
 
             if (*input != '\0') {
                 add_history(input);
-                result = Parse_buf(env, input);
-                Sv_dump(Sv_eval(env, result));
+                result = Parse_buf(input);
+                Sv_dump(Sv_eval(MAIN_ENV, result));
                 printf("\n");
             }
 

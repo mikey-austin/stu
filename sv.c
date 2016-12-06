@@ -21,14 +21,10 @@ extern Sv
 *Sv_new(enum Sv_type type)
 {
     Sv *x = NULL;
-    int i;
 
     if ((x = calloc(1, sizeof(*x))) != NULL) {
         GC_INIT(x, GC_TYPE_SV);
         x->type = type;
-        x->special = 0;
-        for (i = 0; i < SV_CONS_REGISTERS; i++)
-            x->val.reg[i] = NULL;
     } else {
         err(1, "Sv_new");
     }
@@ -96,9 +92,7 @@ extern Sv
     Sv_ufunc *f = NULL;
 
     if ((f = malloc(sizeof(*f))) != NULL) {
-        f->env = Env_new();
-        if (env && !env->top)
-            Env_copy(env, f->env);
+        f->env = env;
         f->formals = formals;
         f->body = body;
         x->val.ufunc = f;
@@ -283,8 +277,8 @@ extern Sv
 
         case SV_LAMBDA:
             if (x->val.ufunc) {
-                y = Sv_new_lambda(x->val.ufunc->env, Sv_copy(x->val.ufunc->formals),
-                    Sv_copy(x->val.ufunc->body));
+                y = Sv_new_lambda(
+                    x->val.ufunc->env, x->val.ufunc->formals, x->val.ufunc->body);
             }
             break;
         }
@@ -357,7 +351,7 @@ extern Sv
          * If the symbol exists but it's value is NULL, then it is
          * the empty list.
          */
-        if ((y = Env_top_get(env, x)) == NULL && !Env_top_exists(env, x)) {
+        if ((y = Env_get(env, x)) == NULL && !Env_exists(env, x)) {
             y = Sv_new_err("possibly unknown symbol");
         }
         return y;
@@ -409,6 +403,7 @@ extern Sv
 *Sv_call(struct Env *env, Sv *f, Sv *a)
 {
     short varargs = 0;
+    Env *call_env;
     Sv *formals, *formal, *arg, *partial, *args = a;
     formals = formal = arg = partial = NULL;
 
@@ -421,6 +416,7 @@ extern Sv
     if (f->type == SV_LAMBDA) {
         /* Bind the formals to the arguments. */
         formals = f->val.ufunc->formals;
+        call_env = f->val.ufunc->env;
 
         while (!IS_NIL(formals) && (formal = CAR(formals))) {
             if (!varargs && formal->type == SV_SYM && formal->val.i == Symtab_get_id("&")) {
@@ -429,19 +425,20 @@ extern Sv
                 /* Get the next arg. */
                 if (args && (arg = CAR(args))) {
                     if (varargs) {
-                        Env_put(f->val.ufunc->env, formal, Sv_list(args));
+                        call_env = Env_put(call_env, formal, Sv_list(args));
                         break;
                     } else {
-                        Env_put(f->val.ufunc->env, formal, arg);
+                        call_env = Env_put(call_env, formal, arg);
                     }
                 } else if (varargs) {
                     /* Variable args not supplied. */
-                    Env_put(f->val.ufunc->env, formal, NULL);
+                    call_env = Env_put(call_env, formal, NULL);
                     break;
                 } else {
                     /* No more arguments to consume. */
                     partial = Sv_copy(f);
                     partial->val.ufunc->formals = formals;
+                    partial->val.ufunc->env = call_env;
                     break;
                 }
                 args = CDR(args);
@@ -449,13 +446,10 @@ extern Sv
             formals = CDR(formals);
         }
 
-        if (f->val.ufunc->env != env)
-            f->val.ufunc->env->parent = env;
-
         if (partial) {
             return partial;
         } else {
-            return Sv_eval(f->val.ufunc->env, f->val.ufunc->body);
+            return Sv_eval(call_env, f->val.ufunc->body);
         }
     }
 

@@ -8,7 +8,6 @@
 /* Entry points of global gc-managed structure list. */
 static Gc *Gc_head = NULL;
 static Gc *Gc_tail = NULL;
-static Env *Gc_top_env = NULL;
 static int Gc_allocs = 0;
 
 static int Stats_managed_objects = 0;
@@ -18,29 +17,12 @@ static int Stats_allocs = 0;
 static int Stats_cleaned = 0;
 
 extern void
-Gc_init(Gc *gc)
-{
-    if (gc->flags >> GC_TYPE_BITS == GC_TYPE_ENV)
-        Gc_top_env = (Env *) gc;
-}
-
-extern void
-Gc_dump_stats(void)
-{
-    fprintf(stderr, "--\n");
-    fprintf(stderr, "Avg cleanups per gc: %.2f\n", Stats_cleaned / (Stats_collections + 1.0));
-    fprintf(stderr, "Number of gc:        %d\n", Stats_collections);
-    fprintf(stderr, "Number of allocs:    %d\n", Stats_allocs);
-    fprintf(stderr, "Number of frees:     %d\n", Stats_frees);
-}
-
-extern void
 Gc_collect(void)
 {
     int before_collect = Stats_managed_objects;
 
     if (Gc_allocs > GC_THRESHOLD) {
-        Gc_mark((Gc *) Gc_top_env);
+        Gc_mark((Gc *) MAIN_ENV);
         Gc_sweep(1);
         Gc_allocs = 0;
         Stats_cleaned += before_collect - Stats_managed_objects;
@@ -106,13 +88,9 @@ Gc_mark_sv(Sv *sv) {
 
 static void
 Gc_mark_env(Env *env) {
-    Sv **contents = NULL;
-    int num_contents = 0, i;
-
-    if (env && (num_contents = Env_contents(env, &contents)) > 0) {
-        for (i = 0; i < num_contents; i++)
-            Gc_mark((Gc *) contents[i]);
-        free(contents);
+    for (; env; env = env->prev) {
+        Gc_mark((Gc *) env);
+        Gc_mark((Gc *) env->val);
     }
 }
 
@@ -160,4 +138,14 @@ Gc_sweep(int only_unmarked)
         }
         cur = next;
     }
+}
+
+extern void
+Gc_dump_stats(void)
+{
+    fprintf(stderr, "--\n");
+    fprintf(stderr, "Avg cleanups per gc: %.2f\n", Stats_cleaned / (Stats_collections + 1.0));
+    fprintf(stderr, "Number of gc:        %d\n", Stats_collections);
+    fprintf(stderr, "Number of allocs:    %d\n", Stats_allocs);
+    fprintf(stderr, "Number of frees:     %d\n", Stats_frees);
 }

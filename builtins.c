@@ -10,7 +10,7 @@ struct Builtin {
 };
 
 extern void
-Builtin_install(Env *env)
+Builtin_init(void)
 {
     struct Builtin *b = NULL;
     struct Builtin builtins[] = {
@@ -37,7 +37,7 @@ Builtin_install(Env *env)
     };
 
     for (b = builtins; b->name != NULL; b++) {
-        Env_put(env, Sv_new_sym(b->name), Sv_new_func(b->func));
+        Env_main_put(Sv_new_sym(b->name), Sv_new_func(b->func));
     }
 }
 
@@ -47,7 +47,7 @@ extern Sv
     Sv *cur = NULL;
     long acc = 0;
 
-    while (x && (cur = CAR(x))) {
+    while (!IS_NIL(x) && (cur = CAR(x))) {
         if (cur->type != SV_INT)
             return Sv_new_err("'+' can operate on numbers only");
         acc += cur->val.i;
@@ -63,7 +63,7 @@ extern Sv
     Sv *cur = NULL;
     long acc = 0;
 
-    if (x && (cur = CAR(x))) {
+    if (!IS_NIL(x) && (cur = CAR(x))) {
         if (cur->type != SV_INT)
             return Sv_new_err("'-' can operate on numbers only");
         acc = cur->val.i;
@@ -151,7 +151,15 @@ extern Sv
         return Sv_new_err("'def' needs a symbol as the first argument");
 
     /* Def in the top scope. */
-    Env_top_put(env, y, Sv_eval(env, CAR(z)));
+    z = Sv_eval(env, CAR(z));
+    Env_main_put(y, z);
+
+    /*
+     * If we installed a lambda, also install in the lambda's env so
+     * it can call itself.
+     */
+    if (z->type == SV_LAMBDA)
+        z->val.ufunc->env = Env_put(z->val.ufunc->env, y, z);
 
     return NIL;
 }
@@ -271,10 +279,10 @@ extern Sv
             return Sv_new_bool(1); \
         case SV_INT: \
         case SV_BOOL: \
+        case SV_SYM: \
             return Sv_new_bool(compare_numbers(op, x->val.i, y->val.i)); \
         case SV_STR: \
         case SV_ERR: \
-        case SV_SYM: \
             return Sv_new_bool(compare_strings(op, x->val.buf, y->val.buf)); \
         default: \
             return Sv_new_err("'eq' does not support these types"); \

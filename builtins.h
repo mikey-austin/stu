@@ -4,8 +4,7 @@
 #include "env.h"
 #include "sv.h"
 
-extern void Builtin_install(Env *);
-
+extern void Builtin_init(void);
 extern Sv *Builtin_add(Env *, Sv *);
 extern Sv *Builtin_sub(Env *, Sv *);
 extern Sv *Builtin_mul(Env *, Sv *);
