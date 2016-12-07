@@ -48,8 +48,7 @@
 (def min (lambda (a b) (if (< a b) a b)))
 
 ;; List max & min.
-(def list-max (lambda (lst)
-                (fold max 0 lst)))
+(def list-max (fold max 0))
 (def list-min (lambda (lst)
                 (fold min (car lst) lst)))
 
