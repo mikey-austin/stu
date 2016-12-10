@@ -17,11 +17,13 @@ extern Sv
     if (buf) {
         YY_BUFFER_STATE bp = yy_scan_string(buf);
         yy_switch_to_buffer(bp);
+        PUSH_SCOPE;
         switch (yyparse(&result)) {
         case 2:
             errx(1, "Parser memory allocation error");
             break;
         }
+        POP_SCOPE;
         yy_delete_buffer(bp);
     }
 
@@ -40,11 +42,13 @@ extern Sv
             err(1, "Parse_file");
     }
 
+    PUSH_SCOPE;
     switch (yyparse(&result)) {
     case 2:
         errx(1, "Parser memory allocation error");
         break;
     }
+    POP_SCOPE;
 
     if (yyin && yyin != stdin)
         fclose(yyin);

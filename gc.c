@@ -1,9 +1,20 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <err.h>
 
 #include "gc.h"
 #include "sv.h"
 #include "env.h"
+
+struct Scope;
+typedef struct Scope {
+    struct Scope *prev;
+    Gc *val;
+} Scope;
+
+static Scope **scope_stack = NULL;
+static int stack_size = 0;
+static int max_stack_size = 20;
 
 /* Entry points of global gc-managed structure list. */
 static Gc *Gc_head = NULL;
@@ -15,52 +26,8 @@ static int Stats_collections = 0;
 static int Stats_frees = 0;
 static int Stats_allocs = 0;
 static int Stats_cleaned = 0;
-
-extern void
-Gc_collect(void)
-{
-    int before_collect = Stats_managed_objects;
-
-    if (Gc_allocs > GC_THRESHOLD) {
-        Gc_mark((Gc *) MAIN_ENV);
-        Gc_sweep(1);
-        Gc_allocs = 0;
-        Stats_cleaned += before_collect - Stats_managed_objects;
-        Stats_collections++;
-    }
-}
-
-extern void
-Gc_add(Gc *gc)
-{
-    Stats_managed_objects++;
-    Stats_allocs++;
-    Gc_allocs++;
-    if (Gc_head == NULL) {
-        Gc_head = Gc_tail = gc;
-    } else {
-        /* Add to the end of the list. */
-        gc->next = Gc_tail;
-        Gc_tail->prev = gc;
-        Gc_tail = gc;
-    }
-}
-
-extern void
-Gc_del(Gc *gc)
-{
-    Stats_managed_objects--;
-    Stats_frees++;
-    if (gc->prev == NULL)
-        Gc_tail = gc->next;
-    else
-        gc->prev->next = gc->next;
-
-    if (gc->next == NULL)
-        Gc_head = gc->prev;
-    else
-        gc->next->prev = gc->prev;
-}
+static int Scope_pushes = 0;
+static int Scope_pops = 0;
 
 static void
 Gc_mark_sv(Sv *sv) {
@@ -92,6 +59,120 @@ Gc_mark_env(Env *env) {
         Gc_mark((Gc *) env);
         Gc_mark((Gc *) env->val);
     }
+}
+
+static void
+Gc_mark_scope(Scope *scope) {
+    for (; scope; scope = scope->prev)
+        Gc_mark(scope->val);
+}
+
+extern void
+Gc_collect(void)
+{
+    int before_collect = Stats_managed_objects;
+
+    if (Gc_allocs > GC_THRESHOLD) {
+        Gc_mark((Gc *) MAIN_ENV);
+        for (int i = 0; i < stack_size; i++)
+            Gc_mark_scope(scope_stack[i]);
+        Gc_sweep(1);
+        Gc_allocs = 0;
+        Stats_cleaned += (before_collect - Stats_managed_objects);
+        Stats_collections++;
+    }
+}
+
+static Scope
+*Gc_new_scope()
+{
+    Scope *new = NULL;
+
+    if ((new = calloc(1, sizeof(*new))) == NULL)
+        err(1, "Gc_new_scope");
+
+    return new;
+}
+
+extern void
+Gc_scope_push(void)
+{
+    Scope *new = Gc_new_scope();
+
+    if (!scope_stack || (stack_size + 1) > max_stack_size) {
+        if (scope_stack)
+            max_stack_size *= 2;
+        scope_stack = realloc(
+            scope_stack, max_stack_size * sizeof(*scope_stack));
+        if (scope_stack == NULL)
+            err(1, "Gc_scope_push");
+    }
+
+    scope_stack[stack_size++] = new;
+    Scope_pushes += 1;
+}
+
+extern void
+Gc_scope_pop(void)
+{
+    Scope *old = scope_stack[stack_size - 1], *prev = NULL;
+    scope_stack[stack_size - 1] = NULL;
+    stack_size -= 1;
+
+    while (old) {
+        prev = old->prev;
+        free(old);
+        old = prev;
+    }
+
+    if (stack_size == 0) {
+        free(scope_stack);
+        scope_stack = NULL;
+    }
+
+    Scope_pops += 1;
+}
+
+extern void
+Gc_add(Gc *gc)
+{
+    Scope *top = stack_size > 0 ? scope_stack[stack_size - 1] : NULL, *new;
+
+    Stats_managed_objects++;
+    Stats_allocs++;
+    Gc_allocs++;
+    if (Gc_head == NULL) {
+        Gc_head = Gc_tail = gc;
+    } else {
+        /* Add to the end of the list. */
+        gc->next = Gc_tail;
+        Gc_tail->prev = gc;
+        Gc_tail = gc;
+    }
+
+    /* Add to front of the top scope, if it exists. */
+    if (top) {
+        new = Gc_new_scope();
+        new->prev = top;
+        new->val = gc;
+        scope_stack[stack_size - 1] = new;
+    }
+}
+
+extern void
+Gc_del(Gc *gc)
+{
+    Stats_managed_objects--;
+    Stats_frees++;
+    if (gc->prev == NULL)
+        Gc_tail = gc->next;
+    else
+        gc->prev->next = gc->next;
+
+    if (gc->next == NULL)
+        Gc_head = gc->prev;
+    else
+        gc->next->prev = gc->prev;
 }
 
 extern void
@@ -145,7 +226,9 @@ Gc_dump_stats(void)
 {
     fprintf(stderr, "--\n");
     fprintf(stderr, "Avg cleanups per gc: %.2f\n", Stats_cleaned / (Stats_collections + 1.0));
-    fprintf(stderr, "Number of gc:        %d\n", Stats_collections);
+    fprintf(stderr, "Number of gcs:       %d\n", Stats_collections);
     fprintf(stderr, "Number of allocs:    %d\n", Stats_allocs);
     fprintf(stderr, "Number of frees:     %d\n", Stats_frees);
+    fprintf(stderr, "Scope pushes:        %d\n", Scope_pushes);
+    fprintf(stderr, "Scope pops:          %d\n", Scope_pops);
 }

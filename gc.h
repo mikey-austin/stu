@@ -1,6 +1,8 @@
 #ifndef GC_DEFINED
 #define GC_DEFINED
 
+#define PUSH_SCOPE   Gc_scope_push()
+#define POP_SCOPE    Gc_scope_pop()
 #define GC_MARK_MASK 0x01
 #define GC_TYPE_MASK 0xF0
 #define GC_TYPE_BITS 4
@@ -32,5 +34,7 @@ extern void Gc_add(Gc *);
 extern void Gc_del(Gc *);
 extern void Gc_mark(Gc *);
 extern void Gc_sweep(int);
+extern void Gc_scope_push(void);
+extern void Gc_scope_pop(void);
 
 #endif
