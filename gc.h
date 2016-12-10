@@ -1,6 +1,8 @@
 #ifndef GC_DEFINED
 #define GC_DEFINED
 
+#include <stdio.h>
+
 #define PUSH_SCOPE   Gc_scope_push()
 #define POP_SCOPE    Gc_scope_pop()
 #define GC_MARK_MASK 0x01
@@ -8,7 +10,7 @@
 #define GC_TYPE_BITS 4
 #define GC_TYPE_SV   0x01
 #define GC_TYPE_ENV  0x02
-#define GC_THRESHOLD  2
+#define GC_THRESHOLD 1000
 
 #define GC_MARKED(x)  ((x) ? (((Gc *) x)->flags & GC_MARK_MASK) : 0)
 #define GC_MARK(x)    ((x) ? (((Gc *) x)->flags |= GC_MARK_MASK) : 0)
@@ -17,7 +19,9 @@
 #define GC_NEXT(x)    ((x) ? (((Gc *) x)->next : NULL))
 #define GC_IS_SV(x)   ((x) ? (((Gc *) x)->flags >> GC_TYPE_BITS) == GC_TYPE_SV : 0)
 #define GC_IS_ENV(x)  ((x) ? (((Gc *) x)->flags >> GC_TYPE_BITS) == GC_TYPE_ENV : 0)
-#define GC_INIT(x, t) ((x) ? (((Gc *) x)->flags = (t << GC_TYPE_BITS)) : 0); Gc_add(((Gc *) x))
+#define GC_INIT(x, t) ((x) ? (((Gc *) x)->flags = (t << GC_TYPE_BITS)) : 0); \
+                             Gc_collect(); \
+                             Gc_add(((Gc *) x))
 
 /* Forward declarations. */
 struct Gc;
@@ -29,6 +33,7 @@ typedef struct Gc {
 } Gc;
 
 extern void Gc_dump_stats(void);
+extern void Gc_dump_graphviz(FILE *);
 extern void Gc_collect(void);
 extern void Gc_add(Gc *);
 extern void Gc_del(Gc *);

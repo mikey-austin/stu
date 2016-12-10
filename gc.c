@@ -5,6 +5,8 @@
 #include "gc.h"
 #include "sv.h"
 #include "env.h"
+#include "hash.h"
+#include "symtab.h"
 
 struct Scope;
 typedef struct Scope {
@@ -20,6 +22,11 @@ static int max_stack_size = 20;
 static Gc *Gc_head = NULL;
 static Gc *Gc_tail = NULL;
 static int Gc_allocs = 0;
+
+/* Visualization declarations. */
+static Hash *Gc_graphviz_nodes = NULL;
+static void Gc_dump_sv_graphviz(FILE *, Sv *);
+static void Gc_dump_env_graphviz(FILE *, Env *);
 
 static int Stats_managed_objects = 0;
 static int Stats_collections = 0;
@@ -231,4 +238,181 @@ Gc_dump_stats(void)
     fprintf(stderr, "Number of frees:     %d\n", Stats_frees);
     fprintf(stderr, "Scope pushes:        %d\n", Scope_pushes);
     fprintf(stderr, "Scope pops:          %d\n", Scope_pops);
+}
+
+/*
+ * Dump visualization of GC internal structures.
+ */
+static void
+Gc_register_graphviz_node(Hash *nodes, Gc *node)
+{
+    static char key[1000];
+    snprintf(key, sizeof(key), "%lx", (unsigned long) node);
+    Hash_put(Gc_graphviz_nodes, key, node);
+}
+
+static int
+Gc_graphviz_node_exists(Hash *nodes, Gc *node)
+{
+    static char key[1000];
+    snprintf(key, sizeof(key), "%lx", (unsigned long) node);
+    return Hash_get(Gc_graphviz_nodes, key) != NULL;
+}
+
+static void
+Gc_dump_sv_graphviz(FILE *out, Sv *sv)
+{
+    if (sv && !Gc_graphviz_node_exists(Gc_graphviz_nodes, (Gc *) sv)) {
+        switch (sv->type) {
+        case SV_CONS:
+            fprintf(out, "\"%lx\" -> \"%lx\" [color=\"green\"]\n",
+                    (unsigned long) sv, (unsigned long) CAR(sv));
+            fprintf(out, "\"%lx\" -> \"%lx\" [color=\"green\"]\n",
+                    (unsigned long) sv, (unsigned long) CDR(sv));
+
+            Gc_dump_sv_graphviz(out, CAR(sv));
+            Gc_dump_sv_graphviz(out, CDR(sv));
+
+            Gc_register_graphviz_node(Gc_graphviz_nodes, (Gc *) CAR(sv));
+            Gc_register_graphviz_node(Gc_graphviz_nodes, (Gc *) CDR(sv));
+            break;
+
+        case SV_LAMBDA:
+            if (sv->val.ufunc) {
+                fprintf(out, "\"%lx\" -> \"%lx\" [color=\"red\"]\n",
+                        (unsigned long) sv, (unsigned long) sv->val.ufunc->env);
+                fprintf(out, "\"%lx\" -> \"%lx\" [color=\"green\"]\n",
+                    (unsigned long) sv, (unsigned long) sv->val.ufunc->formals);
+                fprintf(out, "\"%lx\" -> \"%lx\" [color=\"green\"]\n",
+                    (unsigned long) sv, (unsigned long) sv->val.ufunc->body);
+
+                Gc_dump_env_graphviz(out, sv->val.ufunc->env);
+                Gc_dump_sv_graphviz(out, sv->val.ufunc->formals);
+                Gc_dump_sv_graphviz(out, sv->val.ufunc->body);
+
+                Gc_register_graphviz_node(Gc_graphviz_nodes, (Gc *) sv->val.ufunc->env);
+                Gc_register_graphviz_node(Gc_graphviz_nodes, (Gc *) sv->val.ufunc->formals);
+                Gc_register_graphviz_node(Gc_graphviz_nodes, (Gc *) sv->val.ufunc->body);
+            }
+            break;
+
+        default:
+            /* Ignore. */
+            break;
+        }
+    }
+}
+
+static void
+Gc_dump_env_graphviz(FILE *out, Env *env)
+{
+    for (; env; env = env->prev) {
+        Gc_register_graphviz_node(Gc_graphviz_nodes, (Gc *) env);
+        if (env->prev) {
+            fprintf(out, "\"%lx\" -> \"%lx\" [color=\"red\"]\n",
+                    (unsigned long) env, (unsigned long) env->prev);
+        }
+
+        if (env->val) {
+            fprintf(out, "\"%lx\" -> \"%lx\" [color=\"green\"]\n",
+                    (unsigned long) env, (unsigned long) env->val);
+            Gc_dump_sv_graphviz(out, env->val);
+        }
+    }
+}
+
+static void
+Gc_dump_graphviz_sv_node(FILE *out, const char *key, Sv *sv)
+{
+    switch (sv->type) {
+    case SV_SYM:
+        fprintf(out, "\"%s\" [label=\"%s [0x%s]\n%s\",style=\"filled\"]\n",
+                key, "Sym", key, Symtab_get_name(sv->val.i));
+        break;
+
+    case SV_STR:
+        fprintf(out, "\"%s\" [label=\"%s [0x%s]\n\"%s\"\",style=\"filled\"]\n",
+                key, "Str", key, sv->val.buf);
+        break;
+
+    case SV_INT:
+        fprintf(out, "\"%s\" [label=\"%s [0x%s]\n%ld\",style=\"filled\"]\n",
+                key, "Int", key, sv->val.i);
+        break;
+
+    case SV_BOOL:
+        fprintf(out, "\"%s\" [label=\"%s [0x%s]\n%s\",style=\"filled\"]\n",
+                key, "Int", key, sv->val.i ? "#t" : "#f");
+        break;
+
+    case SV_FUNC:
+        fprintf(out, "\"%s\" [label=\"%s [0x%s]\",style=\"filled\"]\n",
+                key, "Builtin", key);
+        break;
+
+    case SV_LAMBDA:
+        fprintf(out, "\"%s\" [label=\"%s [0x%s]\",style=\"filled\"]\n",
+                key, "Lambda", key);
+        break;
+
+    case SV_NIL:
+        fprintf(out, "\"%s\" [label=\"%s [0x%s]\",style=\"filled\"]\n",
+                key, "Nil", key);
+        break;
+
+    default:
+        /* Ignore. */
+        break;
+    }
+}
+
+static void
+Gc_dump_graphviz_node(FILE *out, const char *key, Gc *gc)
+{
+    switch (gc->flags >> GC_TYPE_BITS) {
+    case GC_TYPE_SV:
+        Gc_dump_graphviz_sv_node(out, key, (Sv *) gc);
+        break;
+
+    case GC_TYPE_ENV:
+        fprintf(out, "\"%s\" [shape=\"box\",label=\"%s [0x%s]\n%s\"]\n",
+                key, "Env", key, Symtab_get_name(((Env *) gc)->sym));
+        break;
+    }
+}
+
+extern void
+Gc_dump_graphviz(FILE *out)
+{
+    Gc *cur = Gc_head;
+
+    if (!out)
+        out = stderr;
+
+    if (Gc_graphviz_nodes)
+        Hash_destroy(&Gc_graphviz_nodes);
+    Gc_graphviz_nodes = Hash_new(NULL);
+
+    fprintf(out, "digraph gc {\n");
+
+    /* Dump every gc managed object. */
+    while (cur && cur->prev) {
+        Gc_register_graphviz_node(Gc_graphviz_nodes, cur);
+        fprintf(out, "\"%lx\" -> \"%lx\" [color=\"blue\"]\n",
+                (unsigned long) cur, (unsigned long) cur->prev);
+        cur = cur->prev;
+    }
+
+    /* Crawl environments. */
+    Gc_dump_env_graphviz(out, MAIN_ENV);
+
+    /* Print detailed node information. */
+    Hash_ent *ent = Hash_entries(Gc_graphviz_nodes);
+    for (; ent; ent = NEXT_ENTRY(ent)) {
+        Gc_dump_graphviz_node(out, ent->k, (Gc *) ent->v);
+    }
+
+    fprintf(out, "}\n");
+
+    Hash_destroy(&Gc_graphviz_nodes);
 }

@@ -177,8 +177,7 @@ Sv_dump(Sv *sv)
     if (sv) {
         switch (sv->type) {
         case SV_SYM:
-            if (sv->val.buf)
-                printf("%s", Symtab_get_name(sv->val.i));
+            printf("%s", Symtab_get_name(sv->val.i));
             break;
 
         case SV_ERR:
