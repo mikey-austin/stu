@@ -345,6 +345,7 @@ extern Sv
     if (!x)
         return x;
 
+    PUSH_SCOPE;
     switch (x->type) {
     case SV_SYM:
         /*
@@ -354,14 +355,19 @@ extern Sv
         if ((y = Env_get(env, x)) == NULL && !Env_exists(env, x)) {
             y = Sv_new_err("possibly unknown symbol");
         }
-        return y;
+        break;
 
     case SV_CONS:
-        return Sv_eval_sexp(env, x);
+        y = Sv_eval_sexp(env, x);
+        break;
 
     default:
-        return x;
+        y = x;
+        break;
     }
+    POP_N_SAVE(y);
+
+    return y;
 }
 
 extern Sv

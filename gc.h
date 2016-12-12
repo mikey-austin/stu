@@ -10,8 +10,9 @@
 #define GC_TYPE_BITS 4
 #define GC_TYPE_SV   0x01
 #define GC_TYPE_ENV  0x02
-#define GC_THRESHOLD 400
+#define GC_THRESHOLD 1000
 
+#define POP_N_SAVE(x) POP_SCOPE; Gc_scope_save((Gc *) (x))
 #define GC_DUMP(file) Gc_dump_graphviz_file((file))
 #define GC_MARKED(x)  ((x) ? (((Gc *) x)->flags & GC_MARK_MASK) : 0)
 #define GC_MARK(x)    ((x) ? (((Gc *) x)->flags |= GC_MARK_MASK) : 0)
@@ -43,5 +44,6 @@ extern void Gc_mark(Gc *);
 extern void Gc_sweep(int);
 extern void Gc_scope_push(void);
 extern void Gc_scope_pop(void);
+extern void Gc_scope_save(Gc *);
 
 #endif

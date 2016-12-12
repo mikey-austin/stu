@@ -140,11 +140,22 @@ Gc_scope_pop(void)
     Scope_pops += 1;
 }
 
+/* Save result in the top scope if it exists. */
+extern
+void Gc_scope_save(Gc *gc)
+{
+    Scope *top = stack_size > 0 ? scope_stack[stack_size - 1] : NULL, *new;
+    if (top) {
+        new = Gc_new_scope();
+        new->prev = top;
+        new->val = gc;
+        scope_stack[stack_size - 1] = new;
+    }
+}
+
 extern void
 Gc_add(Gc *gc)
 {
-    Scope *top = stack_size > 0 ? scope_stack[stack_size - 1] : NULL, *new;
-
     Stats_managed_objects++;
     Stats_allocs++;
     Gc_allocs++;
@@ -157,13 +168,7 @@ Gc_add(Gc *gc)
         Gc_tail = gc;
     }
 
-    /* Add to front of the top scope, if it exists. */
-    if (top) {
-        new = Gc_new_scope();
-        new->prev = top;
-        new->val = gc;
-        scope_stack[stack_size - 1] = new;
-    }
+    Gc_scope_save(gc);
 }
 
 extern void
@@ -232,7 +237,8 @@ extern void
 Gc_dump_stats(void)
 {
     fprintf(stderr, "--\n");
-    fprintf(stderr, "Avg cleanups per gc: %.2f\n", Stats_cleaned / (Stats_collections + 1.0));
+    fprintf(stderr, "Avg cleanups per gc: %.2f (%d cleaned)\n",
+            Stats_cleaned / (Stats_collections + 1.0), Stats_cleaned);
     fprintf(stderr, "Number of gcs:       %d\n", Stats_collections);
     fprintf(stderr, "Number of allocs:    %d\n", Stats_allocs);
     fprintf(stderr, "Number of frees:     %d\n", Stats_frees);
