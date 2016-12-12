@@ -15,6 +15,7 @@ void Sv_init(void)
 {
     /* Initialize global nil object. */
     Sv_nil = Sv_new(SV_NIL);
+    Env_main_put(Sv_new_sym("nil"), Sv_nil);
 }
 
 extern Sv

@@ -326,38 +326,41 @@ Gc_dump_graphviz_sv_node(FILE *out, const char *key, Sv *sv)
 {
     switch (sv->type) {
     case SV_SYM:
-        fprintf(out, "\"%s\" [label=\"%s [0x%s]\n%s\",style=\"filled\"]\n",
-                key, "Sym", key, Symtab_get_name(sv->val.i));
+        fprintf(out, "\"%s\" [label=\"%s%s [0x%s]\n%s\",style=\"filled\"]\n",
+                key, "Sym", (GC_MARKED((Gc *) sv) ? " (marked)" : ""), key,
+                Symtab_get_name(sv->val.i));
         break;
 
     case SV_STR:
-        fprintf(out, "\"%s\" [label=\"%s [0x%s]\n\"%s\"\",style=\"filled\"]\n",
-                key, "Str", key, sv->val.buf);
+        fprintf(out, "\"%s\" [label=\"%s%s [0x%s]\n\"%s\"\",style=\"filled\"]\n",
+                key, "Str", (GC_MARKED((Gc *) sv) ? " (marked)" : ""), key,
+                sv->val.buf);
         break;
 
     case SV_INT:
-        fprintf(out, "\"%s\" [label=\"%s [0x%s]\n%ld\",style=\"filled\"]\n",
-                key, "Int", key, sv->val.i);
+        fprintf(out, "\"%s\" [label=\"%s%s [0x%s]\n%ld\",style=\"filled\"]\n",
+                key, "Int", (GC_MARKED((Gc *) sv) ? " (marked)" : ""), key, sv->val.i);
         break;
 
     case SV_BOOL:
-        fprintf(out, "\"%s\" [label=\"%s [0x%s]\n%s\",style=\"filled\"]\n",
-                key, "Int", key, sv->val.i ? "#t" : "#f");
+        fprintf(out, "\"%s\" [label=\"%s%s [0x%s]\n%s\",style=\"filled\"]\n",
+                key, "Int", (GC_MARKED((Gc *) sv) ? " (marked)" : ""), key,
+                sv->val.i ? "#t" : "#f");
         break;
 
     case SV_FUNC:
-        fprintf(out, "\"%s\" [label=\"%s [0x%s]\",style=\"filled\"]\n",
-                key, "Builtin", key);
+        fprintf(out, "\"%s\" [label=\"%s%s [0x%s]\",style=\"filled\"]\n",
+                key, "Builtin", (GC_MARKED((Gc *) sv) ? " (marked)" : ""), key);
         break;
 
     case SV_LAMBDA:
-        fprintf(out, "\"%s\" [label=\"%s [0x%s]\",style=\"filled\"]\n",
-                key, "Lambda", key);
+        fprintf(out, "\"%s\" [label=\"%s%s [0x%s]\",style=\"filled\"]\n",
+                key, "Lambda", (GC_MARKED((Gc *) sv) ? " (marked)" : ""), key);
         break;
 
     case SV_NIL:
-        fprintf(out, "\"%s\" [label=\"%s [0x%s]\",style=\"filled\"]\n",
-                key, "Nil", key);
+        fprintf(out, "\"%s\" [label=\"%s%s [0x%s]\",style=\"filled\"]\n",
+                key, "Nil", (GC_MARKED((Gc *) sv) ? " (marked)" : ""), key);
         break;
 
     default:
@@ -375,8 +378,9 @@ Gc_dump_graphviz_node(FILE *out, const char *key, Gc *gc)
         break;
 
     case GC_TYPE_ENV:
-        fprintf(out, "\"%s\" [shape=\"box\",label=\"%s [0x%s]\n%s\"]\n",
-                key, "Env", key, Symtab_get_name(((Env *) gc)->sym));
+        fprintf(out, "\"%s\" [shape=\"box\",label=\"%s%s [0x%s]\n%s\"]\n",
+                key, "Env", (GC_MARKED(gc) ? " (marked)" : ""), key,
+                Symtab_get_name(((Env *) gc)->sym));
         break;
     }
 }
@@ -415,4 +419,14 @@ Gc_dump_graphviz(FILE *out)
     fprintf(out, "}\n");
 
     Hash_destroy(&Gc_graphviz_nodes);
+}
+
+extern void
+Gc_dump_graphviz_file(const char *filename)
+{
+    FILE *handle = fopen(filename, "w+");
+    if (handle == NULL)
+        err(1, "Gc_dump_graphviz_file");
+    Gc_dump_graphviz(handle);
+    fclose(handle);
 }
