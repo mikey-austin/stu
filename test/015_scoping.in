@@ -1,4 +1,4 @@
-(def length (lambda (x)
+(def length (λ (x)
               (if (= x ())
                   0
                 (+ 1 (length (cdr x))))))
@@ -7,7 +7,7 @@
 
 ;; This should not overwrite the recursive
 ;; call to length above.
-(def length (lambda (x)
+(def length (λ (x)
               99))
 
 (original-length '(1 2 3))

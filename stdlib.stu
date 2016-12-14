@@ -1,56 +1,57 @@
 ;;
-;; Stdlib functions and definitions.
+;; Stdlib functions and definitions. Note that lambda or λ
+;; can be used for lambda syntax.
 ;;
 
 ;; Better function definition syntax.
-(def defun (lambda (name args body)
-             (def (eval 'name) (eval (list 'lambda args body)))))
+(def defun (λ (name args body)
+             (def (eval 'name) (eval (list 'λ args body)))))
 
 ;; Boolean negation.
-(def not (lambda (a) (if a #f #t)))
+(def not (λ (a) (if a #f #t)))
 
 ;; nil predicate.
-(def nil? (lambda (a) (= a nil)))
+(def nil? (λ (a) (= a nil)))
 
 ;; Fold right.
-(def foldr (lambda (f end lst)
+(def foldr (λ (f end lst)
              (if (nil? lst)
                  end
                (f (car lst) (foldr f end (cdr lst))))))
 (def reduce foldr)
 
 ;; Fold left.
-(def foldl (lambda (f acc lst)
+(def foldl (λ (f acc lst)
              (if (nil? lst)
                  acc
                (foldl f (f (car lst) acc) (cdr lst)))))
 (def fold foldl)
 
 ;; Length of a list.
-(def length (lambda (lst)
-              (fold (lambda (a b) (+ 1 b)) 0 lst)))
+(def length (λ (lst)
+              (fold (λ (a b) (+ 1 b)) 0 lst)))
 
 ;; Standard map.
-(def map (lambda (f lst)
-           (reduce (lambda (a b) (cons (f a) b)) nil lst)))
+(def map (λ (f lst)
+           (reduce (λ (a b) (cons (f a) b)) nil lst)))
 
 ;; Perl-style grep.
-(def grep (lambda (p lst)
-            (reduce (lambda (a b)
+(def grep (λ (p lst)
+            (reduce (λ (a b)
                      (if (p a) (cons a b) b)) nil lst)))
 (def filter grep)
 
 ;; Max & min
-(def max (lambda (a b) (if (> a b) a b)))
-(def min (lambda (a b) (if (< a b) a b)))
+(def max (λ (a b) (if (> a b) a b)))
+(def min (λ (a b) (if (< a b) a b)))
 
 ;; List max & min.
 (def list-max (fold max 0))
-(def list-min (lambda (lst)
+(def list-min (λ (lst)
                 (fold min (car lst) lst)))
 
 ;; The various list accessors.
-(def cadr (lambda (a) (car (cdr a))))
-(def caddr (lambda (a) (car (cdr (cdr a)))))
-(def cadddr (lambda (a) (car (cdr (cdr (cdr a))))))
-(def caddddr (lambda (a) (car (cdr (cdr (cdr (cdr a)))))))
+(def cadr (λ (a) (car (cdr a))))
+(def caddr (λ (a) (car (cdr (cdr a)))))
+(def cadddr (λ (a) (car (cdr (cdr (cdr a))))))
+(def caddddr (λ (a) (car (cdr (cdr (cdr (cdr a)))))))

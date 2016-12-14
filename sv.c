@@ -65,6 +65,7 @@ extern Sv
     x->special = !strcmp(sym, "quote")
         || !strcmp(sym, "def")
         || !strcmp(sym, "lambda")
+        || !strcmp(sym, u8"λ")
         || !strcmp(sym, "if");
     x->val.i = Symtab_get_id(sym);
     return x;
@@ -207,7 +208,7 @@ Sv_dump(Sv *sv)
 
         case SV_LAMBDA:
             if (sv->val.ufunc) {
-                printf("(lambda ");
+                printf(u8"(λ ");
                 Sv_dump(sv->val.ufunc->formals);
                 putchar(' ');
                 Sv_dump(sv->val.ufunc->body);
