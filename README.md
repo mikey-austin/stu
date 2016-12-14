@@ -14,10 +14,10 @@ Stutter is a simple & minimal lisp implementation in C.
 Or you can use the repl by specifying no arguments:
 
     $ ./stutter
-    stutter> (def make-adder (lambda (a) (lambda (b) (+ a b))))
-    ()
+    stutter> (def make-adder (λ (a) (λ (b) (+ a b))))
+    nil
     stutter> (def add-two (make-adder 2))
-    ()
+    nil
     stutter> (add-two 2)
     4
     stutter> ^D
