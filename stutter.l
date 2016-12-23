@@ -21,9 +21,10 @@
 
 \"(\\.|[^"])*\" { yylval.str = yytext; return STRING; }
 
--?[0-9]+ { yylval.i = atol(yytext); return INTEGER; }
-"#t"     { yylval.i = 1; return BOOLEAN; }
-"#f"     { yylval.i = 0; return BOOLEAN; }
+-?[0-9]+         { yylval.i = atol(yytext); return INTEGER; }
+-?[0-9]+\.[0-9]+ { yylval.f = atof(yytext); return FLOAT; }
+"#t"             { yylval.i = 1; return BOOLEAN; }
+"#f"             { yylval.i = 0; return BOOLEAN; }
 
 [a-zA-Z0-9._*+-~#/=<>?!&\x80-\xf3]+ { yylval.str = yytext; return SYMBOL; }
 

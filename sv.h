@@ -18,6 +18,7 @@ enum Sv_type {
     SV_ERR,
     SV_SYM,
     SV_INT,
+    SV_FLOAT,
     SV_BOOL,
     SV_STR,
     SV_CONS,
@@ -42,6 +43,7 @@ typedef struct Sv_ufunc {
 /* Actual value container. */
 union Sv_val {
     long i;
+    double f;
     char *buf;
     Sv_func func;
     struct Sv *reg[SV_CONS_REGISTERS];
@@ -62,6 +64,7 @@ extern Sv *Sv_nil;
 extern void Sv_init(void);
 extern Sv *Sv_new(enum Sv_type);
 extern Sv *Sv_new_int(long);
+extern Sv *Sv_new_float(double);
 extern Sv *Sv_new_bool(short);
 extern Sv *Sv_new_str(const char *);
 extern Sv *Sv_new_sym(const char *);

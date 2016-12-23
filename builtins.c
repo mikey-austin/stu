@@ -42,94 +42,134 @@ Builtin_init(void)
     }
 }
 
+#define INIT_ACC(init) short real = 0, curr_real = 0; \
+                       double facc = (init), f; \
+                       long acc = (init), i;
+
+#define SET_ACC(op) switch (cur->type) { \
+                    case SV_INT: \
+                        curr_real = 0; \
+                        i = cur->val.i; \
+                        break; \
+                    case SV_FLOAT: \
+                        if (!real) \
+                            facc = acc; \
+                        curr_real = 1; \
+                        real = 1; \
+                        f = cur->val.f; \
+                        break; \
+                    default: \
+                        return Sv_new_err(op " can operate on numbers only"); \
+                    }
+
+#define RET_ACC return real ? Sv_new_float(facc) : Sv_new_int(acc);
+
 extern Sv
 *Builtin_add(Env *env, Sv *x)
 {
     Sv *cur = NULL;
-    long acc = 0;
+    INIT_ACC(0);
 
     while (!IS_NIL(x) && (cur = CAR(x))) {
-        if (cur->type != SV_INT)
-            return Sv_new_err("'+' can operate on numbers only");
-        acc += cur->val.i;
+        SET_ACC("+");
+        if (real)
+            facc += (curr_real ? f : i);
+        else
+            acc += i;
         x = CDR(x);
     }
 
-    return Sv_new_int(acc);
+    RET_ACC;
 }
 
 extern Sv
 *Builtin_sub(Env *env, Sv *x)
 {
     Sv *cur = NULL;
-    long acc = 0;
+    INIT_ACC(0);
 
     if (!IS_NIL(x) && (cur = CAR(x))) {
-        if (cur->type != SV_INT)
-            return Sv_new_err("'-' can operate on numbers only");
-        acc = cur->val.i;
+        SET_ACC("-");
+        if (real)
+            facc = (curr_real ? f : i);
+        else
+            acc = i;
         x = CDR(x);
 
         if (x) {
             while (!IS_NIL(x) && (cur = CAR(x))) {
-                if (cur->type != SV_INT)
-                    return Sv_new_err("'-' can operate on numbers only");
-                acc -= cur->val.i;
+                SET_ACC("-");
+                if (real)
+                    facc -= (curr_real ? f : i);
+                else
+                    acc -= i;
                 x = CDR(x);
             }
         } else {
-            acc = -acc;
+            if (real)
+                facc = -facc;
+            else
+                acc = -acc;
         }
     }
 
-    return Sv_new_int(acc);
+    RET_ACC;
 }
 
 extern Sv
 *Builtin_mul(Env *env, Sv *x)
 {
     Sv *cur = NULL;
-    long acc = 1;
+    INIT_ACC(1);
 
     while (!IS_NIL(x) && (cur = CAR(x))) {
-        if (cur->type != SV_INT)
-            return Sv_new_err("'*' can operate on numbers only");
-        acc *= cur->val.i;
+        SET_ACC("*");
+        if (real)
+            facc *= (curr_real ? f : i);
+        else
+            acc *= i;
         x = CDR(x);
     }
 
-    return Sv_new_int(acc);
+    RET_ACC;
 }
 
 extern Sv
 *Builtin_div(Env *env, Sv *x)
 {
     Sv *cur = NULL;
-    long acc = 0;
+    INIT_ACC(0);
 
     if (!IS_NIL(x) && (cur = CAR(x))) {
-        if (cur->type != SV_INT)
-            return Sv_new_err("'/' can operate on numbers only");
-        acc = cur->val.i;
+        SET_ACC("/");
+        if (real)
+            facc = (curr_real ? f : i);
+        else
+            acc = i;
         x = CDR(x);
 
         if (x) {
             while (!IS_NIL(x) && (cur = CAR(x))) {
-                if (cur->type != SV_INT)
-                    return Sv_new_err("'/' can operate on numbers only");
-                if (cur->val.i == 0)
+                SET_ACC("/");
+                if ((curr_real ? f : i) == 0)
                     return Sv_new_err("'/' cannot divide by zero!");
-                acc /= cur->val.i;
+                if (real)
+                    facc /= (curr_real ? f : i);
+                else
+                    acc /= i;
                 x = CDR(x);
             }
         } else {
-            acc = 1 / acc;
+            if (real)
+                facc = 1 / (curr_real ? f : i);
+            else
+                acc = 1 / i;
         }
     } else {
         return Sv_new_err("'/' requires one or more arguments");
     }
 
-    return Sv_new_int(acc);
+    RET_ACC;
 }
 
 extern Sv

@@ -42,6 +42,14 @@ extern Sv
 }
 
 extern Sv
+*Sv_new_float(double f)
+{
+    Sv *x = Sv_new(SV_FLOAT);
+    x->val.f = f;
+    return  x;
+}
+
+extern Sv
 *Sv_new_bool(short i)
 {
     Sv *x = Sv_new(SV_BOOL);
@@ -124,13 +132,6 @@ Sv_destroy(Sv **sv)
                 (*sv)->val.reg[i] = NULL;
             break;
 
-        case SV_SYM:
-        case SV_FUNC:
-        case SV_NIL:
-        case SV_BOOL:
-        case SV_INT:
-            break;
-
         case SV_LAMBDA:
             /* GC will clean up environments and lists. */
             if ((*sv)->val.ufunc) {
@@ -140,6 +141,9 @@ Sv_destroy(Sv **sv)
                 free((*sv)->val.ufunc);
                 (*sv)->val.ufunc = NULL;
             }
+            break;
+
+        default:
             break;
         }
 
@@ -196,6 +200,10 @@ Sv_dump(Sv *sv)
 
         case SV_INT:
             printf("%ld", sv->val.i);
+            break;
+
+        case SV_FLOAT:
+            printf("%lf", sv->val.f);
             break;
 
         case SV_BOOL:
@@ -266,6 +274,10 @@ extern Sv
 
         case SV_INT:
             y = Sv_new_int(x->val.i);
+            break;
+
+        case SV_FLOAT:
+            y = Sv_new_float(x->val.f);
             break;
 
         case SV_BOOL:
