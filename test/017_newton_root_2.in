@@ -1,0 +1,13 @@
+(def newton-root-2 (λ (x)
+                      (/ (+ x (/ 2 x)) 2)))
+
+(def newton-root-finder
+     (λ (guess iterations)
+        (if (= iterations 0)
+            (list guess)
+          (cons guess (newton-root-finder (newton-root-2 guess) (- iterations 1))))))
+
+;;
+;; Find the √2 using newton's method.
+;;
+(newton-root-finder 2.0 4)

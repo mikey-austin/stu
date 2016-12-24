@@ -203,7 +203,7 @@ Sv_dump(Sv *sv)
             break;
 
         case SV_FLOAT:
-            printf("%lf", sv->val.f);
+            printf("%0.10f", sv->val.f);
             break;
 
         case SV_BOOL:
