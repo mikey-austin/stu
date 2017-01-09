@@ -20,7 +20,7 @@ void yyerror (Sv **result, char const *s)
     long i;
     double f;
     char *str;
-    Sv_rational *rational;
+    Sv_rational rational;
     Sv *sv;
 }
 
@@ -64,7 +64,7 @@ atom: INTEGER               { $$ = Sv_new_int($1); }
     | FLOAT                 { $$ = Sv_new_float($1); }
     | STRING                { $$ = Sv_new_str($1); }
     | SYMBOL                { $$ = Sv_new_sym($1); }
-    | RATIONAL              { $$ = $1; }
+    | RATIONAL              { $$ = Sv_new_rational($1.n, $1.d); }
     | BOOLEAN               { $$ = Sv_new_bool((short) $1); }
     ;
 

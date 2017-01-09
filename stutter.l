@@ -22,9 +22,9 @@
 \"(\\.|[^"])*\" { yylval.str = yytext; return STRING; }
 
 -?[1-9][0-9]*\/[1-9][0-9]* {
-                            yylval.rational = Sv_new_rational(
-                                atol(strtok(yytext, "/")),
-                                atol(strtok(NULL, "/")));
+                            char *str = yytext;
+                            Sv_rational r = { atol(strtok(str, "/")), atol(strtok(NULL, "/")) };
+                            yylval.rational = r;
                             return RATIONAL;
                         }
 -?[0-9]+         { yylval.i = atol(yytext); return INTEGER; }

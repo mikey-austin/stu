@@ -102,6 +102,13 @@ extern Sv
     while (!IS_NIL(x) && (cur = CAR(x))) {
         SET_ACC("+");
         if (rational) {
+            // if current value is not float it's for sure
+            // integer since we recet rational flag otherwise
+            if (!curr_rational) {
+              r.n = i;
+              r.d = 1;
+            }
+
             if (racc.n == 0) {
                 racc.n = r.n;
                 racc.d = r.d;
