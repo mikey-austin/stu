@@ -42,19 +42,45 @@ Builtin_init(void)
     }
 }
 
-#define INIT_ACC(init) short real = 0, curr_real = 0; \
+#define INIT_ACC(init) short real = 0, curr_real = 0, rational = 0, curr_rational = 0; \
+                       Sv_rational racc, r; \
                        double facc = (init), f; \
-                       long acc = (init), i;
+                       long acc = (init), i; \
+                       racc.n = 0; racc.d = 0;
 
 #define SET_ACC(op) switch (cur->type) { \
                     case SV_INT: \
                         curr_real = 0; \
+                        curr_rational = 0; \
                         i = cur->val.i; \
                         break; \
+                    case SV_RATIONAL: \
+                        if (real) { \
+                            curr_real = 1; \
+                            curr_rational = 0; \
+                            f = (float) cur->val.rational.n / cur->val.rational.d; \
+                        } else { \
+                            if (!rational) { \
+                                racc.n = acc; \
+                                racc.d = acc; \
+                            } \
+                            curr_real = 0; \
+                            rational = 1; \
+                            curr_rational = 1; \
+                            r.n = cur->val.rational.n; \
+                            r.d = cur->val.rational.d; \
+                        } \
+                        break; \
                     case SV_FLOAT: \
+                        if (rational) { \
+                            facc = (float) racc.n / racc.d; \
+                            real = 1; \
+                        } \
                         if (!real) \
                             facc = acc; \
                         curr_real = 1; \
+                        curr_rational = 0; \
+                        rational = 0; \
                         real = 1; \
                         f = cur->val.f; \
                         break; \
@@ -62,7 +88,10 @@ Builtin_init(void)
                         return Sv_new_err(op " can operate on numbers only"); \
                     }
 
-#define RET_ACC return real ? Sv_new_float(facc) : Sv_new_int(acc);
+#define RET_ACC return rational ? \
+                    racc.n % racc.d == 0 ? Sv_new_int(racc.n / racc.d) : \
+                                           Sv_new_rational(racc.n, racc.d) \
+                    : real ? Sv_new_float(facc) : Sv_new_int(acc); \
 
 extern Sv
 *Builtin_add(Env *env, Sv *x)
@@ -72,7 +101,21 @@ extern Sv
 
     while (!IS_NIL(x) && (cur = CAR(x))) {
         SET_ACC("+");
-        if (real)
+        if (rational) {
+            if (racc.n == 0) {
+                racc.n = r.n;
+                racc.d = r.d;
+            } else if (r.d == racc.d) {
+                racc.n += r.n;
+                racc.d = r.d;
+            } else {
+                racc.n *= r.d;
+                r.n *= racc.d;
+                r.d *= racc.d;
+                racc.d = r.d;
+                racc.n += r.n;
+            }
+        } else if (real)
             facc += (curr_real ? f : i);
         else
             acc += i;

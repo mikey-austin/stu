@@ -21,6 +21,12 @@
 
 \"(\\.|[^"])*\" { yylval.str = yytext; return STRING; }
 
+-?[1-9][0-9]*\/[1-9][0-9]* {
+                            yylval.rational = Sv_new_rational(
+                                atol(strtok(yytext, "/")),
+                                atol(strtok(NULL, "/")));
+                            return RATIONAL;
+                        }
 -?[0-9]+         { yylval.i = atol(yytext); return INTEGER; }
 -?[0-9]+\.[0-9]+ { yylval.f = atof(yytext); return FLOAT; }
 "#t"             { yylval.i = 1; return BOOLEAN; }

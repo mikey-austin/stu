@@ -50,6 +50,27 @@ extern Sv
 }
 
 extern Sv
+*Sv_new_rational(long n, long d)
+{
+    Sv *x = Sv_new(SV_RATIONAL);
+    long max_search = n > d ? d : n;
+    max_search /= 2;
+    long cur = 2;
+
+    while (cur <= max_search) {
+        if ((n % cur == 0) && (d % cur == 0)) {
+            n /= cur; d /= cur;
+        } else {
+            cur++;
+        }
+    }
+
+    x->val.rational.n = n;
+    x->val.rational.d = d;
+    return  x;
+}
+
+extern Sv
 *Sv_new_bool(short i)
 {
     Sv *x = Sv_new(SV_BOOL);
@@ -206,6 +227,10 @@ Sv_dump(Sv *sv)
             printf("%0.10f", sv->val.f);
             break;
 
+        case SV_RATIONAL:
+            printf("%ld/%ld", sv->val.rational.n, sv->val.rational.d);
+            break;
+
         case SV_BOOL:
             printf("%s", sv->val.i ? "#t" : "#f");
             break;
@@ -278,6 +303,10 @@ extern Sv
 
         case SV_FLOAT:
             y = Sv_new_float(x->val.f);
+            break;
+
+        case SV_RATIONAL:
+            y = Sv_new_rational(x->val.rational.n, x->val.rational.d);
             break;
 
         case SV_BOOL:
