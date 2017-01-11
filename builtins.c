@@ -9,6 +9,12 @@ struct Builtin {
     Sv_func func;
 };
 
+typedef enum {
+  INTEGER,
+  RATIONAL,
+  REAL
+} value_type;
+
 extern void
 Builtin_init(void)
 {
@@ -42,27 +48,50 @@ Builtin_init(void)
     }
 }
 
-#define INIT_ACC(init) short real = 0, curr_real = 0; \
+#define INIT_ACC(init) value_type acc_type = INTEGER, cur_type = INTEGER; \
+                       Sv_rational racc, r; \
                        double facc = (init), f; \
-                       long acc = (init), i;
+                       long acc = (init), i; \
+                       racc.n = 0; racc.d = 0;
 
 #define SET_ACC(op) switch (cur->type) { \
                     case SV_INT: \
-                        curr_real = 0; \
+                        cur_type = INTEGER; \
                         i = cur->val.i; \
                         break; \
+                    case SV_RATIONAL: \
+                        if (acc_type == REAL) { \
+                            cur_type = REAL; \
+                            f = (float) cur->val.rational.n / cur->val.rational.d; \
+                        } else { \
+                            if (cur_type != RATIONAL) { \
+                                racc.n = acc; \
+                                racc.d = acc; \
+                            } \
+                            acc_type = RATIONAL; \
+                            cur_type = RATIONAL; \
+                            r.n = cur->val.rational.n; \
+                            r.d = cur->val.rational.d; \
+                        } \
+                        break; \
                     case SV_FLOAT: \
-                        if (!real) \
+                        if (acc_type == RATIONAL) { \
+                            facc = (float) racc.n / racc.d; \
+                            acc_type = REAL; \
+                        } \
+                        if (acc_type != REAL) \
                             facc = acc; \
-                        curr_real = 1; \
-                        real = 1; \
+                        cur_type = REAL; \
+                        acc_type = REAL; \
                         f = cur->val.f; \
                         break; \
                     default: \
                         return Sv_new_err(op " can operate on numbers only"); \
                     }
 
-#define RET_ACC return real ? Sv_new_float(facc) : Sv_new_int(acc);
+#define RET_ACC return acc_type == RATIONAL ? \
+                    Sv_new_rational(racc.n, racc.d) \
+                    : acc_type == REAL ? Sv_new_float(facc) : Sv_new_int(acc); \
 
 extern Sv
 *Builtin_add(Env *env, Sv *x)
@@ -72,8 +101,31 @@ extern Sv
 
     while (!IS_NIL(x) && (cur = CAR(x))) {
         SET_ACC("+");
-        if (real)
-            facc += (curr_real ? f : i);
+        if (acc_type == RATIONAL) {
+            /*
+             * If current value is not float it's for sure
+             * integer since we reset the rational flag otherwise
+             */
+            if (cur_type != RATIONAL) {
+              r.n = i;
+              r.d = 1;
+            }
+
+            if (racc.n == 0) {
+                racc.n = r.n;
+                racc.d = r.d;
+            } else if (r.d == racc.d) {
+                racc.n += r.n;
+                racc.d = r.d;
+            } else {
+                racc.n *= r.d;
+                r.n *= racc.d;
+                r.d *= racc.d;
+                racc.d = r.d;
+                racc.n += r.n;
+            }
+        } else if (acc_type == REAL)
+            facc += (cur_type == REAL ? f : i);
         else
             acc += i;
         x = CDR(x);
@@ -90,8 +142,11 @@ extern Sv
 
     if (!IS_NIL(x) && (cur = CAR(x))) {
         SET_ACC("-");
-        if (real)
-            facc = (curr_real ? f : i);
+        if (acc_type == RATIONAL) {
+            racc.n = r.n;
+            racc.d = r.d;
+        } else if (acc_type == REAL)
+            facc = (cur_type == REAL ? f : i);
         else
             acc = i;
         x = CDR(x);
@@ -99,14 +154,36 @@ extern Sv
         if (x) {
             while (!IS_NIL(x) && (cur = CAR(x))) {
                 SET_ACC("-");
-                if (real)
-                    facc -= (curr_real ? f : i);
+                if (acc_type == RATIONAL) {
+                    /*
+                     * If current value is not float it's for sure
+                     * integer since we reset the rational flag otherwise.
+                     */
+                    if (cur_type != RATIONAL) {
+                      r.n = i;
+                      r.d = 1;
+                    }
+
+                    if (r.d == racc.d) {
+                        racc.n -= r.n;
+                        racc.d = r.d;
+                    } else {
+                        racc.n *= r.d;
+                        r.n *= racc.d;
+                        r.d *= racc.d;
+                        racc.d = r.d;
+                        racc.n -= r.n;
+                    }
+                } else if (acc_type == REAL)
+                    facc -= (cur_type == REAL ? f : i);
                 else
                     acc -= i;
                 x = CDR(x);
             }
         } else {
-            if (real)
+          if (acc_type == RATIONAL) {
+                racc.n = -racc.n;
+          } else if (acc_type == REAL)
                 facc = -facc;
             else
                 acc = -acc;
@@ -121,11 +198,26 @@ extern Sv
 {
     Sv *cur = NULL;
     INIT_ACC(1);
+    racc.n = 1;
+    racc.d = 1;
 
     while (!IS_NIL(x) && (cur = CAR(x))) {
         SET_ACC("*");
-        if (real)
-            facc *= (curr_real ? f : i);
+        if (acc_type == RATIONAL) {
+            if (acc != 1) {
+              racc.n = acc;
+              racc.d = 1;
+            }
+            // if current value is not float it's for sure
+            // integer since we recet rational flag otherwise
+            if (cur_type != RATIONAL) {
+                racc.n *= i;
+            } else {
+                racc.n *= r.n;
+                racc.d *= r.d;
+            }
+        } else if (acc_type == REAL)
+            facc *= (cur_type == REAL ? f : i);
         else
             acc *= i;
         x = CDR(x);
@@ -142,8 +234,11 @@ extern Sv
 
     if (!IS_NIL(x) && (cur = CAR(x))) {
         SET_ACC("/");
-        if (real)
-            facc = (curr_real ? f : i);
+        if (acc_type == RATIONAL) {
+            racc.n = r.n;
+            racc.d = r.d;
+        } else if (acc_type == REAL)
+            facc = (cur_type == REAL ? f : i);
         else
             acc = i;
         x = CDR(x);
@@ -151,19 +246,32 @@ extern Sv
         if (x) {
             while (!IS_NIL(x) && (cur = CAR(x))) {
                 SET_ACC("/");
-                if ((curr_real ? f : i) == 0)
+                if (cur_type == REAL && f == 0)
                     return Sv_new_err("'/' cannot divide by zero!");
-                if (real)
-                    facc /= (curr_real ? f : i);
+                if (cur_type != RATIONAL && i == 0)
+                    return Sv_new_err("'/' cannot divide by zero!");
+
+                if (acc_type == RATIONAL) {
+                  if (cur_type == RATIONAL) {
+                    racc.n *= r.d;
+                    racc.d *= r.n;
+                  } else {
+                    racc.d *= i;
+                  }
+                } else if (acc_type == REAL)
+                    facc /= (cur_type == REAL ? f : i);
                 else
                     acc /= i;
                 x = CDR(x);
             }
         } else {
-            if (real)
-                facc = 1 / (curr_real ? f : i);
-            else
-                acc = 1 / i;
+            if (acc_type == REAL)
+                facc = 1 / (cur_type == REAL ? f : i);
+            else {
+                acc_type = RATIONAL;
+                racc.n = 1;
+                racc.d = i;
+            }
         }
     } else {
         return Sv_new_err("'/' requires one or more arguments");
@@ -322,6 +430,8 @@ extern Sv
         case SV_BOOL: \
         case SV_SYM: \
             return Sv_new_bool(compare_numbers(op, x->val.i, y->val.i)); \
+        case SV_RATIONAL: \
+            return Sv_new_bool(compare_rationals(op, x->val.rational, y->val.rational)); \
         case SV_STR: \
         case SV_ERR: \
             return Sv_new_bool(compare_strings(op, x->val.buf, y->val.buf)); \
@@ -332,7 +442,7 @@ extern Sv
     return Sv_new_bool(0);
 
 static int
-compare_numbers(int op, int x, int y)
+compare_numbers(int op, long x, long y)
 {
     switch (op) {
     case OP_EQ:
@@ -353,6 +463,12 @@ compare_numbers(int op, int x, int y)
     default:
         return 0;
     }
+}
+
+static int
+compare_rationals(int op, Sv_rational x, Sv_rational y)
+{
+    return compare_numbers(op, x.n * y.d, x.d * y.n);
 }
 
 static int
