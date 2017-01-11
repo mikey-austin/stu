@@ -426,6 +426,8 @@ extern Sv
         case SV_BOOL: \
         case SV_SYM: \
             return Sv_new_bool(compare_numbers(op, x->val.i, y->val.i)); \
+        case SV_RATIONAL: \
+            return Sv_new_bool(compare_rationals(op, x->val.rational, y->val.rational)); \
         case SV_STR: \
         case SV_ERR: \
             return Sv_new_bool(compare_strings(op, x->val.buf, y->val.buf)); \
@@ -436,7 +438,7 @@ extern Sv
     return Sv_new_bool(0);
 
 static int
-compare_numbers(int op, int x, int y)
+compare_numbers(int op, long x, long y)
 {
     switch (op) {
     case OP_EQ:
@@ -457,6 +459,12 @@ compare_numbers(int op, int x, int y)
     default:
         return 0;
     }
+}
+
+static int
+compare_rationals(int op, Sv_rational x, Sv_rational y)
+{
+    return compare_numbers(op, x.n * y.d, x.d * y.n);
 }
 
 static int
