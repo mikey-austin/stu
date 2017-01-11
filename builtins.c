@@ -140,7 +140,10 @@ extern Sv
 
     if (!IS_NIL(x) && (cur = CAR(x))) {
         SET_ACC("-");
-        if (real)
+        if (rational) {
+            racc.n = r.n;
+            racc.d = r.d;
+        } else if (real)
             facc = (curr_real ? f : i);
         else
             acc = i;
@@ -149,14 +152,34 @@ extern Sv
         if (x) {
             while (!IS_NIL(x) && (cur = CAR(x))) {
                 SET_ACC("-");
-                if (real)
+                if (rational) {
+                    // if current value is not float it's for sure
+                    // integer since we recet rational flag otherwise
+                    if (!curr_rational) {
+                      r.n = i;
+                      r.d = 1;
+                    }
+
+                    if (r.d == racc.d) {
+                        racc.n -= r.n;
+                        racc.d = r.d;
+                    } else {
+                        racc.n *= r.d;
+                        r.n *= racc.d;
+                        r.d *= racc.d;
+                        racc.d = r.d;
+                        racc.n -= r.n;
+                    }
+                } else if (real)
                     facc -= (curr_real ? f : i);
                 else
                     acc -= i;
                 x = CDR(x);
             }
         } else {
-            if (real)
+          if (rational) {
+                racc.n = -racc.n;
+          } else if (real)
                 facc = -facc;
             else
                 acc = -acc;
@@ -171,10 +194,25 @@ extern Sv
 {
     Sv *cur = NULL;
     INIT_ACC(1);
+    racc.n = 1;
+    racc.d = 1;
 
     while (!IS_NIL(x) && (cur = CAR(x))) {
         SET_ACC("*");
-        if (real)
+        if (rational) {
+            if (acc != 1) {
+              racc.n = acc;
+              racc.d = 1;
+            }
+            // if current value is not float it's for sure
+            // integer since we recet rational flag otherwise
+            if (!curr_rational) {
+                racc.n *= i;
+            } else {
+                racc.n *= r.n;
+                racc.d *= r.d;
+            }
+        } else if (real)
             facc *= (curr_real ? f : i);
         else
             acc *= i;
@@ -192,7 +230,10 @@ extern Sv
 
     if (!IS_NIL(x) && (cur = CAR(x))) {
         SET_ACC("/");
-        if (real)
+        if (rational) {
+            racc.n = r.n;
+            racc.d = r.d;
+        } else if (real)
             facc = (curr_real ? f : i);
         else
             acc = i;
@@ -201,9 +242,19 @@ extern Sv
         if (x) {
             while (!IS_NIL(x) && (cur = CAR(x))) {
                 SET_ACC("/");
-                if ((curr_real ? f : i) == 0)
+                if (curr_real && f == 0)
                     return Sv_new_err("'/' cannot divide by zero!");
-                if (real)
+                if (!curr_rational && i == 0)
+                    return Sv_new_err("'/' cannot divide by zero!");
+
+                if (rational) {
+                  if (curr_rational) {
+                    racc.n *= r.d;
+                    racc.d *= r.n;
+                  } else {
+                    racc.d *= i;
+                  }
+                } else if (real)
                     facc /= (curr_real ? f : i);
                 else
                     acc /= i;
@@ -212,8 +263,11 @@ extern Sv
         } else {
             if (real)
                 facc = 1 / (curr_real ? f : i);
-            else
-                acc = 1 / i;
+            else {
+                rational = 1;
+                racc.n = 1;
+                racc.d = i;
+            }
         }
     } else {
         return Sv_new_err("'/' requires one or more arguments");
