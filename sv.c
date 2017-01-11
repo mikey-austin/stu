@@ -52,6 +52,9 @@ extern Sv
 extern Sv
 *Sv_new_rational(long n, long d)
 {
+    if (n % d == 0)
+        return Sv_new_int(n / d);
+
     Sv *x = Sv_new(SV_RATIONAL);
     long max_search = abs(n) > d ? d : abs(n);
     long cur = 2;
