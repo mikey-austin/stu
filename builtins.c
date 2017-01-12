@@ -422,21 +422,27 @@ extern Sv
 #define CMP_SV(op) \
     Sv *x = CAR(sv), *y = CADR(sv); \
     if (!x && !y) return Sv_new_bool(1); \
-    if (x && y && x->type == y->type) { \
-        switch (x->type) { \
-        case SV_NIL: \
-            return Sv_new_bool(1); \
-        case SV_INT: \
-        case SV_BOOL: \
-        case SV_SYM: \
-            return Sv_new_bool(compare_numbers(op, x->val.i, y->val.i)); \
-        case SV_RATIONAL: \
-            return Sv_new_bool(compare_rationals(op, x->val.rational, y->val.rational)); \
-        case SV_STR: \
-        case SV_ERR: \
-            return Sv_new_bool(compare_strings(op, x->val.buf, y->val.buf)); \
-        default: \
-            return Sv_new_err("'eq' does not support these types"); \
+    if (x && y) { \
+        if (x->type == y->type) { \
+            switch (x->type) { \
+            case SV_NIL: \
+                return Sv_new_bool(1); \
+            case SV_INT: \
+            case SV_BOOL: \
+            case SV_SYM: \
+                return Sv_new_bool(compare_numbers(op, x->val.i, y->val.i)); \
+            case SV_RATIONAL: \
+                return Sv_new_bool(compare_rationals(op, x->val.rational, y->val.rational)); \
+            case SV_STR: \
+            case SV_ERR: \
+                return Sv_new_bool(compare_strings(op, x->val.buf, y->val.buf)); \
+            default: \
+                return Sv_new_err("'eq' does not support these types"); \
+            } \
+        } else if (x->type == SV_INT && x->type == SV_RATIONAL) { \
+            return Sv_new_bool(compare_numbers(op, x->val.i * y->val.rational.d, y->val.rational.n)); \
+        } else if (y->type == SV_INT && x->type == SV_RATIONAL) { \
+            return Sv_new_bool(compare_numbers(op, x->val.rational.n, y->val.i * x->val.rational.d)); \
         } \
     } \
     return Sv_new_bool(0);
