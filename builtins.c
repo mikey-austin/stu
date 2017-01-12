@@ -420,29 +420,46 @@ extern Sv
 #define OP_LTE 5
 
 #define CMP_SV(op) \
-    Sv *x = CAR(sv), *y = CADR(sv); \
+    Sv *x = CAR(sv), *y = CADR(sv), *rest = CDR(sv); \
+    short result = 1; \
     if (!x && !y) return Sv_new_bool(1); \
     if (x && y) { \
-        if (x->type == y->type) { \
-            switch (x->type) { \
-            case SV_NIL: \
-                return Sv_new_bool(1); \
-            case SV_INT: \
-            case SV_BOOL: \
-            case SV_SYM: \
-                return Sv_new_bool(compare_numbers(op, x->val.i, y->val.i)); \
-            case SV_RATIONAL: \
-                return Sv_new_bool(compare_rationals(op, x->val.rational, y->val.rational)); \
-            case SV_STR: \
-            case SV_ERR: \
-                return Sv_new_bool(compare_strings(op, x->val.buf, y->val.buf)); \
-            default: \
-                return Sv_new_err("'eq' does not support these types"); \
+        while (!IS_NIL(rest) && (y = CAR(rest))) { \
+            if (x->type == y->type) { \
+                switch (x->type) { \
+                    case SV_NIL: \
+                        result = 1; \
+                        break; \
+                    case SV_INT: \
+                    case SV_BOOL: \
+                    case SV_SYM: \
+                        result = result && compare_numbers(op, x->val.i, y->val.i); \
+                        break; \
+                    case SV_RATIONAL: \
+                        result = result && compare_rationals(op, x->val.rational, y->val.rational); \
+                        break; \
+                    case SV_STR: \
+                    case SV_ERR: \
+                        result = result && compare_strings(op, x->val.buf, y->val.buf); \
+                        break; \
+                    default: \
+                        return Sv_new_err("'eq' does not support these types"); \
+                } \
+            } else if (x->type == SV_INT && x->type == SV_RATIONAL) { \
+                result = result && compare_numbers(op, x->val.i * y->val.rational.d, y->val.rational.n); \
+            } else if (y->type == SV_INT && x->type == SV_RATIONAL) { \
+                result = result && compare_numbers(op, x->val.rational.n, y->val.i * x->val.rational.d); \
+            } else { \
+                return Sv_new_bool(0); \
             } \
-        } else if (x->type == SV_INT && x->type == SV_RATIONAL) { \
-            return Sv_new_bool(compare_numbers(op, x->val.i * y->val.rational.d, y->val.rational.n)); \
-        } else if (y->type == SV_INT && x->type == SV_RATIONAL) { \
-            return Sv_new_bool(compare_numbers(op, x->val.rational.n, y->val.i * x->val.rational.d)); \
+            \
+            if (!result) return Sv_new_bool(0); \
+            \
+            x = y; rest = CDR(rest); \
+        } \
+        \
+        if (IS_NIL(rest)) { \
+            return Sv_new_bool(result); \
         } \
     } \
     return Sv_new_bool(0);
