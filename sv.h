@@ -39,6 +39,7 @@ typedef struct Sv_ufunc {
     struct Env *env;
     struct Sv *formals;
     struct Sv *body;
+    short  is_macro;
 } Sv_ufunc;
 
 typedef struct Sv_rational {
