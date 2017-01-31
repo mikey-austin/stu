@@ -128,6 +128,7 @@ extern Sv
         f->env = env;
         f->formals = formals;
         f->body = body;
+        f->is_macro = 0;
         x->val.ufunc = f;
     } else {
         err(1, "Sv_new_lambda");

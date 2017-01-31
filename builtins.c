@@ -21,27 +21,28 @@ Builtin_init(void)
 {
     struct Builtin *b = NULL;
     struct Builtin builtins[] = {
-        { "+",       Builtin_add },
-        { "-",       Builtin_sub },
-        { "*",       Builtin_mul },
-        { "/",       Builtin_div },
-        { "quote",   Builtin_quote },
-        { "def",     Builtin_def },
-        { "cons",    Builtin_cons },
-        { "list",    Builtin_list },
-        { "λ",       Builtin_lambda },
-        { "lambda",  Builtin_lambda },
-        { "eval",    Builtin_eval },
-        { "car",     Builtin_car },
-        { "cdr",     Builtin_cdr },
-        { "reverse", Builtin_reverse },
-        { "if",      Builtin_if },
-        { "read",    Builtin_read },
-        { "=",       Builtin_eq },
-        { ">",       Builtin_gt },
-        { "<",       Builtin_lt },
-        { ">=",      Builtin_gte },
-        { "<=",      Builtin_lte },
+        { "defmacro",     Builtin_defmacro },
+        { "+",            Builtin_add },
+        { "-",            Builtin_sub },
+        { "*",            Builtin_mul },
+        { "/",            Builtin_div },
+        { "quote",        Builtin_quote },
+        { "def",          Builtin_def },
+        { "cons",         Builtin_cons },
+        { "list",         Builtin_list },
+        { u8"λ",          Builtin_lambda },
+        { "lambda",       Builtin_lambda },
+        { "eval",         Builtin_eval },
+        { "car",          Builtin_car },
+        { "cdr",          Builtin_cdr },
+        { "reverse",      Builtin_reverse },
+        { "if",           Builtin_if },
+        { "read",         Builtin_read },
+        { "=",            Builtin_eq },
+        { ">",            Builtin_gt },
+        { "<",            Builtin_lt },
+        { ">=",           Builtin_gte },
+        { "<=",           Builtin_lte },
         { NULL }
     };
 
@@ -360,6 +361,19 @@ extern Sv
     cur = CDR(x);
 
     return Sv_new_lambda(env, formals, CAR(cur));
+}
+
+extern Sv
+*Builtin_defmacro(Env *env, Sv *x)
+{
+    Sv *name = CAR(x);
+    Sv *definition = CDR(x);
+    Sv *lambda = Builtin_lambda(env, definition);
+    lambda->val.ufunc->is_macro = 1;
+
+    Env_main_put(name, lambda);
+
+    return name;
 }
 
 extern Sv
