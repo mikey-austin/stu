@@ -1,5 +1,7 @@
 ### Stutter; another lisp implementation
 
+[![Build Status](https://travis-ci.org/mikey-austin/stutter.svg?branch=master)](https://travis-ci.org/mikey-austin/stutter)
+
 Stutter is a simple & minimal lisp implementation in C.
 
     $ make >/dev/null
