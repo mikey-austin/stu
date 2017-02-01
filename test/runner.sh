@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TESTS=$(ls *.in |while read i; do basename -s\.in $i; done)
+TESTS=$(ls *.in |while read i; do basename $i .in; done)
 TOTAL=$(ls *.in |wc -l)
 PASSED=0
 FAILED=0
