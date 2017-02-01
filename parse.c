@@ -5,19 +5,20 @@
 
 #include "gc.h"
 #include "sv.h"
+#include "svlist.h"
 #include "lex.yy.h"
 #include "stutter.tab.h"
 #include "parse.h"
 
-extern Sv
+extern Svlist
 *Parse_buf(const char *buf)
 {
-    Sv *result = NULL;
+    Svlist *list = Svlist_new();
 
     if (buf) {
         YY_BUFFER_STATE bp = yy_scan_string(buf);
         yy_switch_to_buffer(bp);
-        switch (yyparse(&result)) {
+        switch (yyparse(&list)) {
         case 2:
             errx(1, "Parser memory allocation error");
             break;
@@ -25,13 +26,13 @@ extern Sv
         yy_delete_buffer(bp);
     }
 
-    return result;
+    return list;
 }
 
-extern Sv
+extern Svlist
 *Parse_file(const char *file)
 {
-    Sv *result = NULL;
+    Svlist *list = Svlist_new();
 
     if (!file || !strcmp(file, "-")) {
         yyin = stdin;
@@ -40,7 +41,7 @@ extern Sv
             err(1, "Parse_file");
     }
 
-    switch (yyparse(&result)) {
+    switch (yyparse(&list)) {
     case 2:
         errx(1, "Parser memory allocation error");
         break;
@@ -50,5 +51,5 @@ extern Sv
         fclose(yyin);
     yylex_destroy();
 
-    return result;
+    return list;
 }

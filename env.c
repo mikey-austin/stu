@@ -44,10 +44,11 @@ extern Env
     return env;
 }
 
-extern void
-Env_main_put(Sv *key, Sv *val)
+extern Env
+*Env_main_put(Sv *key, Sv *val)
 {
     main_env = Env_put(main_env, key, val);
+    return main_env;
 }
 
 extern Sv

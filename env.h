@@ -19,7 +19,7 @@ typedef struct Env {
 
 extern Env *Env_new(void);
 extern void Env_destroy(Env **);
-extern void Env_main_put(Sv *, Sv *);
+extern Env *Env_main_put(Sv *, Sv *);
 extern Sv *Env_main_get(Sv *);
 extern int Env_main_exists(Sv *);
 extern Env *Env_main();

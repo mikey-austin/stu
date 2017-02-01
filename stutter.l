@@ -9,6 +9,7 @@
 #include "gc.h"
 #include "sv.h"
 #include "env.h"
+#include "svlist.h"
 #include "stutter.tab.h"
 %}
 

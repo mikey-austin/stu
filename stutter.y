@@ -6,11 +6,12 @@
 #include "gc.h"
 #include "sv.h"
 #include "env.h"
+#include "svlist.h"
 
 extern int yylex(void);
-extern void yyerror(Sv **, char const *);
+extern void yyerror(Svlist **, char const *);
 
-void yyerror (Sv **result, char const *s)
+void yyerror (Svlist **list, char const *s)
 {
     warnx("%s", s);
 }
@@ -32,17 +33,15 @@ void yyerror (Sv **result, char const *s)
 %type <sv> list sexp forms atom elements
 
 %start stutter
-%parse-param { Sv **result }
+%parse-param { Svlist **list }
 
 %%
 
-/* Just return the last sexp without evaling it. */
 stutter:
-    | forms                 { *result = $1; }
+    | forms                 { Svlist_push(*list, $1); }
     ;
 
-/* Eval every form in the order received except the last form. */
-forms: forms sexp           { Sv_eval(MAIN_ENV, $1); $$ = $2; }
+forms: forms sexp           { Svlist_push(*list, $1); $$ = $2; }
     | sexp                  { $$ = $1; }
     ;
 

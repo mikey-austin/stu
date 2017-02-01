@@ -18,7 +18,7 @@ int
 main(int argc, char **argv)
 {
     int option = 0, repl = 0, files = 0, debug = 0;
-    Sv *result = NULL;
+    Svlist *forms = NULL;
 
     Symtab_init();
     PUSH_SCOPE;
@@ -26,13 +26,14 @@ main(int argc, char **argv)
     Sv_init();
     POP_SCOPE;
 
-    while((option = getopt(argc, argv, "rl:f:d")) != -1) {
-        switch(option) {
+    while ((option = getopt(argc, argv, "rl:f:d")) != -1) {
+        switch (option) {
         case 'f':
             files = 1;
             PUSH_SCOPE;
-            result = Parse_file(optarg);
-            Sv_dump(Sv_eval(MAIN_ENV, result));
+            forms = Parse_file(optarg);
+            Sv_dump(Svlist_eval(MAIN_ENV, forms));
+            Svlist_destroy(&forms);
             POP_SCOPE;
             printf("\n");
             break;
@@ -40,7 +41,9 @@ main(int argc, char **argv)
         case 'l':
             files = 1;
             PUSH_SCOPE;
-            Sv_eval(MAIN_ENV, Parse_file(optarg));
+            forms = Parse_file(optarg);
+            Svlist_eval(MAIN_ENV, forms);
+            Svlist_destroy(&forms);
             POP_SCOPE;
             break;
 
@@ -56,7 +59,7 @@ main(int argc, char **argv)
 
     if (!files || repl) {
         for (;;) {
-            char *input = readline("stutter> ");
+            char *input = readline("stu> ");
             if (input == NULL) {
                 printf("\nBye!\n");
                 break;
@@ -65,8 +68,9 @@ main(int argc, char **argv)
             if (*input != '\0') {
                 add_history(input);
                 PUSH_SCOPE;
-                result = Parse_buf(input);
-                Sv_dump(Sv_eval(MAIN_ENV, result));
+                forms = Parse_buf(input);
+                Sv_dump(Svlist_eval(MAIN_ENV, forms));
+                Svlist_destroy(&forms);
                 POP_SCOPE;
                 printf("\n");
             }

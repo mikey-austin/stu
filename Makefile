@@ -11,8 +11,8 @@ all: stutter
 with_brew: BISON=$(shell brew --prefix bison)/bin/bison
 with_brew: stutter
 
-stutter: lex.yy.o stutter.tab.o sv.o parse.o main.o hash.o env.o builtins.o utils.o gc.o symtab.o
-	$(CC) -o stutter lex.yy.o stutter.tab.o sv.o parse.o main.o hash.o env.o builtins.o utils.o gc.o symtab.o $(LDFLAGS)
+stutter: lex.yy.o stutter.tab.o sv.o parse.o main.o hash.o env.o builtins.o utils.o gc.o symtab.o svlist.o
+	$(CC) -o stutter lex.yy.o stutter.tab.o sv.o parse.o main.o hash.o env.o builtins.o utils.o gc.o symtab.o svlist.o $(LDFLAGS)
 
 test: stutter
 	cd test; $(BASH) ./runner.sh $(WITH_VALGRIND) -f ../stutter -l ../stdlib.stu
@@ -32,6 +32,9 @@ stutter.tab.o: stutter.y sv.h
 
 sv.o: sv.c sv.h env.h
 	$(CC) $(CFLAGS) -c sv.c
+
+svlist.o: svlist.c svlist.h
+	$(CC) $(CFLAGS) -c svlist.c
 
 main.o: main.c parse.h sv.h
 	$(CC) $(CFLAGS) -c main.c
