@@ -95,6 +95,7 @@ extern Sv
     Sv *x = Sv_new(SV_SYM);
     x->special = !strcmp(sym, "quote")
         || !strcmp(sym, "def")
+        || !strcmp(sym, "defmacro")
         || !strcmp(sym, "lambda")
         || !strcmp(sym, "λ")
         || !strcmp(sym, "if");
@@ -419,6 +420,8 @@ extern Sv
 *Sv_eval_sexp(Env *env, Sv *x)
 {
     Sv *cur = x, *y = NULL, *z = NULL;
+    int is_special = 0;
+    int is_macro = 0;
 
     if (!cur)
         return NULL;
@@ -427,7 +430,18 @@ extern Sv
     if (z && z->special) {
         /* Only evaluate the head, leaving tail intact. */
         y = Sv_eval(env, z);
-    } else {
+        is_special = 1;
+    } else if (z && z->type == SV_SYM) {
+        y = Env_main_get(z);
+
+        if (y && y->type == SV_LAMBDA && y->val.ufunc->is_macro) {
+            is_special = 1;
+
+            return Sv_eval_sexp(env, Sv_call(env, y, CDR(x)));
+        }
+    }
+
+    if (!is_special) {
         /* Evaluate all arguments. */
          while (!IS_NIL(cur)) {
             if (cur->type == SV_CONS) {
