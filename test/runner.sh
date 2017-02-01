@@ -17,7 +17,7 @@ while getopts "mf:l:" opt; do
             STULIB="$STULIB -l $OPTARG"
             ;;
         m)
-            VALGRIND="/usr/bin/valgrind -q --error-exitcode=1 --leak-check=full --errors-for-leak-kinds=all --show-leak-kinds=all --tool=memcheck"
+            VALGRIND="/usr/bin/valgrind -q --error-exitcode=1 --leak-check=full --track-origins=yes --tool=memcheck"
             ;;
         \?)
             echo k"Invalid option: -$OPTARG" >&2
