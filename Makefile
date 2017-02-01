@@ -1,6 +1,6 @@
 CC=cc
 BISON=bison
-CFLAGS=-g3 -Wall $(shell pkg-config --cflags libedit) -O0
+CFLAGS=-g3 -Wall $(shell pkg-config --cflags libedit) -O0 -std=gnu99
 LDFLAGS=$(shell pkg-config --libs libedit)
 BASH=/bin/bash
 WITH_VALGRIND=-m

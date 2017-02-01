@@ -28,7 +28,7 @@ Builtin_init(void)
         { "def",     Builtin_def },
         { "cons",    Builtin_cons },
         { "list",    Builtin_list },
-        { u8"λ",     Builtin_lambda },
+        { "λ",       Builtin_lambda },
         { "lambda",  Builtin_lambda },
         { "eval",    Builtin_eval },
         { "car",     Builtin_car },
