@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "gc.h"
+#include "parse.h"
 #include "builtins.h"
 
 struct Builtin {
@@ -35,6 +36,7 @@ Builtin_init(void)
         { "cdr",     Builtin_cdr },
         { "reverse", Builtin_reverse },
         { "if",      Builtin_if },
+        { "read",    Builtin_read },
         { "=",       Builtin_eq },
         { ">",       Builtin_gt },
         { "<",       Builtin_lt },
@@ -407,6 +409,27 @@ extern Sv
     } else {
         return second ? Sv_eval(env, second) : NULL;
     }
+}
+
+extern Sv
+*Builtin_read(Env *env, Sv* sv)
+{
+    Sv *code = CAR(sv), *result = NULL;
+    Svlist *forms = NULL;
+
+    if (!code || code->type != SV_STR || code->val.buf == NULL)
+        return Sv_new_err("read expects a string argument");
+
+    forms = Parse_buf(code->val.buf);
+    if (forms->count != 1) {
+        result = Sv_new_err("read argument must contain exactly one form");
+    } else {
+        result = Svlist_eval(env, forms);
+    }
+
+    Svlist_destroy(&forms);
+
+    return result;
 }
 
 /*

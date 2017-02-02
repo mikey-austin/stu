@@ -77,8 +77,8 @@ extern Sv
          *       Replicating previous semantics until we address the above; it
          *       assumes there is only ever one environment.
          */
-        env = MAIN_ENV;
         result = Sv_eval(env, cur->sv);
+        env = MAIN_ENV;
     }
 
     return result;

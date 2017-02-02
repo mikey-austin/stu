@@ -212,7 +212,7 @@ Sv_dump(Sv *sv)
         case SV_ERR:
         case SV_STR:
             if (sv->val.buf)
-                printf("%s", sv->val.buf);
+                printf("\"%s\"", sv->val.buf);
             break;
 
         case SV_CONS:
