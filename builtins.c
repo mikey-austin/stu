@@ -424,7 +424,7 @@ extern Sv
     if (forms->count != 1) {
         result = Sv_new_err("read argument must contain exactly one form");
     } else {
-        result = Svlist_eval(env, forms);
+        result = forms->head->sv;
     }
 
     Svlist_destroy(&forms);
