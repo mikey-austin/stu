@@ -3,57 +3,56 @@
 ;; can be used for lambda syntax.
 ;;
 
-;; Better function definition syntax.
-(def defun (λ (name args body)
-             (def (eval 'name) (eval (list 'λ args body)))))
+(defmacro defun (name args & rest)
+  (list 'def name (cons 'λ (cons args rest))))
 
 ;; Boolean negation.
-(def not (λ (a) (if a #f #t)))
+(defun not (a) (if a #f #t))
 
 ;; nil predicate.
-(def nil? (λ (a) (= a nil)))
+(defun nil? (a) (= a nil))
 
 ;; Fold right.
-(def foldr (λ (f end lst)
+(defun foldr (f end lst)
              (if (nil? lst)
                  end
-               (f (car lst) (foldr f end (cdr lst))))))
+               (f (car lst) (foldr f end (cdr lst)))))
 (def reduce foldr)
 
 ;; Fold left.
-(def foldl (λ (f acc lst)
+(defun foldl (f acc lst)
              (if (nil? lst)
                  acc
-               (foldl f (f (car lst) acc) (cdr lst)))))
+               (foldl f (f (car lst) acc) (cdr lst))))
 (def fold foldl)
 
 ;; Length of a list.
-(def length (λ (lst)
-              (fold (λ (a b) (+ 1 b)) 0 lst)))
+(defun length (lst)
+              (fold (λ (a b) (+ 1 b)) 0 lst))
 
 ;; Standard map.
-(def map (λ (f lst)
-           (reduce (λ (a b) (cons (f a) b)) nil lst)))
+(defun map (f lst)
+           (reduce (λ (a b) (cons (f a) b)) nil lst))
 
 ;; Perl-style grep.
-(def grep (λ (p lst)
+(defun grep (p lst)
             (reduce (λ (a b)
-                     (if (p a) (cons a b) b)) nil lst)))
+                     (if (p a) (cons a b) b)) nil lst))
 (def filter grep)
 
 ;; Max & min
-(def max (λ (a b) (if (> a b) a b)))
-(def min (λ (a b) (if (< a b) a b)))
+(defun max (a b) (if (> a b) a b))
+(defun min (a b) (if (< a b) a b))
 
 ;; List max & min.
-(def list-max (fold max 0))
-(def list-min (λ (lst)
-                (fold min (car lst) lst)))
+(defun list-max (fold max 0))
+(defun list-min (lst)
+                (fold min (car lst) lst))
 
 ;; The various list accessors.
-(def cadr (λ (a) (car (cdr a))))
-(def caddr (λ (a) (car (cdr (cdr a)))))
-(def cadddr (λ (a) (car (cdr (cdr (cdr a))))))
-(def caddddr (λ (a) (car (cdr (cdr (cdr (cdr a)))))))
+(defun cadr (a) (car (cdr a)))
+(defun caddr (a) (car (cdr (cdr a))))
+(defun cadddr (a) (car (cdr (cdr (cdr a)))))
+(defun caddddr (a) (car (cdr (cdr (cdr (cdr a))))))
 
-(def abs (λ (a) (if (< a 0) (- a) a)))
+(defun abs (a) (if (< a 0) (- a) a))
