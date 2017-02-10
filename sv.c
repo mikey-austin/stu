@@ -199,6 +199,8 @@ Sv_cons_dump(Sv *sv)
             Sv_dump(cdr);
             break;
         }
+    } else {
+        err(1, "NULL value in CDR");
     }
 }
 
@@ -350,7 +352,7 @@ extern Sv
 extern Sv
 *Sv_reverse(Sv *x)
 {
-    Sv *y = NULL;
+    Sv *y = NIL;
 
     while (!IS_NIL(x) && x->type == SV_CONS) {
         y = Sv_cons(CAR(x), y);
@@ -363,21 +365,17 @@ extern Sv
 extern Sv
 *Sv_list(Sv *x)
 {
-    Sv *y = NULL, *z = NULL;
+    Sv *y = NULL, *z = NIL;
 
     if (!x)
         return x;
 
     if (x->type != SV_CONS)
-        return Sv_cons(x, NULL);
+        return Sv_cons(x, NIL);
 
     while (!IS_NIL(x) && (y = CAR(x))) {
         z = Sv_cons(y, z);
         x = CDR(x);
-        if (x && x->type != SV_CONS) {
-            z = Sv_cons(x, z);
-            break;
-        }
     }
 
     return Sv_reverse(z);

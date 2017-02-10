@@ -155,7 +155,7 @@ extern Sv
             acc = i;
         x = CDR(x);
 
-        if (x) {
+        if (!IS_NIL(x)) {
             while (!IS_NIL(x) && (cur = CAR(x))) {
                 SET_ACC("-");
                 if (acc_type == RATIONAL) {
@@ -247,7 +247,7 @@ extern Sv
             acc = i;
         x = CDR(x);
 
-        if (x) {
+        if (!IS_NIL(x)) {
             while (!IS_NIL(x) && (cur = CAR(x))) {
                 SET_ACC("/");
                 if (cur_type == REAL && f == 0)
