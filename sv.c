@@ -421,7 +421,6 @@ extern Sv
 {
     Sv *cur = x, *y = NULL, *z = NULL;
     int is_special = 0;
-    int is_macro = 0;
 
     if (!cur)
         return NULL;

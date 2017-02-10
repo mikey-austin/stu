@@ -15,6 +15,7 @@ extern Sv *Builtin_cons(Env *, Sv *);
 extern Sv *Builtin_list(Env *, Sv *);
 extern Sv *Builtin_lambda(Env *, Sv *);
 extern Sv *Builtin_defmacro(Env *, Sv *);
+extern Sv *Builtin_macroexpand_1(Env *, Sv *);
 extern Sv *Builtin_eval(Env *, Sv *);
 extern Sv *Builtin_car(Env *, Sv *);
 extern Sv *Builtin_cdr(Env *, Sv *);
