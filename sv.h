@@ -87,6 +87,8 @@ extern Sv *Sv_cons(Sv *, Sv *);
 extern Sv *Sv_reverse(Sv *);
 extern Sv *Sv_list(Sv *);
 extern Sv *Sv_copy(Sv *);
+extern Sv *Sv_expand(Sv *);
+extern Sv *Sv_expand_1(Sv *);
 
 extern Sv *Sv_eval(struct Env *, Sv *);
 extern Sv *Sv_eval_sexp(struct Env *, Sv *);

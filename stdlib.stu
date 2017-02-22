@@ -6,6 +6,9 @@
 (defmacro defun (name args & rest)
   (list 'def name (cons 'λ (cons args rest))))
 
+(defmacro when (cond form)
+  (list 'if cond form nil))
+
 ;; Boolean negation.
 (defun not (a) (if a #f #t))
 

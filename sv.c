@@ -7,6 +7,7 @@
 #include "sv.h"
 #include "env.h"
 #include "symtab.h"
+#include "builtins.h"
 
 Sv *Sv_nil = NULL;
 
@@ -382,6 +383,50 @@ extern Sv
 }
 
 extern Sv
+*Sv_expand_1(Sv *x)
+{
+    if (!x || x->type != SV_CONS)
+        return x;
+
+    Sv *head = CAR(x);
+    Sv *macro;
+
+    if (head->type != SV_SYM) return x;
+
+    macro = Env_main_get(head);
+
+    if (!macro || macro->type != SV_LAMBDA ||
+          !macro->val.ufunc->is_macro) return x;
+
+    return Sv_call(Env_main(), macro, CDR(x));
+}
+
+extern Sv
+*Sv_expand(Sv *x)
+{
+    if (!x || x->type != SV_CONS)
+        return x;
+
+    Sv *head = CAR(x);
+    Sv *macro;
+
+    while (1) {
+        if (head->type != SV_SYM) return x;
+
+        macro = Env_main_get(head);
+
+        if (!macro || macro->type != SV_LAMBDA || !macro->val.ufunc->is_macro) {
+            return x;
+        }
+
+        x = Sv_expand_1(x);
+        head = CAR(x);
+    }
+
+    // we won't get there
+}
+
+extern Sv
 *Sv_eval(Env *env, Sv *x)
 {
     Sv *y = NULL;
@@ -417,28 +462,20 @@ extern Sv
 extern Sv
 *Sv_eval_sexp(Env *env, Sv *x)
 {
-    Sv *cur = x, *y = NULL, *z = NULL;
-    int is_special = 0;
+    Sv *cur = NULL, *y = NULL, *z = NULL;
+    cur = x = Sv_expand(x);
+    /*cur = x;*/
+    /*Sv_dump(cur);*/
 
     if (!cur)
         return NULL;
 
-    z = CAR(x);
+    z = CAR(cur);
+
     if (z && z->special) {
         /* Only evaluate the head, leaving tail intact. */
         y = Sv_eval(env, z);
-        is_special = 1;
-    } else if (z && z->type == SV_SYM) {
-        y = Env_main_get(z);
-
-        if (y && y->type == SV_LAMBDA && y->val.ufunc->is_macro) {
-            is_special = 1;
-
-            return Sv_eval_sexp(env, Sv_call(env, y, CDR(x)));
-        }
-    }
-
-    if (!is_special) {
+    } else {
         /* Evaluate all arguments. */
          while (!IS_NIL(cur)) {
             if (cur->type == SV_CONS) {

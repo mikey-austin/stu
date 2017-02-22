@@ -33,6 +33,7 @@ Builtin_init(void)
         { u8"λ",          Builtin_lambda },
         { "lambda",       Builtin_lambda },
         { "macroexpand-1",Builtin_macroexpand_1 },
+        { "macroexpand",  Builtin_macroexpand },
         { "eval",         Builtin_eval },
         { "car",          Builtin_car },
         { "cdr",          Builtin_cdr },
@@ -381,19 +382,16 @@ extern Sv
 *Builtin_macroexpand_1(Env *env, Sv *x)
 {
     x = CAR(x);
-    if (!x || x->type != SV_CONS) return x;
 
-    Sv *head = CAR(x);
-    Sv *macro;
+    return Sv_expand_1(x);
+}
 
-    if (head->type != SV_SYM) return x;
+extern Sv
+*Builtin_macroexpand(Env *env, Sv *x)
+{
+    x = CAR(x);
 
-    macro = Env_main_get(head);
-
-    if (!macro || macro->type != SV_LAMBDA ||
-          !macro->val.ufunc->is_macro) return x;
-
-    return Sv_call(env, macro, CDR(x));
+    return Sv_expand(x);
 }
 
 extern Sv
