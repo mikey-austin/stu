@@ -34,6 +34,7 @@ Builtin_init(void)
         { "lambda",       Builtin_lambda },
         { "macroexpand-1",Builtin_macroexpand_1 },
         { "macroexpand",  Builtin_macroexpand },
+        { "progn",        Builtin_progn },
         { "eval",         Builtin_eval },
         { "car",          Builtin_car },
         { "cdr",          Builtin_cdr },
@@ -393,6 +394,12 @@ extern Sv
     x = CAR(x);
 
     return Sv_expand(x);
+}
+
+extern Sv
+*Builtin_progn(Env *env, Sv *x)
+{
+    return x ? Sv_eval_list(env, x) : x;
 }
 
 extern Sv
