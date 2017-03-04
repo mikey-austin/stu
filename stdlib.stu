@@ -48,7 +48,7 @@
 (defun min (a b) (if (< a b) a b))
 
 ;; List max & min.
-(defun list-max (fold max 0))
+(def list-max (fold max 0))
 (defun list-min (lst)
                 (fold min (car lst) lst))
 
