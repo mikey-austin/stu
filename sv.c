@@ -565,7 +565,7 @@ extern Sv
                 break;
 
             case SV_SPECIAL_COMMA_SPREAD:
-                if (special->body->type == SV_SYM) {
+                if (special->body->type == SV_SYM || special->body->type == SV_CONS) {
                     Sv *val = Sv_eval(env, special->body);
                     if (val->type == SV_CONS) {
                         return val;

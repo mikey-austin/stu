@@ -58,7 +58,7 @@ sexp: atom                  { $$ = $1; }
     | list                  { $$ = $1; }
     | '\'' sexp             { $$ = Sv_cons(Sv_new_sym("quote"), Sv_cons($2, NIL)); }
     | '`' sexp              { $$ = Sv_new_special(SV_SPECIAL_BACKQUOTE, $2); }
-    | ',' '@' atom          { $$ = Sv_new_special(SV_SPECIAL_COMMA_SPREAD, $3); }
+    | ',' '@' sexp          { $$ = Sv_new_special(SV_SPECIAL_COMMA_SPREAD, $3); }
     | ','  sexp             { $$ = Sv_new_special(SV_SPECIAL_COMMA, $2); }
     ;
 
