@@ -40,6 +40,7 @@ Builtin_init(void)
         { "reverse",      Builtin_reverse },
         { "if",           Builtin_if },
         { "read",         Builtin_read },
+        { "print",        Builtin_print },
         { "=",            Builtin_eq },
         { ">",            Builtin_gt },
         { "<",            Builtin_lt },
@@ -462,6 +463,13 @@ extern Sv
     Svlist_destroy(&forms);
 
     return result;
+}
+
+extern Sv
+*Builtin_print(Env *env, Sv* sv)
+{
+    Sv_dump(CAR(sv));
+    return CAR(sv);
 }
 
 /*

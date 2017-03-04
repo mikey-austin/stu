@@ -28,5 +28,6 @@ extern Sv *Builtin_lt(Env *, Sv*);
 extern Sv *Builtin_gte(Env *, Sv*);
 extern Sv *Builtin_lte(Env *, Sv*);
 extern Sv *Builtin_read(Env *, Sv*);
+extern Sv *Builtin_print(Env *, Sv*);
 
 #endif
