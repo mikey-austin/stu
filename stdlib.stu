@@ -61,3 +61,7 @@
 (defun caddddr (a) (car (cdr (cdr (cdr (cdr a))))))
 
 (defun abs (a) (if (< a 0) (- a) a))
+
+(defmacro let (args & body)
+  `((λ ,(map car args) ,@body)
+    ,@(map cadr args)))
