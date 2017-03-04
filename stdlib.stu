@@ -6,8 +6,10 @@
 (defmacro defun  (name args & rest)
   `(def ,name (λ ,args ,@rest)))
 
-(defmacro when (cond form)
-  (list 'if cond form nil))
+(defmacro when (cond & body)
+  `(if ,cond
+    (progn ,@body)
+    nil))
 
 ;; Boolean negation.
 (defun not (a) (if a #f #t))
