@@ -510,6 +510,20 @@ extern Sv
 }
 
 extern Sv
+*Sv_eval_list(Env *env, Sv *x)
+{
+    if (IS_NIL(x)) return x;
+
+    Sv *head = Sv_eval(env, CAR(x));
+
+    if (IS_NIL(CDR(x))) {
+        return head;
+    } else {
+        return Sv_eval_list(env, CDR(x));
+    }
+}
+
+extern Sv
 *Sv_eval_special(Env *env, Sv *x)
 {
     Sv_special *special = x->val.special;
@@ -665,7 +679,7 @@ extern Sv
         if (partial) {
             return partial;
         } else {
-            return Sv_eval(call_env, f->val.ufunc->body);
+            return Sv_eval_list(call_env, f->val.ufunc->body);
         }
     }
 

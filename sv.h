@@ -105,6 +105,7 @@ extern Sv *Sv_expand(Sv *);
 extern Sv *Sv_expand_1(Sv *);
 
 extern Sv *Sv_eval(struct Env *, Sv *);
+extern Sv *Sv_eval_list(struct Env *, Sv *);
 extern Sv *Sv_eval_special(struct Env *, Sv *);
 extern Sv *Sv_eval_special_cons(struct Env *, Sv *);
 extern Sv *Sv_eval_sexp(struct Env *, Sv *);

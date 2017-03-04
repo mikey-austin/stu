@@ -363,7 +363,7 @@ extern Sv
     formals = CAR(x);
     cur = CDR(x);
 
-    return Sv_new_lambda(env, formals, CAR(cur));
+    return Sv_new_lambda(env, formals, cur);
 }
 
 extern Sv
