@@ -45,6 +45,12 @@ Gc_mark_sv(Sv *sv) {
             Gc_mark((Gc *) CDR(sv));
             break;
 
+        case SV_SPECIAL:
+            if (sv->val.special) {
+                Gc_mark((Gc *) sv->val.special->body);
+            }
+            break;
+
         case SV_LAMBDA:
             if (sv->val.ufunc) {
                 Gc_mark((Gc *) sv->val.ufunc->env);

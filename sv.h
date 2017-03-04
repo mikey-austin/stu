@@ -24,7 +24,14 @@ enum Sv_type {
     SV_STR,
     SV_CONS,
     SV_FUNC,
-    SV_LAMBDA
+    SV_LAMBDA,
+    SV_SPECIAL,
+};
+
+enum Sv_special_type {
+    SV_SPECIAL_COMMA,
+    SV_SPECIAL_COMMA_SPREAD,
+    SV_SPECIAL_BACKQUOTE
 };
 
 /* Forward declarations. */
@@ -42,6 +49,11 @@ typedef struct Sv_ufunc {
     short  is_macro;
 } Sv_ufunc;
 
+typedef struct Sv_special {
+    enum Sv_special_type type;
+    struct Sv *body;
+} Sv_special;
+
 typedef struct Sv_rational {
     long n;
     long d;
@@ -54,6 +66,7 @@ union Sv_val {
     char *buf;
     Sv_func func;
     Sv_rational rational;
+    struct Sv_special *special;
     struct Sv *reg[SV_CONS_REGISTERS];
     struct Sv_ufunc *ufunc;
 };
@@ -80,6 +93,7 @@ extern Sv *Sv_new_sym(const char *);
 extern Sv *Sv_new_err(const char *);
 extern Sv *Sv_new_func(Sv_func);
 extern Sv *Sv_new_lambda(struct Env *, Sv *, Sv *);
+extern Sv *Sv_new_special(enum Sv_special_type type, Sv *body);
 
 extern void Sv_dump(Sv *sv);
 extern void Sv_destroy(Sv **);
@@ -91,6 +105,8 @@ extern Sv *Sv_expand(Sv *);
 extern Sv *Sv_expand_1(Sv *);
 
 extern Sv *Sv_eval(struct Env *, Sv *);
+extern Sv *Sv_eval_special(struct Env *, Sv *);
+extern Sv *Sv_eval_special_cons(struct Env *, Sv *);
 extern Sv *Sv_eval_sexp(struct Env *, Sv *);
 extern Sv *Sv_call(struct Env *, Sv *, Sv *);
 

@@ -121,6 +121,23 @@ extern Sv
 }
 
 extern Sv
+*Sv_new_special(enum Sv_special_type type, Sv *body)
+{
+    Sv *x = Sv_new(SV_SPECIAL);
+    Sv_special *s = NULL;
+
+    if ((s = malloc(sizeof(*s))) != NULL) {
+        s->type = type;
+        s->body = Sv_copy(body);
+        x->val.special = s;
+    } else {
+        err(1, "Sv_new_special");
+    }
+
+    return x;
+}
+
+extern Sv
 *Sv_new_lambda(Env *env, Sv *formals, Sv *body)
 {
     Sv *x = Sv_new(SV_LAMBDA);
@@ -166,6 +183,15 @@ Sv_destroy(Sv **sv)
                 (*sv)->val.ufunc->body = NULL;
                 free((*sv)->val.ufunc);
                 (*sv)->val.ufunc = NULL;
+            }
+            break;
+
+        case SV_SPECIAL:
+            /* GC will clean up environments and lists. */
+            if ((*sv)->val.special) {
+                (*sv)->val.special->body = NULL;
+                free((*sv)->val.special);
+                (*sv)->val.special = NULL;
             }
             break;
 
@@ -224,6 +250,22 @@ Sv_dump(Sv *sv)
             printf("(");
             Sv_cons_dump(sv);
             printf(")");
+            break;
+
+        case SV_SPECIAL:
+            switch (sv->val.special->type) {
+                case SV_SPECIAL_COMMA:
+                    printf(",");
+                    break;
+                case SV_SPECIAL_COMMA_SPREAD:
+                    printf(",@");
+                    break;
+                case SV_SPECIAL_BACKQUOTE:
+                    printf("`");
+                    break;
+            }
+
+            Sv_dump(sv->val.special->body);
             break;
 
         case SV_INT:
@@ -302,6 +344,10 @@ extern Sv
             for (int i = 0; i < SV_CONS_REGISTERS; i++) {
                 y->val.reg[i] = Sv_copy(x->val.reg[i]);
             }
+            break;
+
+        case SV_SPECIAL:
+            y = Sv_new_special(x->val.special->type, x->val.special->body);
             break;
 
         case SV_INT:
@@ -446,6 +492,10 @@ extern Sv
         }
         break;
 
+    case SV_SPECIAL:
+        y = Sv_eval_special(env, x);
+        break;
+
     case SV_CONS:
         y = Sv_eval_sexp(env, x);
         break;
@@ -457,6 +507,73 @@ extern Sv
     POP_N_SAVE(y);
 
     return y;
+}
+
+extern Sv
+*Sv_eval_special(Env *env, Sv *x)
+{
+    Sv_special *special = x->val.special;
+    Sv *body = x->val.special->body;
+
+    switch (special->type) {
+        case SV_SPECIAL_BACKQUOTE:
+            if (body->type == SV_SYM) {
+                return Sv_eval_sexp(env, Sv_cons(Sv_new_sym("quote"), Sv_cons(body, NIL)));
+            } else if (body->type == SV_CONS) {
+                return Sv_eval_special_cons(env, body);
+            } else {
+                return body;
+            }
+            break;
+        case SV_SPECIAL_COMMA:
+            return Sv_new_err("Comma can be used only inside backquoted list");
+        case SV_SPECIAL_COMMA_SPREAD:
+            return Sv_new_err("Comma spread can be used only inside backquoted list");
+    }
+
+    return Sv_new_err("Troubles with quoting magic");
+}
+
+extern Sv
+*Sv_eval_special_cons(Env *env, Sv *x)
+{
+    if (IS_NIL(x)) return x;
+
+    Sv *head = CAR(x);
+
+    if (head->type == SV_SPECIAL) {
+        Sv_special *special = head->val.special;
+
+        switch (special->type) {
+            case SV_SPECIAL_COMMA:
+                return Sv_cons(Sv_eval(env, special->body),
+                        Sv_eval_special_cons(env, CDR(x)));
+                break;
+
+            case SV_SPECIAL_COMMA_SPREAD:
+                if (special->body->type == SV_SYM) {
+                    Sv *val = Sv_eval(env, special->body);
+                    if (val->type == SV_CONS) {
+                        return val;
+                    } else {
+                        return Sv_new_err("spread operator applied to atom");
+                    }
+                } else {
+                    return Sv_new_err("spread operator can be applied only to symbol");
+                }
+
+                break;
+            case SV_SPECIAL_BACKQUOTE:
+                return Sv_new_err("backquote is not permitted inside of other backquote");
+        }
+    } else if (head->type == SV_CONS)  {
+        return Sv_cons(Sv_eval_special_cons(env, head),
+                        Sv_eval_special_cons(env, CDR(x)));
+    } else {
+        return Sv_cons(head, Sv_eval_special_cons(env, CDR(x)));
+    }
+
+    return Sv_new_err("Got confused inside of backquoted list");
 }
 
 extern Sv
