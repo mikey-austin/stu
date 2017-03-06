@@ -109,10 +109,6 @@ extern Sv
     while (!IS_NIL(x) && (cur = CAR(x))) {
         SET_ACC("+");
         if (acc_type == RATIONAL) {
-            /*
-             * If current value is not float it's for sure
-             * integer since we reset the rational flag otherwise
-             */
             if (cur_type != RATIONAL) {
               r.n = i;
               r.d = 1;
@@ -163,7 +159,7 @@ extern Sv
                 SET_ACC("-");
                 if (acc_type == RATIONAL) {
                     /*
-                     * If current value is not float it's for sure
+                     * If the current value is not a float, it's for sure an
                      * integer since we reset the rational flag otherwise.
                      */
                     if (cur_type != RATIONAL) {
@@ -215,8 +211,11 @@ extern Sv
               racc.n = acc;
               racc.d = 1;
             }
-            // if current value is not float it's for sure
-            // integer since we recet rational flag otherwise
+
+            /*
+             * If the current value is not a float, it's for sure an
+             * integer since we reset the rational flag otherwise.
+             */
             if (cur_type != RATIONAL) {
                 racc.n *= i;
             } else {

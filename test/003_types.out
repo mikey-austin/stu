@@ -1,1 +1,1 @@
-(1 -1 "string" sym #t #f (λ (a b c) (+ a b c)))
+(1 -1 "string" sym #t #f (λ (a b c) ((+ a b c))))

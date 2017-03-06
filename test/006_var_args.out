@@ -1,1 +1,1 @@
-((1 2 (3 4 5)) (1 2) (λ (b & rest) (list a b rest)))
+((1 2 (3 4 5)) (1 2) (λ (b & rest) ((list a b rest))))
