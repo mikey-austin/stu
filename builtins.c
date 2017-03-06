@@ -346,7 +346,7 @@ extern Sv
 
     /* All formals should be symbols. */
     formals = CAR(x);
-    if (formals->type == SV_CONS) {
+    if (formals->type == SV_CONS || IS_NIL(formals)) {
         while (!IS_NIL(formals) && formals->type == SV_CONS && (cur = CAR(formals))) {
             if (cur->type != SV_SYM) {
                 return Sv_new_err(
@@ -354,7 +354,6 @@ extern Sv
             }
             formals = CDR(formals);
         }
-
     } else {
         return Sv_new_err(
             "'lambda' needs a list of symbols as the first argument");
