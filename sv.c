@@ -187,7 +187,7 @@ Sv_destroy(Sv **sv)
             break;
 
         case SV_SPECIAL:
-            /* GC will clean up environments and lists. */
+            /* GC will clean up special body. */
             if ((*sv)->val.special) {
                 (*sv)->val.special->body = NULL;
                 free((*sv)->val.special);
@@ -437,12 +437,12 @@ extern Sv
     Sv *head = CAR(x);
     Sv *macro;
 
-    if (head->type != SV_SYM) return x;
+    if (head->type != SV_SYM)
+        return x;
 
     macro = Env_main_get(head);
-
-    if (!macro || macro->type != SV_LAMBDA ||
-          !macro->val.ufunc->is_macro) return x;
+    if (!IS_MACRO(macro))
+        return x;
 
     return Sv_call(Env_main(), macro, CDR(x));
 }
@@ -450,26 +450,14 @@ extern Sv
 extern Sv
 *Sv_expand(Sv *x)
 {
-    if (!x || x->type != SV_CONS)
-        return x;
+    Sv *head;
 
-    Sv *head = CAR(x);
-    Sv *macro;
-
-    while (1) {
-        if (head->type != SV_SYM) return x;
-
-        macro = Env_main_get(head);
-
-        if (!macro || macro->type != SV_LAMBDA || !macro->val.ufunc->is_macro) {
-            return x;
-        }
-
+    do {
         x = Sv_expand_1(x);
         head = CAR(x);
-    }
+    } while (IS_MACRO(Env_main_get(head)));
 
-    // we won't get there
+    return x;
 }
 
 extern Sv
@@ -530,19 +518,21 @@ extern Sv
     Sv *body = x->val.special->body;
 
     switch (special->type) {
-        case SV_SPECIAL_BACKQUOTE:
-            if (body->type == SV_SYM) {
-                return Sv_eval_sexp(env, Sv_cons(Sv_new_sym("quote"), Sv_cons(body, NIL)));
-            } else if (body->type == SV_CONS) {
-                return Sv_eval_special_cons(env, body);
-            } else {
-                return body;
-            }
-            break;
-        case SV_SPECIAL_COMMA:
-            return Sv_new_err("Comma can be used only inside backquoted list");
-        case SV_SPECIAL_COMMA_SPREAD:
-            return Sv_new_err("Comma spread can be used only inside backquoted list");
+    case SV_SPECIAL_BACKQUOTE:
+        if (body->type == SV_SYM) {
+            return Sv_eval_sexp(env, Sv_cons(Sv_new_sym("quote"), Sv_cons(body, NIL)));
+        } else if (body->type == SV_CONS) {
+            return Sv_eval_special_cons(env, body);
+        } else {
+            return body;
+        }
+        break;
+
+    case SV_SPECIAL_COMMA:
+        return Sv_new_err("Comma can be used only inside backquoted list");
+
+    case SV_SPECIAL_COMMA_SPREAD:
+        return Sv_new_err("Comma spread can be used only inside backquoted list");
     }
 
     return Sv_new_err("Troubles with quoting magic");
@@ -551,7 +541,8 @@ extern Sv
 extern Sv
 *Sv_eval_special_cons(Env *env, Sv *x)
 {
-    if (IS_NIL(x)) return x;
+    if (IS_NIL(x))
+        return x;
 
     Sv *head = CAR(x);
 
@@ -559,30 +550,29 @@ extern Sv
         Sv_special *special = head->val.special;
 
         switch (special->type) {
-            case SV_SPECIAL_COMMA:
-                return Sv_cons(Sv_eval(env, special->body),
-                        Sv_eval_special_cons(env, CDR(x)));
-                break;
+        case SV_SPECIAL_COMMA:
+            return Sv_cons(
+                Sv_eval(env, special->body), Sv_eval_special_cons(env, CDR(x)));
 
-            case SV_SPECIAL_COMMA_SPREAD:
-                if (special->body->type == SV_SYM || special->body->type == SV_CONS) {
-                    Sv *val = Sv_eval(env, special->body);
-                    if (val->type == SV_CONS) {
-                        return val;
-                    } else {
-                        return Sv_new_err("spread operator applied to atom");
-                    }
+        case SV_SPECIAL_COMMA_SPREAD:
+            if (special->body->type == SV_SYM || special->body->type == SV_CONS) {
+                Sv *val = Sv_eval(env, special->body);
+                if (!IS_NIL(val) && val->type == SV_CONS) {
+                    return val;
                 } else {
-                    return Sv_new_err("spread operator can be applied only to symbol");
+                    return Sv_new_err("spread operator applied to atom");
                 }
+            } else {
+                return Sv_new_err("spread operator can be applied only to symbol");
+            }
+            break;
 
-                break;
-            case SV_SPECIAL_BACKQUOTE:
-                return Sv_new_err("backquote is not permitted inside of other backquote");
+        case SV_SPECIAL_BACKQUOTE:
+            return Sv_new_err("backquote is not permitted inside of other backquote");
         }
     } else if (head->type == SV_CONS)  {
-        return Sv_cons(Sv_eval_special_cons(env, head),
-                        Sv_eval_special_cons(env, CDR(x)));
+        return Sv_cons(
+            Sv_eval_special_cons(env, head), Sv_eval_special_cons(env, CDR(x)));
     } else {
         return Sv_cons(head, Sv_eval_special_cons(env, CDR(x)));
     }
@@ -595,8 +585,6 @@ extern Sv
 {
     Sv *cur = NULL, *y = NULL, *z = NULL;
     cur = x = Sv_expand(x);
-    /*cur = x;*/
-    /*Sv_dump(cur);*/
 
     if (!cur)
         return NULL;

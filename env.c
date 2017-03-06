@@ -89,7 +89,7 @@ extern Sv
 {
     Env *cur = env;
 
-    for (; key && cur; cur = cur->prev) {
+    for (; key && key->type == SV_SYM && cur; cur = cur->prev) {
         if (cur->sym == key->val.i)
             return cur->val;
     }

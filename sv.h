@@ -6,11 +6,12 @@
 #define SV_CDR_REG 1
 #define NIL        Sv_nil
 
-#define IS_NIL(sv) ((sv) && (sv)->type == SV_NIL ? 1 : ((sv) ? 0 : 1))
-#define CAR(sv)    ((sv) && (sv)->type == SV_CONS ? (sv)->val.reg[SV_CAR_REG] : NULL)
-#define CDR(sv)    ((sv) && (sv)->type == SV_CONS ? (sv)->val.reg[SV_CDR_REG] : NULL)
-#define CADR(sv)   ((sv) ? CAR(CDR((sv))) : NULL)
-#define CADDR(sv)  ((sv) ? CAR(CDR(CDR((sv)))) : NULL)
+#define IS_NIL(sv)   ((sv) && (sv)->type == SV_NIL ? 1 : ((sv) ? 0 : 1))
+#define IS_MACRO(sv) ((sv) && (sv)->type == SV_LAMBDA ? ((sv)->val.ufunc->is_macro) : 0)
+#define CAR(sv)      ((sv) && (sv)->type == SV_CONS ? (sv)->val.reg[SV_CAR_REG] : NULL)
+#define CDR(sv)      ((sv) && (sv)->type == SV_CONS ? (sv)->val.reg[SV_CDR_REG] : NULL)
+#define CADR(sv)     ((sv) ? CAR(CDR((sv))) : NULL)
+#define CADDR(sv)    ((sv) ? CAR(CDR(CDR((sv)))) : NULL)
 
 /* Types of stutter values. */
 enum Sv_type {

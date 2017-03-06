@@ -1,0 +1,10 @@
+;; Test multi-level macro expand.
+
+(defmacro inner-macro (arg) `(list "hello" ,arg))
+
+(defmacro top-level-macro (arg) `(inner-macro ,arg))
+
+(list
+ (inner-macro "world")
+ (top-level-macro "universe")
+ (macroexpand '(top-level-macro "amsterdam")))

@@ -3,13 +3,17 @@
 ;; can be used for lambda syntax.
 ;;
 
-(defmacro defun  (name args & rest)
+(defmacro defun (name args & rest)
   `(def ,name (λ ,args ,@rest)))
 
 (defmacro when (cond & body)
   `(if ,cond
     (progn ,@body)
     nil))
+
+(defmacro unless (cond & body)
+  `(when (not ,cond)
+     (progn ,@body)))
 
 ;; Boolean negation.
 (defun not (a) (if a #f #t))
