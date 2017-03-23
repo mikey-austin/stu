@@ -1,5 +1,5 @@
 lex.yy.[hc]
-stutter.tab.[hc]
-stutter
+stu.tab.[hc]
+stu
 *~
 *.o
