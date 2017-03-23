@@ -13,7 +13,7 @@
 #define CADR(sv)     ((sv) ? CAR(CDR((sv))) : NULL)
 #define CADDR(sv)    ((sv) ? CAR(CDR(CDR((sv)))) : NULL)
 
-/* Types of stutter values. */
+/* Types of stu values. */
 enum Sv_type {
     SV_NIL,
     SV_ERR,
@@ -72,7 +72,7 @@ union Sv_val {
     struct Sv_ufunc *ufunc;
 };
 
-/* Core stutter value. */
+/* Core stu value. */
 typedef struct Sv {
     struct Gc gc;
     unsigned char special;

@@ -1,11 +1,11 @@
-### Stutter; another lisp implementation
+### Stu; another lisp implementation
 
 [![Build Status](https://travis-ci.org/mikey-austin/stutter.svg?branch=master)](https://travis-ci.org/mikey-austin/stutter)
 
-Stutter is a simple & minimal lisp implementation in C.
+Stu is a simple & minimal lisp implementation in C.
 
     $ make >/dev/null
-    $ cat <<END |./stutter -f-
+    $ cat <<END |./stu -f-
     (def a 100)
     (def b 200)
     (def c (+ a (* 2 b)))
@@ -15,14 +15,14 @@ Stutter is a simple & minimal lisp implementation in C.
 
 Or you can use the repl by specifying no arguments:
 
-    $ ./stutter
-    stutter> (def make-adder (λ (a) (λ (b) (+ a b))))
+    $ ./stu
+    stu> (def make-adder (λ (a) (λ (b) (+ a b))))
     nil
-    stutter> (def add-two (make-adder 2))
+    stu> (def add-two (make-adder 2))
     nil
-    stutter> (add-two 2)
+    stu> (add-two 2)
     4
-    stutter> ^D
+    stu> ^D
     Bye!
 
 ### Tests
@@ -30,7 +30,7 @@ Or you can use the repl by specifying no arguments:
 The test suite uses valgrind by default. To disable valgrind, use the following:
 
     $ make WITH_VALGRIND= test
-    cd test; /bin/bash ./runner.sh  -f ../stutter
+    cd test; /bin/bash ./runner.sh  -f ../stu
     (1/7) Testing 1_curried                [ OK ]
     (2/7) Testing 1_numbers                [ OK ]
     (3/7) Testing 1_types                  [ OK ]

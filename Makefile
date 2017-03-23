@@ -5,30 +5,30 @@ LDFLAGS=$(shell pkg-config --libs libedit)
 BASH=/bin/bash
 WITH_VALGRIND=-m
 
-all: stutter
+all: stu
 
 # run make macosx_deps to get dependencies necessary for mac os x build
 with_brew: BISON=$(shell brew --prefix bison)/bin/bison
-with_brew: stutter
+with_brew: stu
 
-stutter: lex.yy.o stutter.tab.o sv.o parse.o main.o hash.o env.o builtins.o utils.o gc.o symtab.o svlist.o
-	$(CC) -o stutter lex.yy.o stutter.tab.o sv.o parse.o main.o hash.o env.o builtins.o utils.o gc.o symtab.o svlist.o $(LDFLAGS)
+stu: lex.yy.o stu.tab.o sv.o parse.o main.o hash.o env.o builtins.o utils.o gc.o symtab.o svlist.o
+	$(CC) -o stu lex.yy.o stu.tab.o sv.o parse.o main.o hash.o env.o builtins.o utils.o gc.o symtab.o svlist.o $(LDFLAGS)
 
-test: stutter
-	cd test; $(BASH) ./runner.sh $(WITH_VALGRIND) -f ../stutter -l ../stdlib.stu
+test: stu
+	cd test; $(BASH) ./runner.sh $(WITH_VALGRIND) -f ../stu -l ../stdlib.stu
 
-repl: stutter
-	valgrind -q --error-exitcode=1 --leak-check=full --show-leak-kinds=definite,possible --tool=memcheck ./stutter -l stdlib.stu -dr
+repl: stu
+	valgrind -q --error-exitcode=1 --leak-check=full --show-leak-kinds=definite,possible --tool=memcheck ./stu -l stdlib.stu -dr
 
-lex.yy.o: stutter.tab.h stutter.l sv.h
-	flex --header-file=lex.yy.h stutter.l
+lex.yy.o: stu.tab.h stu.l sv.h
+	flex --header-file=lex.yy.h stu.l
 	$(CC) $(CFLAGS) -c lex.yy.c
 
-stutter.tab.h: stutter.tab.o
+stu.tab.h: stu.tab.o
 
-stutter.tab.o: stutter.y sv.h
-	$(BISON) -d stutter.y
-	$(CC) $(CFLAGS) -c stutter.tab.c
+stu.tab.o: stu.y sv.h
+	$(BISON) -d stu.y
+	$(CC) $(CFLAGS) -c stu.tab.c
 
 sv.o: sv.c sv.h env.h
 	$(CC) $(CFLAGS) -c sv.c
@@ -39,7 +39,7 @@ svlist.o: svlist.c svlist.h
 main.o: main.c parse.h sv.h
 	$(CC) $(CFLAGS) -c main.c
 
-parse.o: parse.c parse.h stutter.tab.h sv.h
+parse.o: parse.c parse.h stu.tab.h sv.h
 	$(CC) $(CFLAGS) -c parse.c
 
 hash.o: hash.c hash.h
@@ -64,6 +64,6 @@ macosx_deps:
 	brew install bison
 
 clean:
-	rm -f lex.yy.[ch] stutter.tab.[ch] stutter *.o
+	rm -f lex.yy.[ch] stu.tab.[ch] stu *.o
 
 .PHONY: test repl

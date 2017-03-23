@@ -7,7 +7,7 @@
 #include "sv.h"
 #include "svlist.h"
 #include "lex.yy.h"
-#include "stutter.tab.h"
+#include "stu.tab.h"
 #include "parse.h"
 
 extern Svlist

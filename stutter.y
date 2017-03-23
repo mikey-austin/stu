@@ -32,12 +32,12 @@ void yyerror (Svlist **list, char const *s)
 
 %type <sv> list sexp forms atom elements
 
-%start stutter
+%start stu
 %parse-param { Svlist **list }
 
 %%
 
-stutter:
+stu:
     | forms                 { Svlist_push(*list, $1); }
     ;
 
