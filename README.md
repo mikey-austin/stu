@@ -1,6 +1,6 @@
 ### Stu; another lisp implementation
 
-[![Build Status](https://travis-ci.org/mikey-austin/stutter.svg?branch=master)](https://travis-ci.org/mikey-austin/stutter)
+[![Build Status](https://travis-ci.org/mikey-austin/stu.svg?branch=master)](https://travis-ci.org/mikey-austin/stu)
 
 Stu is a simple & minimal lisp implementation in C.
 
