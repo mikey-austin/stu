@@ -11,7 +11,7 @@
 #include "sv.h"
 #include "env.h"
 #include "svlist.h"
-#include "stu.tab.h"
+#include "parser.h"
 %}
 
 %%
