@@ -8,7 +8,7 @@
 #include "sv.h"
 #include "env.h"
 #include "symtab.h"
-#include "parse.h"
+#include "stu.h"
 #include "builtins.h"
 
 extern char *optarg;
@@ -31,7 +31,7 @@ main(int argc, char **argv)
         case 'f':
             files = 1;
             PUSH_SCOPE;
-            forms = Parse_file(optarg);
+            forms = Stu_parse_file(optarg);
             Sv_dump(Svlist_eval(MAIN_ENV, forms));
             Svlist_destroy(&forms);
             POP_SCOPE;
@@ -41,7 +41,7 @@ main(int argc, char **argv)
         case 'l':
             files = 1;
             PUSH_SCOPE;
-            forms = Parse_file(optarg);
+            forms = Stu_parse_file(optarg);
             Svlist_eval(MAIN_ENV, forms);
             Svlist_destroy(&forms);
             POP_SCOPE;
@@ -68,7 +68,7 @@ main(int argc, char **argv)
             if (*input != '\0') {
                 add_history(input);
                 PUSH_SCOPE;
-                forms = Parse_buf(input);
+                forms = Stu_parse_buf(input);
                 Sv_dump(Svlist_eval(MAIN_ENV, forms));
                 Svlist_destroy(&forms);
                 POP_SCOPE;

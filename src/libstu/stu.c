@@ -6,12 +6,12 @@
 #include "gc.h"
 #include "sv.h"
 #include "svlist.h"
-#include "lex.yy.h"
+#include "lexer.h"
 #include "parser.h"
-#include "parse.h"
+#include "stu.h"
 
 extern Svlist
-*Parse_buf(const char *buf)
+*Stu_parse_buf(const char *buf)
 {
     Svlist *list = Svlist_new();
 
@@ -30,7 +30,7 @@ extern Svlist
 }
 
 extern Svlist
-*Parse_file(const char *file)
+*Stu_parse_file(const char *file)
 {
     Svlist *list = Svlist_new();
 

@@ -1,4 +1,4 @@
-lex.yy.[hc]
+lexer.[hc]
 stu.tab.[hc]
 stu
 *~

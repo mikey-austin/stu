@@ -2,7 +2,7 @@
 #include <string.h>
 
 #include "gc.h"
-#include "parse.h"
+#include "stu.h"
 #include "builtins.h"
 
 struct Builtin {
@@ -458,7 +458,7 @@ extern Sv
     if (!code || code->type != SV_STR || code->val.buf == NULL)
         return Sv_new_err("read expects a string argument");
 
-    forms = Parse_buf(code->val.buf);
+    forms = Stu_parse_buf(code->val.buf);
     if (forms->count != 1) {
         result = Sv_new_err("read argument must contain exactly one form");
     } else {
