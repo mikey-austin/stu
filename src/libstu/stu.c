@@ -77,6 +77,7 @@ Stu_destroy(Stu **stu)
     s = *stu;
     if (s) {
         Symtab_destroy(s);
+        Gc_sweep(s, 0);
         free(s);
     }
 

@@ -74,7 +74,6 @@ main(int argc, char **argv)
         }
     }
 
-    Gc_sweep(stu, 0);
     if (debug)
         Gc_dump_stats(stu);
     Stu_destroy(&stu);
