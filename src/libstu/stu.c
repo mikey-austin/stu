@@ -3,22 +3,95 @@
 #include <string.h>
 #include <err.h>
 
+#include "builtins.h"
 #include "gc.h"
 #include "sv.h"
 #include "svlist.h"
 #include "lexer.h"
 #include "parser.h"
+#include "symtab.h"
 #include "stu.h"
+#include "hash.h"
+
+/*
+ * NIL singleton object. This object is shared among multiple
+ * stu interpreter instances.
+ */
+Sv *Sv_nil = NULL;
+
+extern Stu
+*Stu_new(void)
+{
+    Stu *stu = NULL;
+    if ((stu = calloc(1, sizeof(*stu))) == NULL) {
+        err(1, "Stu_new");
+    }
+
+    /* Initialize interpreter. */
+    stu->gc_scope_stack = NULL;
+    stu->gc_stack_size = 0;
+    stu->max_gc_stack_size = 20;
+
+    stu->gc_head = NULL;
+    stu->gc_tail = NULL;
+    stu->gc_allocs = 0;
+
+    stu->stats_gc_managed_objects = 0;
+    stu->stats_gc_collections = 0;
+    stu->stats_gc_frees = 0;
+    stu->stats_gc_allocs = 0;
+    stu->stats_gc_cleaned = 0;
+    stu->stats_gc_scope_pushes = 0;
+    stu->stats_gc_scope_pops = 0;
+
+    stu->main_env = NULL;
+    stu->sym_name_to_id = NULL;
+    stu->sym_id_to_name = NULL;
+    stu->sym_num_ids = HASH_SIZE;
+
+    PUSH_SCOPE(stu);
+    Symtab_init(stu);
+
+    /* Setup NIL singleton. */
+    if (Sv_nil == NULL)
+        Sv_nil = Sv_new(stu, SV_NIL);
+    Env_main_put(stu, Sv_new_sym(stu, "nil"), Sv_nil);
+
+    /* Make sure nil is the first symbol with an id of zero. */
+    Symtab_get_id(stu, "nil");
+
+    Builtin_init(stu);
+    POP_SCOPE(stu);
+
+    return stu;
+}
+
+extern void
+Stu_destroy(Stu **stu)
+{
+    Stu *s;
+
+    if (!stu)
+        return;
+
+    s = *stu;
+    if (s) {
+        Symtab_destroy(s);
+        free(s);
+    }
+
+    *stu = NULL;
+}
 
 extern Svlist
-*Stu_parse_buf(const char *buf)
+*Stu_parse_buf(Stu *stu, const char *buf)
 {
     Svlist *list = Svlist_new();
 
     if (buf) {
         YY_BUFFER_STATE bp = yy_scan_string(buf);
         yy_switch_to_buffer(bp);
-        switch (yyparse(&list)) {
+        switch (yyparse(stu, &list)) {
         case 2:
             errx(1, "Parser memory allocation error");
             break;
@@ -30,7 +103,7 @@ extern Svlist
 }
 
 extern Svlist
-*Stu_parse_file(const char *file)
+*Stu_parse_file(Stu *stu, const char *file)
 {
     Svlist *list = Svlist_new();
 
@@ -41,7 +114,7 @@ extern Svlist
             err(1, "Parse_file");
     }
 
-    switch (yyparse(&list)) {
+    switch (yyparse(stu, &list)) {
     case 2:
         errx(1, "Parser memory allocation error");
         break;
