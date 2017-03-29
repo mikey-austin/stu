@@ -38,3 +38,4 @@ check/runner.sh
 Makefile.in
 config.h.in
 m4/*
+check/*.test
