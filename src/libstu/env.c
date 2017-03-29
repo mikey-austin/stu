@@ -1,21 +1,20 @@
 #include <stdlib.h>
 #include <err.h>
 
+#include "stu.h"
 #include "gc.h"
 #include "env.h"
 #include "symtab.h"
 
-static Env *main_env = NULL;
-
 extern Env
-*Env_new(void)
+*Env_new(Stu *stu)
 {
     Env *new = NULL;
 
     if ((new = calloc(1, sizeof(*new))) == NULL)
         err(1, "Env_new");
 
-    GC_INIT(new, GC_TYPE_ENV);
+    GC_INIT(stu, new, GC_TYPE_ENV);
 
     return new;
 }
@@ -31,10 +30,10 @@ Env_destroy(Env **env)
 }
 
 extern Env
-*Env_put(Env *env, Sv *key, Sv *val)
+*Env_put(Stu *stu, Env *env, Sv *key, Sv *val)
 {
     if (key) {
-        Env *new = Env_new();
+        Env *new = Env_new(stu);
         new->sym = key->val.i;
         new->prev = env;
         new->val = val;
@@ -45,22 +44,22 @@ extern Env
 }
 
 extern Env
-*Env_main_put(Sv *key, Sv *val)
+*Env_main_put(Stu *stu, Sv *key, Sv *val)
 {
-    main_env = Env_put(main_env, key, val);
-    return main_env;
+    stu->main_env = Env_put(stu, stu->main_env, key, val);
+    return stu->main_env;
 }
 
 extern Sv
-*Env_main_get(Sv *key)
+*Env_main_get(Stu *stu, Sv *key)
 {
-    return main_env ? Env_get(main_env, key) : NULL;
+    return stu->main_env ? Env_get(stu->main_env, key) : NULL;
 }
 
 extern Env
-*Env_main()
+*Env_main(Stu *stu)
 {
-    return main_env;
+    return stu->main_env;
 }
 
 extern int
@@ -79,9 +78,9 @@ Env_exists(Env *env, Sv *key)
 }
 
 extern int
-Env_main_exists(Sv *key)
+Env_main_exists(Stu *stu, Sv *key)
 {
-    return Env_exists(main_env, key);
+    return Env_exists(stu->main_env, key);
 }
 
 extern Sv

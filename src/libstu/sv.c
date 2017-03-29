@@ -3,29 +3,20 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "stu.h"
 #include "gc.h"
 #include "sv.h"
 #include "env.h"
 #include "symtab.h"
 #include "builtins.h"
 
-Sv *Sv_nil = NULL;
-
-extern
-void Sv_init(void)
-{
-    /* Initialize global nil object. */
-    Sv_nil = Sv_new(SV_NIL);
-    Env_main_put(Sv_new_sym("nil"), Sv_nil);
-}
-
 extern Sv
-*Sv_new(enum Sv_type type)
+*Sv_new(Stu *stu, enum Sv_type type)
 {
     Sv *x = NULL;
 
     if ((x = calloc(1, sizeof(*x))) != NULL) {
-        GC_INIT(x, GC_TYPE_SV);
+        GC_INIT(stu, x, GC_TYPE_SV);
         x->type = type;
     } else {
         err(1, "Sv_new");
@@ -35,34 +26,35 @@ extern Sv
 }
 
 extern Sv
-*Sv_new_int(long i)
+*Sv_new_int(Stu *stu, long i)
 {
-    Sv *x = Sv_new(SV_INT);
+    Sv *x = Sv_new(stu, SV_INT);
     x->val.i = i;
     return  x;
 }
 
 extern Sv
-*Sv_new_float(double f)
+*Sv_new_float(Stu *stu, double f)
 {
-    Sv *x = Sv_new(SV_FLOAT);
+    Sv *x = Sv_new(stu, SV_FLOAT);
     x->val.f = f;
     return  x;
 }
 
 extern Sv
-*Sv_new_rational(long n, long d)
+*Sv_new_rational(Stu *stu, long n, long d)
 {
     if (n % d == 0)
-        return Sv_new_int(n / d);
+        return Sv_new_int(stu, n / d);
 
-    Sv *x = Sv_new(SV_RATIONAL);
+    Sv *x = Sv_new(stu, SV_RATIONAL);
     long max_search = abs(n) > d ? d : abs(n);
     long cur = 2;
 
     while (cur <= max_search) {
         if ((n % cur == 0) && (d % cur == 0)) {
-            n /= cur; d /= cur;
+            n /= cur;
+            d /= cur;
         } else {
             cur++;
         }
@@ -70,65 +62,68 @@ extern Sv
 
     x->val.rational.n = n;
     x->val.rational.d = d;
+
     return  x;
 }
 
 extern Sv
-*Sv_new_bool(short i)
+*Sv_new_bool(Stu *stu, short i)
 {
-    Sv *x = Sv_new(SV_BOOL);
+    Sv *x = Sv_new(stu, SV_BOOL);
     x->val.i = (int) i;
     return  x;
 }
 
 extern Sv
-*Sv_new_str(const char *str)
+*Sv_new_str(Stu *stu, const char *str)
 {
-    Sv *x = Sv_new(SV_STR);
+    Sv *x = Sv_new(stu, SV_STR);
     if ((x->val.buf = strdup(str)) == NULL)
         err(1, "Sv_new_str");
     return  x;
 }
 
 extern Sv
-*Sv_new_sym(const char *sym)
+*Sv_new_sym(Stu *stu, const char *sym)
 {
-    Sv *x = Sv_new(SV_SYM);
+    Sv *x = Sv_new(stu, SV_SYM);
+
     x->special = !strcmp(sym, "quote")
         || !strcmp(sym, "def")
         || !strcmp(sym, "defmacro")
         || !strcmp(sym, "lambda")
         || !strcmp(sym, "λ")
         || !strcmp(sym, "if");
-    x->val.i = Symtab_get_id(sym);
+    x->val.i = Symtab_get_id(stu, sym);
+
     return x;
 }
 
 extern Sv
-*Sv_new_err(const char *err)
+*Sv_new_err(Stu *stu, const char *err)
 {
-    Sv *x = Sv_new_str(err);
+    Sv *x = Sv_new_str(stu, err);
     x->type = SV_ERR;
     return x;
 }
 
 extern Sv
-*Sv_new_func(Sv_func func)
+*Sv_new_func(Stu *stu, Sv_func func)
 {
-    Sv *x = Sv_new(SV_FUNC);
+    Sv *x = Sv_new(stu, SV_FUNC);
     x->val.func = func;
     return x;
 }
 
 extern Sv
-*Sv_new_special(enum Sv_special_type type, Sv *body)
+*Sv_new_special(Stu *stu, enum Sv_special_type type, Sv *body)
 {
-    Sv *x = Sv_new(SV_SPECIAL);
+    Sv *x = Sv_new(stu, SV_SPECIAL);
     Sv_special *s = NULL;
 
     if ((s = malloc(sizeof(*s))) != NULL) {
         s->type = type;
-        s->body = Sv_copy(body);
+        s->body = Sv_copy(stu, body);
         x->val.special = s;
     } else {
         err(1, "Sv_new_special");
@@ -138,9 +133,9 @@ extern Sv
 }
 
 extern Sv
-*Sv_new_lambda(Env *env, Sv *formals, Sv *body)
+*Sv_new_lambda(Stu *stu, Env *env, Sv *formals, Sv *body)
 {
-    Sv *x = Sv_new(SV_LAMBDA);
+    Sv *x = Sv_new(stu, SV_LAMBDA);
     Sv_ufunc *f = NULL;
 
     if ((f = malloc(sizeof(*f))) != NULL) {
@@ -205,16 +200,16 @@ Sv_destroy(Sv **sv)
 }
 
 static void
-Sv_cons_dump(Sv *sv)
+Sv_cons_dump(Stu *stu, Sv *sv)
 {
     Sv *car = CAR(sv);
     Sv *cdr = CDR(sv);
-    Sv_dump(car);
+    Sv_dump(stu, car);
     if (cdr) {
         switch (cdr->type) {
         case SV_CONS:
             printf(" ");
-            Sv_cons_dump(cdr);
+            Sv_cons_dump(stu, cdr);
             break;
 
         case SV_NIL:
@@ -223,7 +218,7 @@ Sv_cons_dump(Sv *sv)
 
         default:
             printf(" . ");
-            Sv_dump(cdr);
+            Sv_dump(stu, cdr);
             break;
         }
     } else {
@@ -232,12 +227,12 @@ Sv_cons_dump(Sv *sv)
 }
 
 extern void
-Sv_dump(Sv *sv)
+Sv_dump(Stu *stu, Sv *sv)
 {
     if (sv) {
         switch (sv->type) {
         case SV_SYM:
-            printf("%s", Symtab_get_name(sv->val.i));
+            printf("%s", Symtab_get_name(stu, sv->val.i));
             break;
 
         case SV_ERR:
@@ -248,7 +243,7 @@ Sv_dump(Sv *sv)
 
         case SV_CONS:
             printf("(");
-            Sv_cons_dump(sv);
+            Sv_cons_dump(stu, sv);
             printf(")");
             break;
 
@@ -265,7 +260,7 @@ Sv_dump(Sv *sv)
                     break;
             }
 
-            Sv_dump(sv->val.special->body);
+            Sv_dump(stu, sv->val.special->body);
             break;
 
         case SV_INT:
@@ -291,9 +286,9 @@ Sv_dump(Sv *sv)
         case SV_LAMBDA:
             if (sv->val.ufunc) {
                 printf("(λ ");
-                Sv_dump(sv->val.ufunc->formals);
+                Sv_dump(stu, sv->val.ufunc->formals);
                 putchar(' ');
-                Sv_dump(sv->val.ufunc->body);
+                Sv_dump(stu, sv->val.ufunc->body);
                 putchar(')');
             }
             break;
@@ -306,16 +301,16 @@ Sv_dump(Sv *sv)
 }
 
 static Sv
-*Sv_copy_sym(Sv *x)
+*Sv_copy_sym(Stu *stu, Sv *x)
 {
-    Sv *y = Sv_new(SV_SYM);
+    Sv *y = Sv_new(stu, SV_SYM);
     y->special = x->special;
     y->val.i = x->val.i;
     return y;
 }
 
 extern Sv
-*Sv_copy(Sv *x)
+*Sv_copy(Stu *stu, Sv *x)
 {
     Sv *y = NULL;
 
@@ -326,54 +321,54 @@ extern Sv
             break;
 
         case SV_SYM:
-            y = Sv_copy_sym(x);
+            y = Sv_copy_sym(stu, x);
             break;
 
         case SV_ERR:
             if (x->val.buf)
-                y = Sv_new_err(x->val.buf);
+                y = Sv_new_err(stu, x->val.buf);
             break;
 
         case SV_STR:
             if (x->val.buf)
-                y = Sv_new_str(x->val.buf);
+                y = Sv_new_str(stu, x->val.buf);
             break;
 
         case SV_CONS:
-            y = Sv_new(SV_CONS);
+            y = Sv_new(stu, SV_CONS);
             for (int i = 0; i < SV_CONS_REGISTERS; i++) {
-                y->val.reg[i] = Sv_copy(x->val.reg[i]);
+                y->val.reg[i] = Sv_copy(stu, x->val.reg[i]);
             }
             break;
 
         case SV_SPECIAL:
-            y = Sv_new_special(x->val.special->type, x->val.special->body);
+            y = Sv_new_special(stu, x->val.special->type, x->val.special->body);
             break;
 
         case SV_INT:
-            y = Sv_new_int(x->val.i);
+            y = Sv_new_int(stu, x->val.i);
             break;
 
         case SV_FLOAT:
-            y = Sv_new_float(x->val.f);
+            y = Sv_new_float(stu, x->val.f);
             break;
 
         case SV_RATIONAL:
-            y = Sv_new_rational(x->val.rational.n, x->val.rational.d);
+            y = Sv_new_rational(stu, x->val.rational.n, x->val.rational.d);
             break;
 
         case SV_BOOL:
-            y = Sv_new_bool((short) x->val.i);
+            y = Sv_new_bool(stu, (short) x->val.i);
             break;
 
         case SV_FUNC:
-            y = Sv_new_func(x->val.func);
+            y = Sv_new_func(stu, x->val.func);
             break;
 
         case SV_LAMBDA:
             if (x->val.ufunc) {
                 y = Sv_new_lambda(
-                    x->val.ufunc->env, x->val.ufunc->formals, x->val.ufunc->body);
+                    stu, x->val.ufunc->env, x->val.ufunc->formals, x->val.ufunc->body);
             }
             break;
         }
@@ -383,9 +378,9 @@ extern Sv
 }
 
 extern Sv
-*Sv_cons(Sv *x, Sv *y)
+*Sv_cons(Stu *stu, Sv *x, Sv *y)
 {
-    Sv *z = Sv_new(SV_CONS);
+    Sv *z = Sv_new(stu, SV_CONS);
     if (z != NULL) {
         z->val.reg[SV_CAR_REG] = x;
         z->val.reg[SV_CDR_REG] = y;
@@ -397,12 +392,12 @@ extern Sv
 }
 
 extern Sv
-*Sv_reverse(Sv *x)
+*Sv_reverse(Stu *stu, Sv *x)
 {
     Sv *y = NIL;
 
     while (!IS_NIL(x) && x->type == SV_CONS) {
-        y = Sv_cons(CAR(x), y);
+        y = Sv_cons(stu, CAR(x), y);
         x = CDR(x);
     }
 
@@ -410,7 +405,7 @@ extern Sv
 }
 
 extern Sv
-*Sv_list(Sv *x)
+*Sv_list(Stu *stu, Sv *x)
 {
     Sv *y = NULL, *z = NIL;
 
@@ -418,18 +413,18 @@ extern Sv
         return x;
 
     if (x->type != SV_CONS)
-        return Sv_cons(x, NIL);
+        return Sv_cons(stu, x, NIL);
 
     while (!IS_NIL(x) && (y = CAR(x))) {
-        z = Sv_cons(y, z);
+        z = Sv_cons(stu, y, z);
         x = CDR(x);
     }
 
-    return Sv_reverse(z);
+    return Sv_reverse(stu, z);
 }
 
 extern Sv
-*Sv_expand_1(Sv *x)
+*Sv_expand_1(Stu *stu, Sv *x)
 {
     if (!x || x->type != SV_CONS)
         return x;
@@ -440,35 +435,35 @@ extern Sv
     if (head->type != SV_SYM)
         return x;
 
-    macro = Env_main_get(head);
+    macro = Env_main_get(stu, head);
     if (!IS_MACRO(macro))
         return x;
 
-    return Sv_call(Env_main(), macro, CDR(x));
+    return Sv_call(stu, stu->main_env, macro, CDR(x));
 }
 
 extern Sv
-*Sv_expand(Sv *x)
+*Sv_expand(Stu *stu, Sv *x)
 {
     Sv *head;
 
     do {
-        x = Sv_expand_1(x);
+        x = Sv_expand_1(stu, x);
         head = CAR(x);
-    } while (IS_MACRO(Env_main_get(head)));
+    } while (IS_MACRO(Env_main_get(stu, head)));
 
     return x;
 }
 
 extern Sv
-*Sv_eval(Env *env, Sv *x)
+*Sv_eval(Stu *stu, Env *env, Sv *x)
 {
     Sv *y = NULL;
 
     if (!x)
         return x;
 
-    PUSH_SCOPE;
+    PUSH_SCOPE(stu);
     switch (x->type) {
     case SV_SYM:
         /*
@@ -476,43 +471,43 @@ extern Sv
          * the empty list.
          */
         if ((y = Env_get(env, x)) == NULL && !Env_exists(env, x)) {
-            y = Sv_new_err("possibly unknown symbol");
+            y = Sv_new_err(stu, "possibly unknown symbol");
         }
         break;
 
     case SV_SPECIAL:
-        y = Sv_eval_special(env, x);
+        y = Sv_eval_special(stu, env, x);
         break;
 
     case SV_CONS:
-        y = Sv_eval_sexp(env, x);
+        y = Sv_eval_sexp(stu, env, x);
         break;
 
     default:
         y = x;
         break;
     }
-    POP_N_SAVE(y);
+    POP_N_SAVE(stu, y);
 
     return y;
 }
 
 extern Sv
-*Sv_eval_list(Env *env, Sv *x)
+*Sv_eval_list(Stu *stu, Env *env, Sv *x)
 {
     if (IS_NIL(x)) return x;
 
-    Sv *head = Sv_eval(env, CAR(x));
+    Sv *head = Sv_eval(stu, env, CAR(x));
 
     if (IS_NIL(CDR(x))) {
         return head;
     } else {
-        return Sv_eval_list(env, CDR(x));
+        return Sv_eval_list(stu, env, CDR(x));
     }
 }
 
 extern Sv
-*Sv_eval_special(Env *env, Sv *x)
+*Sv_eval_special(Stu *stu, Env *env, Sv *x)
 {
     Sv_special *special = x->val.special;
     Sv *body = x->val.special->body;
@@ -520,26 +515,27 @@ extern Sv
     switch (special->type) {
     case SV_SPECIAL_BACKQUOTE:
         if (body->type == SV_SYM) {
-            return Sv_eval_sexp(env, Sv_cons(Sv_new_sym("quote"), Sv_cons(body, NIL)));
+            return Sv_eval_sexp(stu, env,
+                Sv_cons(stu, Sv_new_sym(stu, "quote"), Sv_cons(stu, body, NIL)));
         } else if (body->type == SV_CONS) {
-            return Sv_eval_special_cons(env, body);
+            return Sv_eval_special_cons(stu, env, body);
         } else {
             return body;
         }
         break;
 
     case SV_SPECIAL_COMMA:
-        return Sv_new_err("Comma can be used only inside backquoted list");
+        return Sv_new_err(stu, "Comma can be used only inside backquoted list");
 
     case SV_SPECIAL_COMMA_SPREAD:
-        return Sv_new_err("Comma spread can be used only inside backquoted list");
+        return Sv_new_err(stu, "Comma spread can be used only inside backquoted list");
     }
 
-    return Sv_new_err("Troubles with quoting magic");
+    return Sv_new_err(stu, "Troubles with quoting magic");
 }
 
 extern Sv
-*Sv_eval_special_cons(Env *env, Sv *x)
+*Sv_eval_special_cons(Stu *stu, Env *env, Sv *x)
 {
     if (IS_NIL(x))
         return x;
@@ -552,39 +548,40 @@ extern Sv
         switch (special->type) {
         case SV_SPECIAL_COMMA:
             return Sv_cons(
-                Sv_eval(env, special->body), Sv_eval_special_cons(env, CDR(x)));
+                stu, Sv_eval(stu, env, special->body),
+                Sv_eval_special_cons(stu, env, CDR(x)));
 
         case SV_SPECIAL_COMMA_SPREAD:
             if (special->body->type == SV_SYM || special->body->type == SV_CONS) {
-                Sv *val = Sv_eval(env, special->body);
+                Sv *val = Sv_eval(stu, env, special->body);
                 if (!IS_NIL(val) && val->type == SV_CONS) {
                     return val;
                 } else {
-                    return Sv_new_err("spread operator applied to atom");
+                    return Sv_new_err(stu, "spread operator applied to atom");
                 }
             } else {
-                return Sv_new_err("spread operator can be applied only to symbol");
+                return Sv_new_err(stu, "spread operator can be applied only to symbol");
             }
             break;
 
         case SV_SPECIAL_BACKQUOTE:
-            return Sv_new_err("backquote is not permitted inside of other backquote");
+            return Sv_new_err(stu, "backquote is not permitted inside of other backquote");
         }
     } else if (head->type == SV_CONS)  {
         return Sv_cons(
-            Sv_eval_special_cons(env, head), Sv_eval_special_cons(env, CDR(x)));
+            stu, Sv_eval_special_cons(stu, env, head), Sv_eval_special_cons(stu, env, CDR(x)));
     } else {
-        return Sv_cons(head, Sv_eval_special_cons(env, CDR(x)));
+        return Sv_cons(stu, head, Sv_eval_special_cons(stu, env, CDR(x)));
     }
 
-    return Sv_new_err("Got confused inside of backquoted list");
+    return Sv_new_err(stu, "Got confused inside of backquoted list");
 }
 
 extern Sv
-*Sv_eval_sexp(Env *env, Sv *x)
+*Sv_eval_sexp(Stu *stu, Env *env, Sv *x)
 {
     Sv *cur = NULL, *y = NULL, *z = NULL;
-    cur = x = Sv_expand(x);
+    cur = x = Sv_expand(stu, x);
 
     if (!cur)
         return NULL;
@@ -593,32 +590,32 @@ extern Sv
 
     if (z && z->special) {
         /* Only evaluate the head, leaving tail intact. */
-        y = Sv_eval(env, z);
+        y = Sv_eval(stu, env, z);
     } else {
         /* Evaluate all arguments. */
          while (!IS_NIL(cur)) {
             if (cur->type == SV_CONS) {
-                y = Sv_cons(Sv_eval(env, CAR(cur)), y);
+                y = Sv_cons(stu, Sv_eval(stu, env, CAR(cur)), y);
                 cur = CDR(cur);
             } else {
-                y = Sv_cons(cur, y);
+                y = Sv_cons(stu, cur, y);
                 break;
             }
-        }
-        x = Sv_reverse(y);
-        y = CAR(x);
+         }
+         x = Sv_reverse(stu, y);
+         y = CAR(x);
     }
 
     /* The car should now be a function. */
     if (y && (y->type == SV_FUNC || y->type == SV_LAMBDA)) {
-        return Sv_call(env, y, CDR(x));
+        return Sv_call(stu, env, y, CDR(x));
     }
 
-    return Sv_new_err("first element is not a function");
+    return Sv_new_err(stu, "first element is not a function");
 }
 
 extern Sv
-*Sv_call(struct Env *env, Sv *f, Sv *a)
+*Sv_call(Stu *stu, Env *env, Sv *f, Sv *a)
 {
     short varargs = 0;
     Env *call_env;
@@ -629,7 +626,7 @@ extern Sv
         return f;
 
     if (f->type == SV_FUNC)
-        return f->val.func(env, a);
+        return f->val.func(stu, env, a);
 
     if (f->type == SV_LAMBDA) {
         /* Bind the formals to the arguments. */
@@ -637,24 +634,24 @@ extern Sv
         call_env = f->val.ufunc->env;
 
         while (!IS_NIL(formals) && (formal = CAR(formals))) {
-            if (!varargs && formal->type == SV_SYM && formal->val.i == Symtab_get_id("&")) {
+            if (!varargs && formal->type == SV_SYM && formal->val.i == Symtab_get_id(stu, "&")) {
                 varargs = 1;
             } else {
                 /* Get the next arg. */
                 if (args && (arg = CAR(args))) {
                     if (varargs) {
-                        call_env = Env_put(call_env, formal, Sv_list(args));
+                        call_env = Env_put(stu, call_env, formal, Sv_list(stu, args));
                         break;
                     } else {
-                        call_env = Env_put(call_env, formal, arg);
+                        call_env = Env_put(stu, call_env, formal, arg);
                     }
                 } else if (varargs) {
                     /* Variable args not supplied. */
-                    call_env = Env_put(call_env, formal, NULL);
+                    call_env = Env_put(stu, call_env, formal, NULL);
                     break;
                 } else {
                     /* No more arguments to consume. */
-                    partial = Sv_copy(f);
+                    partial = Sv_copy(stu, f);
                     partial->val.ufunc->formals = formals;
                     partial->val.ufunc->env = call_env;
                     break;
@@ -667,9 +664,9 @@ extern Sv
         if (partial) {
             return partial;
         } else {
-            return Sv_eval_list(call_env, f->val.ufunc->body);
+            return Sv_eval_list(stu, call_env, f->val.ufunc->body);
         }
     }
 
-    return Sv_new_err("can only call functions");
+    return Sv_new_err(stu, "can only call functions");
 }

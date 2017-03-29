@@ -4,7 +4,6 @@
 #define SV_CONS_REGISTERS 2
 #define SV_CAR_REG 0
 #define SV_CDR_REG 1
-#define NIL        Sv_nil
 
 #define IS_NIL(sv)   ((sv) && (sv)->type == SV_NIL ? 1 : ((sv) ? 0 : 1))
 #define IS_MACRO(sv) ((sv) && (sv)->type == SV_LAMBDA ? ((sv)->val.ufunc->is_macro) : 0)
@@ -39,9 +38,10 @@ enum Sv_special_type {
 struct Gc;
 struct Env;
 struct Sv;
+struct Stu;
 
 /* Function value definition. */
-typedef struct Sv *(*Sv_func)(struct Env *, struct Sv *);
+typedef struct Sv *(*Sv_func)(struct Stu *, struct Env *, struct Sv *);
 
 typedef struct Sv_ufunc {
     struct Env *env;
@@ -80,36 +80,32 @@ typedef struct Sv {
     union Sv_val val;
 } Sv;
 
-/* Global nil object. */
-extern Sv *Sv_nil;
+extern Sv *Sv_new(struct Stu *, enum Sv_type);
+extern Sv *Sv_new_int(struct Stu *, long);
+extern Sv *Sv_new_float(struct Stu *, double);
+extern Sv *Sv_new_rational(struct Stu *, long, long);
+extern Sv *Sv_new_bool(struct Stu *, short);
+extern Sv *Sv_new_str(struct Stu *, const char *);
+extern Sv *Sv_new_sym(struct Stu *, const char *);
+extern Sv *Sv_new_err(struct Stu *, const char *);
+extern Sv *Sv_new_func(struct Stu *, Sv_func);
+extern Sv *Sv_new_lambda(struct Stu *, struct Env *, Sv *, Sv *);
+extern Sv *Sv_new_special(struct Stu *, enum Sv_special_type type, Sv *body);
 
-extern void Sv_init(void);
-extern Sv *Sv_new(enum Sv_type);
-extern Sv *Sv_new_int(long);
-extern Sv *Sv_new_float(double);
-extern Sv *Sv_new_rational(long, long);
-extern Sv *Sv_new_bool(short);
-extern Sv *Sv_new_str(const char *);
-extern Sv *Sv_new_sym(const char *);
-extern Sv *Sv_new_err(const char *);
-extern Sv *Sv_new_func(Sv_func);
-extern Sv *Sv_new_lambda(struct Env *, Sv *, Sv *);
-extern Sv *Sv_new_special(enum Sv_special_type type, Sv *body);
-
-extern void Sv_dump(Sv *sv);
+extern void Sv_dump(struct Stu *, Sv *sv);
 extern void Sv_destroy(Sv **);
-extern Sv *Sv_cons(Sv *, Sv *);
-extern Sv *Sv_reverse(Sv *);
-extern Sv *Sv_list(Sv *);
-extern Sv *Sv_copy(Sv *);
-extern Sv *Sv_expand(Sv *);
-extern Sv *Sv_expand_1(Sv *);
+extern Sv *Sv_cons(struct Stu *, Sv *, Sv *);
+extern Sv *Sv_reverse(struct Stu *, Sv *);
+extern Sv *Sv_list(struct Stu *, Sv *);
+extern Sv *Sv_copy(struct Stu *, Sv *);
+extern Sv *Sv_expand(struct Stu *, Sv *);
+extern Sv *Sv_expand_1(struct Stu *, Sv *);
 
-extern Sv *Sv_eval(struct Env *, Sv *);
-extern Sv *Sv_eval_list(struct Env *, Sv *);
-extern Sv *Sv_eval_special(struct Env *, Sv *);
-extern Sv *Sv_eval_special_cons(struct Env *, Sv *);
-extern Sv *Sv_eval_sexp(struct Env *, Sv *);
-extern Sv *Sv_call(struct Env *, Sv *, Sv *);
+extern Sv *Sv_eval(struct Stu *, struct Env *, Sv *);
+extern Sv *Sv_eval_list(struct Stu *, struct Env *, Sv *);
+extern Sv *Sv_eval_special(struct Stu *, struct Env *, Sv *);
+extern Sv *Sv_eval_special_cons(struct Stu *, struct Env *, Sv *);
+extern Sv *Sv_eval_sexp(struct Stu *, struct Env *, Sv *);
+extern Sv *Sv_call(struct Stu *, struct Env *, Sv *, Sv *);
 
 #endif

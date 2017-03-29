@@ -6,6 +6,7 @@
 #include "gc.h"
 #include "sv.h"
 #include "env.h"
+#include "stu.h"
 #include "svlist.h"
 
 extern Svlist
@@ -38,7 +39,7 @@ Svlist_destroy(Svlist **list)
 }
 
 extern void
-Svlist_push(Svlist *list, struct Sv *sv)
+Svlist_push(Svlist *list, Sv *sv)
 {
     Svlist_node *x = NULL;
 
@@ -60,7 +61,7 @@ Svlist_push(Svlist *list, struct Sv *sv)
 }
 
 extern Sv
-*Svlist_eval(struct Env *env, Svlist *list)
+*Svlist_eval(Stu *stu, Env *env, Svlist *list)
 {
     Svlist_node *cur;
     Sv *result = NULL;
@@ -77,8 +78,8 @@ extern Sv
          *       Replicating previous semantics until we address the above; it
          *       assumes there is only ever one environment.
          */
-        result = Sv_eval(env, cur->sv);
-        env = MAIN_ENV;
+        result = Sv_eval(stu, env, cur->sv);
+        env = stu->main_env;
     }
 
     return result;

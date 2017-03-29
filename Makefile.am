@@ -1,0 +1,2 @@
+SUBDIRS = src check
+ACLOCAL_AMFLAGS = -I m4

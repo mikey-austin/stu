@@ -2,7 +2,7 @@
 #include <string.h>
 
 #include "gc.h"
-#include "parse.h"
+#include "stu.h"
 #include "builtins.h"
 
 struct Builtin {
@@ -17,7 +17,7 @@ typedef enum {
 } value_type;
 
 extern void
-Builtin_init(void)
+Builtin_init(Stu *stu)
 {
     struct Builtin *b = NULL;
     struct Builtin builtins[] = {
@@ -51,7 +51,7 @@ Builtin_init(void)
     };
 
     for (b = builtins; b->name != NULL; b++) {
-        Env_main_put(Sv_new_sym(b->name), Sv_new_func(b->func));
+        Env_main_put(stu, Sv_new_sym(stu, b->name), Sv_new_func(stu, b->func));
     }
 }
 
@@ -93,15 +93,17 @@ Builtin_init(void)
                         f = cur->val.f; \
                         break; \
                     default: \
-                        return Sv_new_err(op " can operate on numbers only"); \
+                        return Sv_new_err(stu, op " can operate on numbers only"); \
                     }
 
-#define RET_ACC return acc_type == RATIONAL ? \
-                    Sv_new_rational(racc.n, racc.d) \
-                    : acc_type == REAL ? Sv_new_float(facc) : Sv_new_int(acc); \
+#define RET_ACC return acc_type == RATIONAL \
+                    ? Sv_new_rational(stu, racc.n, racc.d) \
+                    : acc_type == REAL \
+                        ? Sv_new_float(stu, facc) \
+                        : Sv_new_int(stu, acc); \
 
 extern Sv
-*Builtin_add(Env *env, Sv *x)
+*Builtin_add(Stu *stu, Env *env, Sv *x)
 {
     Sv *cur = NULL;
     INIT_ACC(0);
@@ -138,7 +140,7 @@ extern Sv
 }
 
 extern Sv
-*Builtin_sub(Env *env, Sv *x)
+*Builtin_sub(Stu *stu, Env *env, Sv *x)
 {
     Sv *cur = NULL;
     INIT_ACC(0);
@@ -197,7 +199,7 @@ extern Sv
 }
 
 extern Sv
-*Builtin_mul(Env *env, Sv *x)
+*Builtin_mul(Stu *stu, Env *env, Sv *x)
 {
     Sv *cur = NULL;
     INIT_ACC(1);
@@ -233,7 +235,7 @@ extern Sv
 }
 
 extern Sv
-*Builtin_div(Env *env, Sv *x)
+*Builtin_div(Stu *stu, Env *env, Sv *x)
 {
     Sv *cur = NULL;
     INIT_ACC(0);
@@ -253,9 +255,9 @@ extern Sv
             while (!IS_NIL(x) && (cur = CAR(x))) {
                 SET_ACC("/");
                 if (cur_type == REAL && f == 0)
-                    return Sv_new_err("'/' cannot divide by zero!");
+                    return Sv_new_err(stu, "'/' cannot divide by zero!");
                 if (cur_type != RATIONAL && i == 0)
-                    return Sv_new_err("'/' cannot divide by zero!");
+                    return Sv_new_err(stu, "'/' cannot divide by zero!");
 
                 if (acc_type == RATIONAL) {
                   if (cur_type == RATIONAL) {
@@ -280,64 +282,64 @@ extern Sv
             }
         }
     } else {
-        return Sv_new_err("'/' requires one or more arguments");
+        return Sv_new_err(stu, "'/' requires one or more arguments");
     }
 
     RET_ACC;
 }
 
 extern Sv
-*Builtin_quote(Env *env, Sv *x)
+*Builtin_quote(Stu *stu, Env *env, Sv *x)
 {
     return CAR(x);
 }
 
 extern Sv
-*Builtin_def(Env *env, Sv *x)
+*Builtin_def(Stu *stu, Env *env, Sv *x)
 {
     Sv *y = CAR(x);
     Sv *z = CDR(x);
 
     if (y && y->type != SV_SYM)
-        y = Sv_eval(env, y);
+        y = Sv_eval(stu, env, y);
 
     /* We need a symbol in the head. */
     if (!y || y->type != SV_SYM)
-        return Sv_new_err("'def' needs a symbol as the first argument");
+        return Sv_new_err(stu, "'def' needs a symbol as the first argument");
 
     /* Def in the top scope. */
-    z = Sv_eval(env, CAR(z));
-    Env_main_put(y, z);
+    z = Sv_eval(stu, env, CAR(z));
+    Env_main_put(stu, y, z);
 
     /*
      * If we installed a lambda, also install in the lambda's env so
      * it can call itself.
      */
     if (z->type == SV_LAMBDA)
-        z->val.ufunc->env = Env_put(z->val.ufunc->env, y, z);
+        z->val.ufunc->env = Env_put(stu, z->val.ufunc->env, y, z);
 
     return NIL;
 }
 
 extern Sv
-*Builtin_cons(Env *env, Sv *x)
+*Builtin_cons(Stu *stu, Env *env, Sv *x)
 {
     Sv *y = CAR(x), *z = CADR(x);
 
     if (!x || !y)
-        return Sv_new_err("'cons' needs two arguments");
+        return Sv_new_err(stu, "'cons' needs two arguments");
 
-    return Sv_cons(y, z);
+    return Sv_cons(stu, y, z);
 }
 
 extern Sv
-*Builtin_list(Env *env, Sv *x)
+*Builtin_list(Stu *stu, Env *env, Sv *x)
 {
-    return Sv_list(x);
+    return Sv_list(stu, x);
 }
 
 extern Sv
-*Builtin_lambda(Env *env, Sv *x)
+*Builtin_lambda(Stu *stu, Env *env, Sv *x)
 {
     Sv *formals = NULL, *cur = NULL;
 
@@ -350,117 +352,115 @@ extern Sv
         while (!IS_NIL(formals) && formals->type == SV_CONS && (cur = CAR(formals))) {
             if (cur->type != SV_SYM) {
                 return Sv_new_err(
-                    "'lambda' formals need to be symbols");
+                    stu, "'lambda' formals need to be symbols");
             }
             formals = CDR(formals);
         }
     } else {
         return Sv_new_err(
-            "'lambda' needs a list of symbols as the first argument");
+            stu, "'lambda' needs a list of symbols as the first argument");
     }
 
     formals = CAR(x);
     cur = CDR(x);
 
-    return Sv_new_lambda(env, formals, cur);
+    return Sv_new_lambda(stu, env, formals, cur);
 }
 
 extern Sv
-*Builtin_defmacro(Env *env, Sv *x)
+*Builtin_defmacro(Stu *stu, Env *env, Sv *x)
 {
     Sv *name = CAR(x);
     Sv *definition = CDR(x);
-    Sv *lambda = Builtin_lambda(env, definition);
-    lambda->val.ufunc->is_macro = 1;
+    Sv *lambda = Builtin_lambda(stu, env, definition);
 
-    Env_main_put(name, lambda);
+    lambda->val.ufunc->is_macro = 1;
+    Env_main_put(stu, name, lambda);
 
     return name;
 }
 
 extern Sv
-*Builtin_macroexpand_1(Env *env, Sv *x)
+*Builtin_macroexpand_1(Stu *stu, Env *env, Sv *x)
 {
     x = CAR(x);
-
-    return Sv_expand_1(x);
+    return Sv_expand_1(stu, x);
 }
 
 extern Sv
-*Builtin_macroexpand(Env *env, Sv *x)
+*Builtin_macroexpand(Stu *stu, Env *env, Sv *x)
 {
     x = CAR(x);
-
-    return Sv_expand(x);
+    return Sv_expand(stu, x);
 }
 
 extern Sv
-*Builtin_progn(Env *env, Sv *x)
+*Builtin_progn(Stu *stu, Env *env, Sv *x)
 {
-    return x ? Sv_eval_list(env, x) : x;
+    return x ? Sv_eval_list(stu, env, x) : x;
 }
 
 extern Sv
-*Builtin_eval(Env *env, Sv *x)
+*Builtin_eval(Stu *stu, Env *env, Sv *x)
 {
-    return x ? Sv_eval(env, CAR(x)) : x;
+    return x ? Sv_eval(stu, env, CAR(x)) : x;
 }
 
 extern Sv
-*Builtin_car(Env *env, Sv *x)
+*Builtin_car(Stu *stu, Env *env, Sv *x)
 {
     if (!(x = CAR(x)) || x->type != SV_CONS)
-        return Sv_new_err("'car' needs a single list argument");
+        return Sv_new_err(stu, "'car' needs a single list argument");
     return CAR(x);
 }
 
 extern Sv
-*Builtin_cdr(Env *env, Sv *x)
+*Builtin_cdr(Stu *stu, Env *env, Sv *x)
 {
     if (!(x = CAR(x)) || x->type != SV_CONS)
-        return Sv_new_err("'cdr' needs a single list argument");
+        return Sv_new_err(stu, "'cdr' needs a single list argument");
     return CDR(x);
 }
 
 extern Sv
-*Builtin_reverse(Env *env, Sv *x)
+*Builtin_reverse(Stu *stu, Env *env, Sv *x)
 {
     if (!(x = CAR(x)) || x->type != SV_CONS)
-        return Sv_new_err("'reverse' needs a single list argument");
-    return Sv_reverse(x);
+        return Sv_new_err(stu, "'reverse' needs a single list argument");
+    return Sv_reverse(stu, x);
 }
 
 extern Sv
-*Builtin_if(Env *env, Sv* sv)
+*Builtin_if(Stu *stu, Env *env, Sv* sv)
 {
     Sv *cond = CAR(sv), *first = CADR(sv), *second = CADDR(sv);
 
     if (!cond || !first)
         return NULL;
 
-    cond = Sv_eval(env, cond);
+    cond = Sv_eval(stu, env, cond);
     if (!cond || cond->type != SV_BOOL)
-        return Sv_new_err("'if' condition must evaluate to a bool");
+        return Sv_new_err(stu, "'if' condition must evaluate to a bool");
 
     if (cond->val.i) {
-        return Sv_eval(env, first);
+        return Sv_eval(stu, env, first);
     } else {
-        return second ? Sv_eval(env, second) : NULL;
+        return second ? Sv_eval(stu, env, second) : NULL;
     }
 }
 
 extern Sv
-*Builtin_read(Env *env, Sv* sv)
+*Builtin_read(Stu *stu, Env *env, Sv* sv)
 {
     Sv *code = CAR(sv), *result = NULL;
     Svlist *forms = NULL;
 
     if (!code || code->type != SV_STR || code->val.buf == NULL)
-        return Sv_new_err("read expects a string argument");
+        return Sv_new_err(stu, "read expects a string argument");
 
-    forms = Parse_buf(code->val.buf);
+    forms = Stu_parse_buf(stu, code->val.buf);
     if (forms->count != 1) {
-        result = Sv_new_err("read argument must contain exactly one form");
+        result = Sv_new_err(stu, "read argument must contain exactly one form");
     } else {
         result = forms->head->sv;
     }
@@ -471,9 +471,9 @@ extern Sv
 }
 
 extern Sv
-*Builtin_print(Env *env, Sv* sv)
+*Builtin_print(Stu *stu, Env *env, Sv* sv)
 {
-    Sv_dump(CAR(sv));
+    Sv_dump(stu, CAR(sv));
     return CAR(sv);
 }
 
@@ -490,7 +490,7 @@ extern Sv
 #define CMP_SV(op) \
     Sv *x = CAR(sv), *y = CADR(sv), *rest = CDR(sv); \
     short result = 1; \
-    if (!x && !y) return Sv_new_bool(1); \
+    if (!x && !y) return Sv_new_bool(stu, 1);    \
     if (x && y) { \
         while (!IS_NIL(rest) && (y = CAR(rest))) { \
             if (x->type == y->type) { \
@@ -511,26 +511,26 @@ extern Sv
                         result = result && compare_strings(op, x->val.buf, y->val.buf); \
                         break; \
                     default: \
-                        return Sv_new_err("'eq' does not support these types"); \
+                        return Sv_new_err(stu, "'eq' does not support these types"); \
                 } \
             } else if (x->type == SV_INT && x->type == SV_RATIONAL) { \
                 result = result && compare_numbers(op, x->val.i * y->val.rational.d, y->val.rational.n); \
             } else if (y->type == SV_INT && x->type == SV_RATIONAL) { \
                 result = result && compare_numbers(op, x->val.rational.n, y->val.i * x->val.rational.d); \
             } else { \
-                return Sv_new_bool(0); \
+                return Sv_new_bool(stu, 0);      \
             } \
             \
-            if (!result) return Sv_new_bool(0); \
+            if (!result) return Sv_new_bool(stu, 0); \
             \
             x = y; rest = CDR(rest); \
         } \
         \
         if (IS_NIL(rest)) { \
-            return Sv_new_bool(result); \
+            return Sv_new_bool(stu, result);     \
         } \
     } \
-    return Sv_new_bool(0);
+    return Sv_new_bool(stu, 0);
 
 static int
 compare_numbers(int op, long x, long y)
@@ -587,31 +587,31 @@ compare_strings(int op, const char *x, const char *y)
 }
 
 extern Sv
-*Builtin_eq(Env *env, Sv* sv)
+*Builtin_eq(Stu *stu, Env *env, Sv* sv)
 {
     CMP_SV(OP_EQ);
 }
 
 extern Sv
-*Builtin_gt(Env *env, Sv* sv)
+*Builtin_gt(Stu *stu, Env *env, Sv* sv)
 {
     CMP_SV(OP_GT);
 }
 
 extern Sv
-*Builtin_lt(Env *env, Sv* sv)
+*Builtin_lt(Stu *stu, Env *env, Sv* sv)
 {
     CMP_SV(OP_LT);
 }
 
 extern Sv
-*Builtin_gte(Env *env, Sv* sv)
+*Builtin_gte(Stu *stu, Env *env, Sv* sv)
 {
     CMP_SV(OP_GTE);
 }
 
 extern Sv
-*Builtin_lte(Env *env, Sv* sv)
+*Builtin_lte(Stu *stu, Env *env, Sv* sv)
 {
     CMP_SV(OP_LTE);
 }

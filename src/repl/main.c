@@ -8,7 +8,7 @@
 #include "sv.h"
 #include "env.h"
 #include "symtab.h"
-#include "parse.h"
+#include "stu.h"
 #include "builtins.h"
 
 extern char *optarg;
@@ -19,32 +19,27 @@ main(int argc, char **argv)
 {
     int option = 0, repl = 0, files = 0, debug = 0;
     Svlist *forms = NULL;
-
-    Symtab_init();
-    PUSH_SCOPE;
-    Builtin_init();
-    Sv_init();
-    POP_SCOPE;
+    Stu *stu = Stu_new();
 
     while ((option = getopt(argc, argv, "rl:f:d")) != -1) {
         switch (option) {
         case 'f':
             files = 1;
-            PUSH_SCOPE;
-            forms = Parse_file(optarg);
-            Sv_dump(Svlist_eval(MAIN_ENV, forms));
+            PUSH_SCOPE(stu);
+            forms = Stu_parse_file(stu, optarg);
+            Sv_dump(stu, Svlist_eval(stu, stu->main_env, forms));
             Svlist_destroy(&forms);
-            POP_SCOPE;
+            POP_SCOPE(stu);
             printf("\n");
             break;
 
         case 'l':
             files = 1;
-            PUSH_SCOPE;
-            forms = Parse_file(optarg);
-            Svlist_eval(MAIN_ENV, forms);
+            PUSH_SCOPE(stu);
+            forms = Stu_parse_file(stu, optarg);
+            Svlist_eval(stu, stu->main_env, forms);
             Svlist_destroy(&forms);
-            POP_SCOPE;
+            POP_SCOPE(stu);
             break;
 
         case 'r':
@@ -67,11 +62,11 @@ main(int argc, char **argv)
 
             if (*input != '\0') {
                 add_history(input);
-                PUSH_SCOPE;
-                forms = Parse_buf(input);
-                Sv_dump(Svlist_eval(MAIN_ENV, forms));
+                PUSH_SCOPE(stu);
+                forms = Stu_parse_buf(stu, input);
+                Sv_dump(stu, Svlist_eval(stu, stu->main_env, forms));
                 Svlist_destroy(&forms);
-                POP_SCOPE;
+                POP_SCOPE(stu);
                 printf("\n");
             }
 
@@ -79,10 +74,9 @@ main(int argc, char **argv)
         }
     }
 
-    Gc_sweep(0);
     if (debug)
-        Gc_dump_stats();
-    Symtab_destroy();
+        Gc_dump_stats(stu);
+    Stu_destroy(&stu);
 
     return 0;
 }

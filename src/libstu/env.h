@@ -4,11 +4,10 @@
 #include "hash.h"
 #include "sv.h"
 
-#define MAIN_ENV Env_main()
-
 /* Forward declarations. */
 struct Gc;
 struct Env;
+struct Stu;
 
 typedef struct Env {
     struct Gc gc;
@@ -17,13 +16,13 @@ typedef struct Env {
     Sv *val;
 } Env;
 
-extern Env *Env_new(void);
+extern Env *Env_new(struct Stu *);
 extern void Env_destroy(Env **);
-extern Env *Env_main_put(Sv *, Sv *);
-extern Sv *Env_main_get(Sv *);
-extern int Env_main_exists(Sv *);
-extern Env *Env_main();
-extern Env *Env_put(Env *, Sv *, Sv *);
+extern Env *Env_main_put(struct Stu *, Sv *, Sv *);
+extern Sv *Env_main_get(struct Stu *, Sv *);
+extern int Env_main_exists(struct Stu *, Sv *);
+extern Env *Env_main(struct Stu *);
+extern Env *Env_put(struct Stu *, Env *, Sv *, Sv *);
 extern Sv *Env_get(Env *, Sv *);
 extern int Env_exists(Env *, Sv *);
 
