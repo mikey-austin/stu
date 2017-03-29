@@ -66,11 +66,11 @@ Gc_mark_scope(Stu *stu, Scope *scope) {
 extern void
 Gc_collect(Stu *stu)
 {
-    int before_collect = stu->stats_gc_managed_objects;
+    int before_collect = stu->stats_gc_managed_objects, i;
 
     if (stu->gc_allocs > GC_THRESHOLD) {
         Gc_mark(stu, (Gc *) stu->main_env);
-        for (int i = 0; i < stu->gc_stack_size; i++)
+        for (i = 0; i < stu->gc_stack_size; i++)
             Gc_mark_scope(stu, stu->gc_scope_stack[i]);
         Gc_sweep(stu, 1);
         stu->gc_allocs = 0;

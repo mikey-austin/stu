@@ -154,6 +154,8 @@ extern Sv
 extern void
 Sv_destroy(Sv **sv)
 {
+    int i;
+
     if (sv && *sv) {
         switch ((*sv)->type) {
         case SV_ERR:
@@ -166,7 +168,7 @@ Sv_destroy(Sv **sv)
 
         case SV_CONS:
             /* GC will clean up cons cells. */
-            for (int i = 0; i < SV_CONS_REGISTERS; i++)
+            for (i = 0; i < SV_CONS_REGISTERS; i++)
                 (*sv)->val.reg[i] = NULL;
             break;
 
@@ -312,6 +314,7 @@ static Sv
 extern Sv
 *Sv_copy(Stu *stu, Sv *x)
 {
+    int i;
     Sv *y = NULL;
 
     if (x) {
@@ -336,7 +339,7 @@ extern Sv
 
         case SV_CONS:
             y = Sv_new(stu, SV_CONS);
-            for (int i = 0; i < SV_CONS_REGISTERS; i++) {
+            for (i = 0; i < SV_CONS_REGISTERS; i++) {
                 y->val.reg[i] = Sv_copy(stu, x->val.reg[i]);
             }
             break;
