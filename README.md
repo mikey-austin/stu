@@ -7,6 +7,8 @@ Stu is a simple & minimal lisp implementation in C. To build, you need the follo
 - valgrind (optional but highly recommended)
 - libedit-devel
 
+The following commands can be performed to develop stu:
+
     $ autoreconf -i && ./configure CFLAGS="-O0 -g" --disable-shared && make
     ...
     $ cat <<END |./src/repl/stu -f-
