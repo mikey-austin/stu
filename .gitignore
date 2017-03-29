@@ -37,3 +37,4 @@ check/runner.sh
 *.log
 Makefile.in
 config.h.in
+m4/*

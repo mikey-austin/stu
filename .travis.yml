@@ -10,7 +10,7 @@ before_install:
 
 script: ./configure --disable-shared && make check
 
-before_script: autoreconf -i
+before_script: mkdir m4; autoreconf -i
 
 branches:
   only:
