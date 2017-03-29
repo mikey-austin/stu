@@ -14,6 +14,8 @@ AC_CHECK_HEADERS([stdlib.h])
 AC_CHECK_HEADERS([string.h])
 AC_CHECK_HEADERS([unistd.h])
 AC_PATH_PROG([VALGRIND], [valgrind])
+AC_PATH_PROG([DIFF], [diff])
+AC_PATH_PROG([BASENAME], [basename])
 AC_PATH_PROG([BASH], [bash])
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
@@ -33,6 +35,9 @@ AC_CONFIG_FILES([
     src/Makefile
     src/repl/Makefile
     src/libstu/Makefile
+    check/Makefile
+    check/runner.sh
+    check/test_prog_runner.sh
 ])
 
 AC_OUTPUT

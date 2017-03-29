@@ -33,3 +33,6 @@ lexer.c
 parser.c
 parser.h
 compile
+check/runner.sh
+*.trs
+*.log
