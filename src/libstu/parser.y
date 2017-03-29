@@ -36,7 +36,8 @@ void yyerror (struct Stu *stu, Svlist **list, char const *s)
 %type <sv> list sexp forms atom elements
 
 %start stu
-%parse-param { struct Stu *stu } { Svlist **list }
+%parse-param { struct Stu *stu }
+%parse-param { Svlist **list }
 
 %%
 
