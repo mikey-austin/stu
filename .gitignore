@@ -5,7 +5,6 @@ stu
 *.o
 *.lo
 *.la
-*.in
 config.status
 config.sub
 config.guess
@@ -36,3 +35,5 @@ compile
 check/runner.sh
 *.trs
 *.log
+Makefile.in
+config.h.in

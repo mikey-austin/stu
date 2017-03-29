@@ -1,0 +1,66 @@
+#!/bin/bash
+#
+# Run input through stutter and compare with a pre-created output file.
+#
+# Usage:
+#   bash runner.sh -f ../src/repl/stu -l ../src/stdlib.stu 001_curried.input
+#
+# Returns 0 on success; 1 on failure.
+#
+
+VALGRIND="@VALGRIND@"
+BASENAME="@BASENAME@"
+DIFF="@DIFF@"
+INPUT_SUFFIX=".input"
+OUTPUT_SUFFIX=".output"
+STULIB=
+RUNNER=
+
+# Run tests through valgrind if it exists.
+if [ -x $VALGRIND ]; then
+    RUNNER="$VALGRIND -q --trace-children=yes --track-origins=yes --leak-check=full --error-exitcode=1 --tool=memcheck"
+fi
+
+while getopts "f:l:" opt; do
+    case $opt in
+        f)
+            STUTTER=$OPTARG
+            ;;
+        l)
+            STULIB="$STULIB -l $OPTARG"
+            ;;
+        \?)
+            echo k"Invalid option: -$OPTARG" >&2
+            ;;
+  esac
+done
+
+tmp=$(mktemp)
+errtmp=$(mktemp)
+
+shift $((OPTIND - 1))
+TEST=$($BASENAME "$1" $INPUT_SUFFIX)
+TOTAL=$(ls *$INPUT_SUFFIX |wc -l)
+FAILED=0
+
+$RUNNER $STUTTER $STULIB -f $TEST$INPUT_SUFFIX >$tmp 2>$errtmp
+if [ "x$?" != "x0" ]; then
+    echo "[ FAILED ]"
+    echo "--"
+    echo -e "Command: $RUNNER $STUTTER $STULIB -t $TEST$INPUT_SUFFIX"
+    echo "Valgrind errors:"
+    cat $errtmp
+    echo "--"
+    FAILED=1
+else
+    out=$($DIFF -Zu $tmp $TEST$OUTPUT_SUFFIX)
+    if [ "x$?" != "x0" ]; then
+        echo "[ FAILED ]"
+        echo -e "Command: $RUNNER $STUTTER $STULIB -t $TEST$INPUT_SUFFIX"
+        echo -e "$out"
+        let "FAILED++"
+    fi
+fi
+rm -f $tmp $errtmp
+
+exit $FAILED
