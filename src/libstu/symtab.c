@@ -17,8 +17,10 @@ Symtab_init(Stu *stu)
 extern
 void Symtab_destroy(Stu *stu)
 {
+    long i;
+
     if (stu->sym_id_to_name) {
-        for (long i = 0; i < stu->sym_name_to_id->num_entries; i++)
+        for (i = 0; i < stu->sym_name_to_id->num_entries; i++)
             free(stu->sym_id_to_name[i]);
         free(stu->sym_id_to_name);
         stu->sym_id_to_name = NULL;
