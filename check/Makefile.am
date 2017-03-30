@@ -3,7 +3,7 @@ TEST_EXTENSIONS = .input .test
 
 # Stu interpreter input/output tests.
 INPUT_LOG_COMPILER = $(BASH) ./runner.sh
-AM_INPUT_LOG_FLAGS = -f ../src/repl/stu -l ../src/stdlib.stu --
+AM_INPUT_LOG_FLAGS = -f ../src/repl/stu -l ../src/stdlib.stu
 
 # Functional test programs.
 TEST_LOG_COMPILER = $(BASH) ./test_prog_runner.sh
