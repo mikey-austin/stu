@@ -30,7 +30,7 @@ while getopts "f:l:" opt; do
             STULIB="$STULIB -l $OPTARG"
             ;;
         \?)
-            echo k"Invalid option: -$OPTARG" >&2
+            echo "Invalid option: -$OPTARG" >&2
             ;;
   esac
 done
@@ -40,7 +40,6 @@ errtmp=$(mktemp)
 
 shift $((OPTIND - 1))
 TEST=$($BASENAME "$1" $INPUT_SUFFIX)
-TOTAL=$(ls *$INPUT_SUFFIX |wc -l)
 FAILED=0
 
 $RUNNER $STUTTER $STULIB -f $TEST$INPUT_SUFFIX >$tmp 2>$errtmp
