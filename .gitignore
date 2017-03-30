@@ -11,7 +11,6 @@ config.guess
 ylwrap
 stamp-h1
 missing
-test-driver
 depcomp
 install-sh
 libtool
