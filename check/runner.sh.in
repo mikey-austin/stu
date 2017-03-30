@@ -17,7 +17,7 @@ STULIB=
 RUNNER=
 
 # Run tests through valgrind if it exists.
-if [ -x $VALGRIND ]; then
+if [ "x$VALGRIND" != "x" ]; then
     RUNNER="$VALGRIND -q --trace-children=yes --track-origins=yes --leak-check=full --error-exitcode=1 --tool=memcheck"
 fi
 
