@@ -8,10 +8,14 @@ struct Svlist;
 struct Scope;
 struct Env;
 struct Hash;
-typedef struct Sv Sv;
+struct Sv;
+
+/* Public aliases. */
+#define StuVal struct Sv
+#define StuVals struct Svlist
 
 /* Global nil object. */
-extern struct Sv *Sv_nil;
+extern StuVal *Sv_nil;
 #define NIL Sv_nil
 
 /*
@@ -48,11 +52,11 @@ typedef struct Stu {
 
 extern Stu *Stu_new(void);
 extern void Stu_destroy(Stu **);
-extern struct Svlist *Stu_parse_buf(Stu *, const char *);
-extern struct Svlist *Stu_parse_file(Stu *, const char *);
-extern struct Sv *Stu_eval_file(Stu *, const char *);
-extern struct Sv *Stu_eval_buf(Stu *, const char *);
-extern void Stu_dump_sv(Stu *, struct Sv *, FILE *);
+extern StuVals *Stu_parse_buf(Stu *, const char *);
+extern StuVals *Stu_parse_file(Stu *, const char *);
+extern StuVal *Stu_eval_file(Stu *, const char *);
+extern StuVal *Stu_eval_buf(Stu *, const char *);
+extern void Stu_dump_sv(Stu *, StuVal *, FILE *);
 extern void Stu_dump_stats(Stu *, FILE *);
 
 #endif

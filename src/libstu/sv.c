@@ -48,7 +48,7 @@ extern Sv
         return Sv_new_int(stu, n / d);
 
     Sv *x = Sv_new(stu, SV_RATIONAL);
-    long max_search = abs(n) > d ? d : abs(n);
+    long max_search = labs(n) > d ? d : labs(n);
     long cur = 2;
 
     while (cur <= max_search) {

@@ -13,7 +13,7 @@ int
 main(int argc, char **argv)
 {
     int option = 0, repl = 0, files = 0, debug = 0;
-    Sv *result = NULL;
+    StuVal *result = NULL;
     Stu *stu = Stu_new();
 
     while ((option = getopt(argc, argv, "rl:f:d")) != -1) {
