@@ -4,12 +4,7 @@
 #include <string.h>
 #include <editline/readline.h>
 
-#include "gc.h"
-#include "sv.h"
-#include "env.h"
-#include "symtab.h"
 #include "stu.h"
-#include "builtins.h"
 
 extern char *optarg;
 extern int optind, opterr, optopt;
@@ -18,28 +13,21 @@ int
 main(int argc, char **argv)
 {
     int option = 0, repl = 0, files = 0, debug = 0;
-    Svlist *forms = NULL;
+    Sv *result = NULL;
     Stu *stu = Stu_new();
 
     while ((option = getopt(argc, argv, "rl:f:d")) != -1) {
         switch (option) {
         case 'f':
             files = 1;
-            PUSH_SCOPE(stu);
-            forms = Stu_parse_file(stu, optarg);
-            Sv_dump(stu, Svlist_eval(stu, stu->main_env, forms));
-            Svlist_destroy(&forms);
-            POP_SCOPE(stu);
+            result = Stu_eval_file(stu, optarg);
+            Stu_dump_sv(stu, result, stdout);
             printf("\n");
             break;
 
         case 'l':
             files = 1;
-            PUSH_SCOPE(stu);
-            forms = Stu_parse_file(stu, optarg);
-            Svlist_eval(stu, stu->main_env, forms);
-            Svlist_destroy(&forms);
-            POP_SCOPE(stu);
+            Stu_eval_file(stu, optarg);
             break;
 
         case 'r':
@@ -62,11 +50,8 @@ main(int argc, char **argv)
 
             if (*input != '\0') {
                 add_history(input);
-                PUSH_SCOPE(stu);
-                forms = Stu_parse_buf(stu, input);
-                Sv_dump(stu, Svlist_eval(stu, stu->main_env, forms));
-                Svlist_destroy(&forms);
-                POP_SCOPE(stu);
+                result = Stu_eval_buf(stu, input);
+                Stu_dump_sv(stu, result, stdout);
                 printf("\n");
             }
 
@@ -75,7 +60,7 @@ main(int argc, char **argv)
     }
 
     if (debug)
-        Gc_dump_stats(stu);
+        Stu_dump_stats(stu, stderr);
     Stu_destroy(&stu);
 
     return 0;

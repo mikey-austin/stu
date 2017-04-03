@@ -1,17 +1,17 @@
 #ifndef STU_DEFINED
 #define STU_DEFINED
 
-#include "gc.h"
-#include "sv.h"
-#include "svlist.h"
-#include "hash.h"
+#include <stdio.h>
 
 /* Private structure stub definitions. */
+struct Svlist;
 struct Scope;
 struct Env;
+struct Hash;
+typedef struct Sv Sv;
 
 /* Global nil object. */
-extern Sv *Sv_nil;
+extern struct Sv *Sv_nil;
 #define NIL Sv_nil
 
 /*
@@ -24,8 +24,8 @@ typedef struct Stu {
     int max_gc_stack_size;
 
     /* Entry points of interpreter gc-managed structure list. */
-    Gc *gc_head;
-    Gc *gc_tail;
+    struct Gc *gc_head;
+    struct Gc *gc_tail;
     int gc_allocs;
 
     /* GC stats. */
@@ -41,14 +41,18 @@ typedef struct Stu {
     struct Env *main_env;
 
     /* Symbol table structures. */
-    Hash *sym_name_to_id;
+    struct Hash *sym_name_to_id;
     char **sym_id_to_name;
     long sym_num_ids;
 } Stu;
 
 extern Stu *Stu_new(void);
 extern void Stu_destroy(Stu **);
-extern Svlist *Stu_parse_buf(Stu *, const char *);
-extern Svlist *Stu_parse_file(Stu *, const char *);
+extern struct Svlist *Stu_parse_buf(Stu *, const char *);
+extern struct Svlist *Stu_parse_file(Stu *, const char *);
+extern struct Sv *Stu_eval_file(Stu *, const char *);
+extern struct Sv *Stu_eval_buf(Stu *, const char *);
+extern void Stu_dump_sv(Stu *, struct Sv *, FILE *);
+extern void Stu_dump_stats(Stu *, FILE *);
 
 #endif

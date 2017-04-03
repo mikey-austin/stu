@@ -1,6 +1,10 @@
 #ifndef SV_DEFINED
 #define SV_DEFINED
 
+#include <stdio.h>
+
+#include "gc.h"
+
 #define SV_CONS_REGISTERS 2
 #define SV_CAR_REG 0
 #define SV_CDR_REG 1
@@ -92,7 +96,7 @@ extern Sv *Sv_new_func(struct Stu *, Sv_func);
 extern Sv *Sv_new_lambda(struct Stu *, struct Env *, Sv *, Sv *);
 extern Sv *Sv_new_special(struct Stu *, enum Sv_special_type type, Sv *body);
 
-extern void Sv_dump(struct Stu *, Sv *sv);
+extern void Sv_dump(struct Stu *, Sv *sv, FILE *);
 extern void Sv_destroy(Sv **);
 extern Sv *Sv_cons(struct Stu *, Sv *, Sv *);
 extern Sv *Sv_reverse(struct Stu *, Sv *);

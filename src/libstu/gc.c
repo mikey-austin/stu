@@ -230,15 +230,15 @@ Gc_sweep(Stu *stu, int only_unmarked)
 }
 
 extern void
-Gc_dump_stats(Stu *stu)
+Gc_dump_stats(Stu *stu, FILE *out)
 {
-    fprintf(stderr, "--\n");
-    fprintf(stderr, "Number of gcs:       %d\n", stu->stats_gc_collections);
-    fprintf(stderr, "Number of allocs:    %d\n", stu->stats_gc_allocs);
-    fprintf(stderr, "Number of frees:     %d\n", stu->stats_gc_frees);
-    fprintf(stderr, "Scope pushes:        %d\n", stu->stats_gc_scope_pushes);
-    fprintf(stderr, "Scope pops:          %d\n", stu->stats_gc_scope_pops);
-    fprintf(stderr, "Avg cleanups per gc: %.2f (%d cleaned)\n",
+    fprintf(out, "--\n");
+    fprintf(out, "Number of gcs:       %d\n", stu->stats_gc_collections);
+    fprintf(out, "Number of allocs:    %d\n", stu->stats_gc_allocs);
+    fprintf(out, "Number of frees:     %d\n", stu->stats_gc_frees);
+    fprintf(out, "Scope pushes:        %d\n", stu->stats_gc_scope_pushes);
+    fprintf(out, "Scope pops:          %d\n", stu->stats_gc_scope_pops);
+    fprintf(out, "Avg cleanups per gc: %.2f (%d cleaned)\n",
         stu->stats_gc_cleaned / (stu->stats_gc_collections + 1.0),
         stu->stats_gc_cleaned);
 }

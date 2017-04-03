@@ -202,16 +202,16 @@ Sv_destroy(Sv **sv)
 }
 
 static void
-Sv_cons_dump(Stu *stu, Sv *sv)
+Sv_cons_dump(Stu *stu, Sv *sv, FILE *out)
 {
     Sv *car = CAR(sv);
     Sv *cdr = CDR(sv);
-    Sv_dump(stu, car);
+    Sv_dump(stu, car, out);
     if (cdr) {
         switch (cdr->type) {
         case SV_CONS:
             printf(" ");
-            Sv_cons_dump(stu, cdr);
+            Sv_cons_dump(stu, cdr, out);
             break;
 
         case SV_NIL:
@@ -220,7 +220,7 @@ Sv_cons_dump(Stu *stu, Sv *sv)
 
         default:
             printf(" . ");
-            Sv_dump(stu, cdr);
+            Sv_dump(stu, cdr, out);
             break;
         }
     } else {
@@ -229,7 +229,7 @@ Sv_cons_dump(Stu *stu, Sv *sv)
 }
 
 extern void
-Sv_dump(Stu *stu, Sv *sv)
+Sv_dump(Stu *stu, Sv *sv, FILE *out)
 {
     if (sv) {
         switch (sv->type) {
@@ -245,7 +245,7 @@ Sv_dump(Stu *stu, Sv *sv)
 
         case SV_CONS:
             printf("(");
-            Sv_cons_dump(stu, sv);
+            Sv_cons_dump(stu, sv, out);
             printf(")");
             break;
 
@@ -262,7 +262,7 @@ Sv_dump(Stu *stu, Sv *sv)
                     break;
             }
 
-            Sv_dump(stu, sv->val.special->body);
+            Sv_dump(stu, sv->val.special->body, out);
             break;
 
         case SV_INT:
@@ -288,9 +288,9 @@ Sv_dump(Stu *stu, Sv *sv)
         case SV_LAMBDA:
             if (sv->val.ufunc) {
                 printf("(λ ");
-                Sv_dump(stu, sv->val.ufunc->formals);
+                Sv_dump(stu, sv->val.ufunc->formals, out);
                 putchar(' ');
-                Sv_dump(stu, sv->val.ufunc->body);
+                Sv_dump(stu, sv->val.ufunc->body, out);
                 putchar(')');
             }
             break;

@@ -10,8 +10,8 @@
 #include "lexer.h"
 #include "parser.h"
 #include "symtab.h"
-#include "stu.h"
 #include "hash.h"
+#include "stu.h"
 
 /*
  * NIL singleton object. This object is shared among multiple
@@ -126,4 +126,50 @@ extern Svlist
     yylex_destroy();
 
     return list;
+}
+
+extern Sv
+*Stu_eval_file(Stu *stu, const char *file)
+{
+    Svlist *forms;
+    Sv *result;
+
+    PUSH_SCOPE(stu);
+    forms = Stu_parse_file(stu, file);
+    result = Svlist_eval(stu, stu->main_env, forms);
+    Svlist_destroy(&forms);
+    POP_SCOPE(stu);
+
+    return result;
+}
+
+extern Sv
+*Stu_eval_buf(Stu *stu, const char *buf)
+{
+    Svlist *forms;
+    Sv *result;
+
+    PUSH_SCOPE(stu);
+    forms = Stu_parse_buf(stu, buf);
+    result = Svlist_eval(stu, stu->main_env, forms);
+    Svlist_destroy(&forms);
+    POP_SCOPE(stu);
+
+    return result;
+}
+
+extern void
+Stu_dump_sv(Stu *stu, Sv *sv, FILE *out)
+{
+    PUSH_N_SAVE(stu, sv);
+    Sv_dump(stu, sv, out);
+    POP_SCOPE(stu);
+}
+
+extern void
+Stu_dump_stats(Stu *stu, FILE *out)
+{
+    PUSH_SCOPE(stu);
+    Gc_dump_stats(stu, out);
+    POP_SCOPE(stu);
 }

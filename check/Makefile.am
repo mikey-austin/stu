@@ -1,8 +1,8 @@
 AUTOMAKE_OPTIONS = subdir-objects
-TEST_EXTENSIONS = .test
+TEST_EXTENSIONS = .test .input
 
 # Stu interpreter input/output tests.
-LOG_COMPILER = ./runner.sh
+INPUT_LOG_COMPILER = ./runner.sh
 
 # Functional test programs.
 TEST_LOG_COMPILER = ./test_prog_runner.sh

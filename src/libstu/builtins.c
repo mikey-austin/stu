@@ -1,9 +1,11 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "gc.h"
-#include "stu.h"
+#include "svlist.h"
 #include "builtins.h"
+#include "stu.h"
 
 struct Builtin {
     const char *name;
@@ -473,7 +475,7 @@ extern Sv
 extern Sv
 *Builtin_print(Stu *stu, Env *env, Sv* sv)
 {
-    Sv_dump(stu, CAR(sv));
+    Sv_dump(stu, CAR(sv), stdout);
     return CAR(sv);
 }
 
