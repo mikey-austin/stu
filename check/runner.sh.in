@@ -1,4 +1,4 @@
-#!/bin/bash
+#!@BASH@
 #
 # Run input through stutter and compare with a pre-created output file.
 #
@@ -13,7 +13,8 @@ BASENAME="@BASENAME@"
 DIFF="@DIFF@"
 INPUT_SUFFIX=".input"
 OUTPUT_SUFFIX=".output"
-STULIB=
+STULIB="-l ../src/stdlib.stu"
+STU="../src/repl/stu"
 RUNNER=
 
 # Run tests through valgrind if it exists.
@@ -24,7 +25,7 @@ fi
 while getopts "f:l:" opt; do
     case $opt in
         f)
-            STUTTER=$OPTARG
+            STU=$OPTARG
             ;;
         l)
             STULIB="$STULIB -l $OPTARG"
@@ -42,11 +43,11 @@ shift $((OPTIND - 1))
 TEST=$($BASENAME "$1" $INPUT_SUFFIX)
 FAILED=0
 
-$RUNNER $STUTTER $STULIB -f $TEST$INPUT_SUFFIX >$tmp 2>$errtmp
+$RUNNER $STU $STULIB -f $TEST$INPUT_SUFFIX >$tmp 2>$errtmp
 if [ "x$?" != "x0" ]; then
     echo "[ FAILED ]"
     echo "--"
-    echo -e "Command: $RUNNER $STUTTER $STULIB -t $TEST$INPUT_SUFFIX"
+    echo -e "Command: $RUNNER $STU $STULIB -f $TEST$INPUT_SUFFIX"
     echo "Valgrind errors:"
     cat $errtmp
     echo "--"
@@ -55,7 +56,7 @@ else
     out=$($DIFF -Zu $tmp $TEST$OUTPUT_SUFFIX)
     if [ "x$?" != "x0" ]; then
         echo "[ FAILED ]"
-        echo -e "Command: $RUNNER $STUTTER $STULIB -t $TEST$INPUT_SUFFIX"
+        echo -e "Command: $RUNNER $STU $STULIB -f $TEST$INPUT_SUFFIX"
         echo -e "$out"
         let "FAILED++"
     fi

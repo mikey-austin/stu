@@ -36,8 +36,11 @@ AC_CONFIG_FILES([
     src/repl/Makefile
     src/libstu/Makefile
     check/Makefile
+])
+
+AC_CONFIG_FILES([
     check/runner.sh
     check/test_prog_runner.sh
-])
+], [chmod +x check/*.sh])
 
 AC_OUTPUT

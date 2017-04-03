@@ -2,12 +2,10 @@ AUTOMAKE_OPTIONS = subdir-objects
 TEST_EXTENSIONS = .test
 
 # Stu interpreter input/output tests.
-LOG_COMPILER = $(BASH)
-AM_LOG_FLAGS = ./runner.sh -f ../src/repl/stu -l ../src/stdlib.stu --
+LOG_COMPILER = ./runner.sh
 
 # Functional test programs.
-TEST_LOG_COMPILER = $(BASH)
-AM_TEST_LOG_FLAGS = ./test_prog_runner.sh
+TEST_LOG_COMPILER = ./test_prog_runner.sh
 check_PROGRAMS = test_hash.test
 
 test_hash_test_CFLAGS = -I../src
