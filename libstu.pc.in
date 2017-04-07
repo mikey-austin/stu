@@ -1,0 +1,10 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: libstu
+Description: Stu; a minimal lisp dialect
+Version: @VERSION@
+Cflags: -I${includedir}
+Libs: -L${libdir} -lstu

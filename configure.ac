@@ -36,8 +36,10 @@ AC_CONFIG_FILES([
     src/repl/Makefile
     src/libstu/Makefile
     check/Makefile
+    libstu.pc
 ])
 
+# Executables
 AC_CONFIG_FILES([
     check/runner.sh
     check/test_prog_runner.sh
