@@ -56,7 +56,7 @@ if [ "x$?" != "x0" ]; then
     echo "--"
     FAILED=1
 else
-    out=$($DIFF -Zu $tmp $TEST_OUTPUT)
+    out=$($DIFF -u $tmp $TEST_OUTPUT)
     if [ "x$?" != "x0" ]; then
         echo "[ FAILED ]"
         echo -e "Command: $RUNNER $STU $STULIB -f $TEST_INPUT"
