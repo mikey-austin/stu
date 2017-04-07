@@ -6,7 +6,7 @@ compiler:
     - gcc
 before_install:
     - sudo apt-get update
-    - sudo apt-get install autoconf automake libtool valgrind libedit-dev
+    - sudo apt-get install autoconf automake libtool valgrind libedit-dev pkg-config
 script: ./configure --disable-shared && make check
 before_script: mkdir m4; autoreconf -i
 branches:
