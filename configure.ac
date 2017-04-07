@@ -6,6 +6,7 @@ LT_INIT([dlopen])
 AC_CONFIG_SRCDIR([src/libstu/stu.c])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
+PKG_INSTALLDIR
 
 AC_PROG_CC
 AC_PROG_INSTALL
@@ -36,8 +37,8 @@ AC_CONFIG_FILES([
     src/Makefile
     src/repl/Makefile
     src/libstu/Makefile
+    src/libstu/libstu.pc
     check/Makefile
-    libstu.pc
 ])
 
 # Executables

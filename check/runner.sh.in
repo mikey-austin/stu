@@ -3,7 +3,7 @@
 # Run input through stutter and compare with a pre-created output file.
 #
 # Usage:
-#   bash runner.sh -f ../src/repl/stu -l ../src/stdlib.stu 001_curried.input
+#   bash runner.sh -f @top_builddir@/src/repl/stu -l @top_srcdir@/src/stdlib.stu 001_curried.input
 #
 # Returns 0 on success; 1 on failure.
 #
@@ -13,8 +13,9 @@ BASENAME="@BASENAME@"
 DIFF="@DIFF@"
 INPUT_SUFFIX=".input"
 OUTPUT_SUFFIX=".output"
-STULIB="-l ../src/stdlib.stu"
-STU="../src/repl/stu"
+PREFIX="@top_srcdir@/check"
+STULIB="-l @top_srcdir@/src/stdlib.stu"
+STU="@top_builddir@/src/repl/stu"
 RUNNER=
 
 # Run tests through valgrind if it exists.
@@ -41,22 +42,24 @@ errtmp=$(mktemp)
 
 shift $((OPTIND - 1))
 TEST=$($BASENAME "$1" $INPUT_SUFFIX)
+TEST_INPUT="${PREFIX}/${TEST}${INPUT_SUFFIX}"
+TEST_OUTPUT="${PREFIX}/${TEST}${OUTPUT_SUFFIX}"
 FAILED=0
 
-$RUNNER $STU $STULIB -f $TEST$INPUT_SUFFIX >$tmp 2>$errtmp
+$RUNNER $STU $STULIB -f $TEST_INPUT >$tmp 2>$errtmp
 if [ "x$?" != "x0" ]; then
     echo "[ FAILED ]"
     echo "--"
-    echo -e "Command: $RUNNER $STU $STULIB -f $TEST$INPUT_SUFFIX"
+    echo -e "Command: $RUNNER $STU $STULIB -f $TEST_INPUT"
     echo "Valgrind errors:"
     cat $errtmp
     echo "--"
     FAILED=1
 else
-    out=$($DIFF -Zu $tmp $TEST$OUTPUT_SUFFIX)
+    out=$($DIFF -Zu $tmp $TEST_OUTPUT)
     if [ "x$?" != "x0" ]; then
         echo "[ FAILED ]"
-        echo -e "Command: $RUNNER $STU $STULIB -f $TEST$INPUT_SUFFIX"
+        echo -e "Command: $RUNNER $STU $STULIB -f $TEST_INPUT"
         echo -e "$out"
         let "FAILED++"
     fi

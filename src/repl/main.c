@@ -8,7 +8,7 @@
 #  include <editline/readline.h>
 #endif
 
-#include <stu.h>
+#include <libstu/stu.h>
 
 extern char *optarg;
 extern int optind, opterr, optopt;

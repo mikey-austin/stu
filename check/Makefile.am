@@ -8,8 +8,8 @@ INPUT_LOG_COMPILER = ./runner.sh
 TEST_LOG_COMPILER = ./test_prog_runner.sh
 check_PROGRAMS = test_hash.test
 
-test_hash_test_CFLAGS = -I../src
-test_hash_test_LDADD = ../src/libstu/libstu.la
+test_hash_test_CFLAGS = -I$(top_srcdir)/src
+test_hash_test_LDADD = $(top_builddir)/src/libstu/libstu.la
 test_hash_test_SOURCES = test_hash.c
 
 # All tests specified below.
