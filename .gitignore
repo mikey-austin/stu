@@ -39,5 +39,6 @@ check/runner.sh
 Makefile.in
 config.h.in
 m4/*
+!m4/pkg-polyfill.m4
 check/*.test
 check/test_prog_runner.sh
