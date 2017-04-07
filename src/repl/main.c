@@ -2,9 +2,13 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <editline/readline.h>
 
-#include "stu.h"
+#include <config.h>
+#ifdef HAVE_EDITLINE_READLINE_H
+#  include <editline/readline.h>
+#endif
+
+#include <stu.h>
 
 extern char *optarg;
 extern int optind, opterr, optopt;

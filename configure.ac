@@ -3,7 +3,7 @@ AC_INIT([stu], [0.1.0], [mikey@jackiemclean.net])
 AC_USE_SYSTEM_EXTENSIONS
 AM_INIT_AUTOMAKE
 LT_INIT([dlopen])
-AC_CONFIG_SRCDIR([src/repl/main.c])
+AC_CONFIG_SRCDIR([src/libstu/stu.c])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -27,6 +27,7 @@ AC_FUNC_STRNLEN
 
 # Readline support for repl.
 PKG_CHECK_MODULES([LIBEDIT], [libedit])
+AC_CHECK_HEADERS([editline/readline.h])
 CFLAGS="${CFLAGS} ${LIBEDIT_CFLAGS}"
 LIBS="${LIBS} ${LIBEDIT_LIBS}"
 
