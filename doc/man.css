@@ -1,0 +1,118 @@
+/*
+ * pod2html man-page-like styling. Adapted from the ronn html
+ * man page CSS.
+ */
+
+body {
+    margin: 0;
+    max-width: 100ex;
+    padding: 0 9ex 1ex 4ex;
+    text-align: justify;
+    background: #fff;
+}
+
+p, pre, ul, ol, dl {
+    margin: 0 0 20px 0;
+}
+
+h2 {
+    margin: 10px 0 0 0;
+}
+
+body > p, body > pre, body > ul, body > ol, body > dl {
+    margin-left: 8ex;
+}
+
+h3 {
+    margin: 0 0 0 4ex;
+}
+
+dt {
+    margin: 0;
+    clear: left
+}
+
+dt.flush {
+    float: left;
+    width: 8ex
+}
+
+dd {
+    margin: 0 0 0 9ex
+}
+
+h1, h2, h3, h4 {
+    clear: left;
+}
+
+pre {
+    margin-bottom: 20px;
+}
+
+pre+h2, pre+h3 {
+    margin-top: 22px;
+}
+h2+pre, h3+pre {
+    margin-top: 5px;
+}
+
+img {
+    display: block;
+    margin: auto
+}
+
+body, code, pre, tt, kbd, samp, h3, h4 {
+    font-family: monospace;
+    font-size: 14px;
+    line-height: 1.42857142857143
+}
+
+h1 {
+    font-size: 16px;
+    line-height:1.25;
+}
+
+code, pre, pre code, tt, kbd, samp {
+    color:#131211
+}
+
+h1, h2, h3, h4 {
+    color:#030201
+}
+
+u {
+    text-decoration: underline;
+}
+
+code, strong, b {
+    font-weight: bold;
+    color: #131211;
+}
+
+em, var {
+    font-style: italic;
+    color: #232221;
+    text-decoration: none;
+}
+
+a, a:link, a:hover, a code, a pre, a tt, a kbd, a samp {
+    color: #0000ff;
+}
+
+b.man-ref {
+    font-weight: normal;
+    color: #434241;
+}
+
+pre {
+    padding: 0 4ex;
+}
+
+pre code {
+    font-weight: normal;
+    color: #434241;
+}
+
+h2+pre, h3+pre {
+    padding-left: 0;
+}

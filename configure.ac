@@ -14,6 +14,8 @@ AC_CHECK_FUNCS([strdup])
 AC_CHECK_HEADERS([stdlib.h])
 AC_CHECK_HEADERS([string.h])
 AC_CHECK_HEADERS([unistd.h])
+AC_PATH_PROG([POD2MAN], [pod2man])
+AC_PATH_PROG([POD2HTML], [pod2html])
 AC_PATH_PROG([VALGRIND], [valgrind])
 AC_PATH_PROG([DIFF], [diff])
 AC_PATH_PROG([BASENAME], [basename])
@@ -25,6 +27,9 @@ AC_PROG_YACC
 AC_TYPE_SIZE_T
 AM_PROG_CC_C_O
 AC_FUNC_STRNLEN
+
+AC_ARG_VAR([DOC_CSS], [CSS styles for HTML documentation])
+AS_IF([test -z ${DOC_CSS}], [DOC_CSS="man.css"])
 
 # Readline support for repl.
 PKG_CHECK_MODULES([LIBEDIT], [libedit])
@@ -39,6 +44,7 @@ AC_CONFIG_FILES([
     src/libstu/Makefile
     src/libstu/libstu.pc
     check/Makefile
+    doc/Makefile
 ])
 
 # Executables
