@@ -45,3 +45,4 @@ check/test_prog_runner.sh
 doc/*
 !doc/*.pod
 !doc/*.css
+!doc/*.am
