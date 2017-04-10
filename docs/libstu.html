@@ -1,0 +1,110 @@
+<?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>libstu 0.1.0</title>
+<link rel="stylesheet" href="man.css" type="text/css" />
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rev="made" href="mailto:root@localhost" />
+</head>
+
+<body>
+
+
+
+<h1 id="NAME">NAME</h1>
+
+<p><b>libstu</b> provides the core routines for working with the <b>stu</b> interpreter.</p>
+
+<h1 id="SYNOPSIS">SYNOPSIS</h1>
+
+<p>Include the following header accordingly:</p>
+
+<ul>
+
+<p><b>#include &lt;libstu/stu.h</b>&gt;</p>
+
+</ul>
+
+<p>And the relevant build flags, which may be obtained via <i>pkg-config</i>; e.g.</p>
+
+<ul>
+
+<p><b>$ pkg-config --cflags --libs libstu</b></p>
+
+</ul>
+
+<h1 id="DESCRIPTION">DESCRIPTION</h1>
+
+<p>The interpreter <i>Stu</i> object encapsulates all interpreter state information; more than one instance may be used in the same program.</p>
+
+<h1 id="STRUCTURES">STRUCTURES</h1>
+
+<p>The <b>libstu</b> routines all operate on the following structures.</p>
+
+<h2 id="StuVal">StuVal</h2>
+
+<p>The main structure encapsulating the atomic lisp object. The contents of this structure are intentionally opaque.</p>
+
+<h2 id="StuVals">StuVals</h2>
+
+<p>A linked list of <i>StuVal</i> objects. These lists are not managed by the garbage collector, so they must be explicitly cleaned up.</p>
+
+<h2 id="Stu">Stu</h2>
+
+<p>The main <i>stu</i> interpreter structure. TODO: make opaque.</p>
+
+<h2 id="NIL">NIL</h2>
+
+<p>The singleton NIL object. This object is initialized in the first call to <i>Stu_new</i>; any subsequent calls will make use of the same instance.</p>
+
+<h1 id="FUNCTIONS">FUNCTIONS</h1>
+
+<p>The following functions comprise the public <b>libstu</b> interface.</p>
+
+<h2 id="Stu-Stu_new-void">Stu *Stu_new(void)</h2>
+
+<p>Create and initialize an interpreter instance.</p>
+
+<h2 id="void-Stu_destroy-Stu-stu">void Stu_destroy(Stu **<i>stu</i>)</h2>
+
+<p>Destroy an interpreter instance created with <i>Stu_new</i>.</p>
+
+<h2 id="StuVals-Stu_parse_buf-Stu-stu-const-char-buf">StuVals *Stu_parse_buf(Stu *<i>stu</i>, const char *<i>buf</i>)</h2>
+
+<p>Parse a NUL-terminated buffer into a list of forms. No forms are evaluated.</p>
+
+<h2 id="StuVals-Stu_parse_file-Stu-stu-const-char-file">StuVals *Stu_parse_file(Stu *<i>stu</i>, const char *<i>file</i>)</h2>
+
+<p>Parse a NUL-terminated file path into a list of forms. No forms are evaluated.</p>
+
+<h2 id="StuVal-Stu_eval_file-Stu-stu-const-char-file">StuVal *Stu_eval_file(Stu *<i>stu</i>, const char *<i>file</i>)</h2>
+
+<p>Eval a NUL-terminated file path and return the result as a <b>StuVal</b>. The returned <b>StuVal</b> object is managed by the garbage collector and need not be explicitly cleaned.</p>
+
+<h2 id="StuVal-Stu_eval_buf-Stu-stu-const-char-buf">StuVal *Stu_eval_buf(Stu *<i>stu</i>, const char *<i>buf</i>)</h2>
+
+<p>Same as <i>Stu_eval_file</i>, but parse the NUL-terminated buffer instead.</p>
+
+<h2 id="void-Stu_dump_sv-Stu-stu-StuVal-val-FILE-out">void Stu_dump_sv(Stu *<i>stu</i>, StuVal *<i>val</i>, FILE *<i>out</i>)</h2>
+
+<p>Dump the string representation of <i>val</i> to <i>out</i> in the context of the <i>stu</i> interpreter instance.</p>
+
+<h2 id="void-Stu_dump_stats-Stu-stu-FILE-out">void Stu_dump_stats(Stu *<i>stu</i>, FILE *<i>out</i>)</h2>
+
+<p>Dump assorted interpreter stats to <i>out</i>.</p>
+
+<h1 id="AUTHOR">AUTHOR</h1>
+
+<p><b>stu</b> is written by Mikey Austin, Dmitry Petrov and others.</p>
+
+<h1 id="COPYRIGHT-AND-LICENSE">COPYRIGHT AND LICENSE</h1>
+
+<p>See the <i>COPYING</i> file in the distribution for the details.</p>
+
+
+</body>
+
+</html>
+
+

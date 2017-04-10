@@ -42,8 +42,9 @@ m4/*
 !m4/pkg-polyfill.m4
 check/*.test
 check/test_prog_runner.sh
-doc/*
-!doc/*.pod
-!doc/*.css
-!doc/*.am
-!doc/*.pl.in
+docs/*
+!docs/*.pod
+!docs/*.css
+!docs/*.am
+!docs/*.pl.in
+!docs/*.html

@@ -45,14 +45,14 @@ AC_CONFIG_FILES([
     src/libstu/Makefile
     src/libstu/libstu.pc
     check/Makefile
-    doc/Makefile
+    docs/Makefile
 ])
 
 # Executables
 AC_CONFIG_FILES([
     check/runner.sh
     check/test_prog_runner.sh
-    doc/extract_pod.pl
-], [chmod +x check/*.sh doc/*.pl])
+    docs/extract_pod.pl
+], [chmod +x check/*.sh docs/*.pl])
 
 AC_OUTPUT

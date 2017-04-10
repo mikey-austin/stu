@@ -1,0 +1,72 @@
+<?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Stu 0.1.0</title>
+<link rel="stylesheet" href="man.css" type="text/css" />
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rev="made" href="mailto:root@localhost" />
+</head>
+
+<body>
+
+
+
+<h1 id="NAME">NAME</h1>
+
+<p>stu - a simple and minimal lisp dialect</p>
+
+<h1 id="SYNOPSIS">SYNOPSIS</h1>
+
+<p><b>stu</b> [ <b>-d</b> ] [ <b>-r</b> ] [ <b>-l</b> <i>file</i> ] [ <b>-f</b> <i>file</i> ]</p>
+
+<h1 id="DESCRIPTION">DESCRIPTION</h1>
+
+<p><b>stu</b> is a simple wrapper program around <b>libstu</b>. It starts up a new <i>Stu</i> interpreter instance and evalulates the file(s) specified with <b>-f</b> or <b>-l</b>.</p>
+
+<p>After doing the above, it will drop into a REPL (read-evaluate-print-loop) if the <b>-r</b> option is specified.</p>
+
+<h1 id="OPTIONS">OPTIONS</h1>
+
+<dl>
+
+<dt id="d"><b>-d</b></dt>
+<dd>
+
+<p>Print debugging information and statistics at program exit.</p>
+
+</dd>
+<dt id="r"><b>-r</b></dt>
+<dd>
+
+<p>Start a REPL (read-evaluate-print-loop) after evaluating file arguments (see <b>-f</b> and <b>-l</b> options).</p>
+
+</dd>
+<dt id="l-file"><b>-l</b> <i>file</i></dt>
+<dd>
+
+<p>Evaluate the specified file while ignoring the result. This option is useful for loading libraries at interpreter startup.</p>
+
+</dd>
+<dt id="f-file"><b>-f</b> <i>file</i></dt>
+<dd>
+
+<p>Evaluate the specified file and dump the result to STDOUT. If <i>file</i> is &quot;-&quot;, then <b>stu</b> will read from STDIN.</p>
+
+</dd>
+</dl>
+
+<h1 id="AUTHOR">AUTHOR</h1>
+
+<p><b>stu</b> is written by Mikey Austin, Dmitry Petrov and others.</p>
+
+<h1 id="COPYRIGHT-AND-LICENSE">COPYRIGHT AND LICENSE</h1>
+
+<p>See the <i>COPYING</i> file in the distribution for the details.</p>
+
+
+</body>
+
+</html>
+
+
