@@ -15,8 +15,13 @@ p, pre, ul, ol, dl {
     margin: 0 0 20px 0;
 }
 
+h2, h3, h4 {
+    color:#030201
+}
+
 h2 {
     margin: 10px 0 0 0;
+    font-size: 14px;
 }
 
 body > p, body > pre, body > ul, body > ol, body > dl {
@@ -68,6 +73,7 @@ body, code, pre, tt, kbd, samp, h3, h4 {
 }
 
 h1 {
+    color: #36497d;
     font-size: 16px;
     line-height:1.25;
 }
@@ -76,11 +82,7 @@ code, pre, pre code, tt, kbd, samp {
     color:#131211
 }
 
-h1, h2, h3, h4 {
-    color:#030201
-}
-
-u {
+i, u {
     text-decoration: underline;
 }
 

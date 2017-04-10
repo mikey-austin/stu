@@ -46,3 +46,4 @@ doc/*
 !doc/*.pod
 !doc/*.css
 !doc/*.am
+!doc/*.pl.in

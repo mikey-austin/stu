@@ -20,6 +20,7 @@ AC_PATH_PROG([VALGRIND], [valgrind])
 AC_PATH_PROG([DIFF], [diff])
 AC_PATH_PROG([BASENAME], [basename])
 AC_PATH_PROG([BASH], [bash])
+AC_PATH_PROG([PERL], [perl])
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 AC_PROG_LEX
@@ -51,6 +52,7 @@ AC_CONFIG_FILES([
 AC_CONFIG_FILES([
     check/runner.sh
     check/test_prog_runner.sh
-], [chmod +x check/*.sh])
+    doc/extract_pod.pl
+], [chmod +x check/*.sh doc/*.pl])
 
 AC_OUTPUT
