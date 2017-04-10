@@ -81,8 +81,7 @@ struct Sv;
 /**
  * =head2 Stu
  *
- * The main I<stu> interpreter structure. This structure is also intentionally
- * opaque.
+ * The main I<stu> interpreter structure. TODO: make opaque.
  *
  */
 typedef struct Stu {
