@@ -8,7 +8,7 @@ B<stu> [ B<-d> ] [ B<-r> ] [ B<-l> I<file> ] [ B<-f> I<file> ]
 
 =head1 DESCRIPTION
 
-B<stu> is a simple wrapper program around B<libstu>. It starts up a new I<Stu> interpreter instance and evalulates the file(s) specified with B<-f> or B<-l>.
+B<stu> is a simple wrapper program around L<libstu>. It starts up a new I<Stu> interpreter instance and evalulates the file(s) specified with B<-f> or B<-l>.
 
 After doing the above, it will drop into a REPL (read-evaluate-print-loop) if the B<-r> option is specified.
 
@@ -37,6 +37,10 @@ Evaluate the specified file and dump the result to STDOUT. If I<file> is "-", th
 =head1 AUTHOR
 
 B<stu> is written by Mikey Austin, Dmitry Petrov and others.
+
+=head1 SEE ALSO
+
+L<libstu> - public C API documentation
 
 =head1 COPYRIGHT AND LICENSE
 

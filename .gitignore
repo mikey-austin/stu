@@ -44,6 +44,7 @@ check/*.test
 check/test_prog_runner.sh
 docs/*
 !docs/*.pod
+docs/libstu.pod
 !docs/*.css
 !docs/*.am
 !docs/*.pl.in

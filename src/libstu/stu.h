@@ -20,7 +20,7 @@
 /**
  * =head1 NAME
  *
- * B<libstu> provides the core routines for working with the B<stu> interpreter.
+ * B<libstu> provides the core routines for working with the L<stu> interpreter.
  *
  * =head1 SYNOPSIS
  *
@@ -81,7 +81,7 @@ struct Sv;
 /**
  * =head2 Stu
  *
- * The main I<stu> interpreter structure. TODO: make opaque.
+ * The main L<stu> interpreter structure. TODO: make opaque.
  *
  */
 typedef struct Stu {
@@ -203,6 +203,10 @@ extern void Stu_dump_stats(Stu *, FILE *);
  * =head1 AUTHOR
  *
  * B<stu> is written by Mikey Austin, Dmitry Petrov and others.
+ *
+ * =head1 SEE ALSO
+ *
+ * L<stu> - cli
  *
  * =head1 COPYRIGHT AND LICENSE
  *

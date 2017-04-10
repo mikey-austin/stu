@@ -99,6 +99,7 @@ em, var {
 
 a, a:link, a:hover, a code, a pre, a tt, a kbd, a samp {
     color: #0000ff;
+    font-weight: bold;
 }
 
 b.man-ref {
