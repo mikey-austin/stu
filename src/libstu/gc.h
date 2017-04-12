@@ -19,20 +19,25 @@
 
 #include <stdio.h>
 
-#define PUSH_SCOPE(s) Gc_scope_push((s))
-#define POP_SCOPE(s)  Gc_scope_pop((s))
 #define GC_MARK_MASK  0x01
+#define GC_LOCK_MASK  0x02
 #define GC_TYPE_MASK  0xF0
 #define GC_TYPE_BITS  4
 #define GC_TYPE_SV    0x01
 #define GC_TYPE_ENV   0x02
-#define GC_THRESHOLD  1000
+#define GC_THRESHOLD  10000
 
+#define PUSH_SCOPE(s)     Gc_scope_push((s))
+#define POP_SCOPE(s)      Gc_scope_pop((s))
 #define POP_N_SAVE(s, x)  POP_SCOPE((s)); Gc_scope_save((s), (Gc *) (x))
 #define PUSH_N_SAVE(s, x) PUSH_SCOPE((s)); Gc_scope_save((s), (Gc *) (x))
+#define GC_SWEEPABLE(x)   ((x) ? !GC_MARKED((x)) && !GC_LOCKED((x)) : 0)
 #define GC_MARKED(x)      ((x) ? (((Gc *) x)->flags & GC_MARK_MASK) : 0)
 #define GC_MARK(x)        ((x) ? (((Gc *) x)->flags |= GC_MARK_MASK) : 0)
 #define GC_UNMARK(x)      ((x) ? (((Gc *) x)->flags &= ~GC_MARK_MASK) : 0)
+#define GC_LOCKED(x)      ((x) ? (((Gc *) x)->flags & GC_LOCK_MASK) : 0)
+#define GC_LOCK(x)        ((x) ? (((Gc *) x)->flags |= GC_LOCK_MASK) : 0)
+#define GC_UNLOCK(x)      ((x) ? (((Gc *) x)->flags &= ~GC_LOCK_MASK) : 0)
 #define GC_PREV(x)        ((x) ? (((Gc *) x)->prev : NULL))
 #define GC_NEXT(x)        ((x) ? (((Gc *) x)->next : NULL))
 #define GC_IS_SV(x)       ((x) ? (((Gc *) x)->flags >> GC_TYPE_BITS) == GC_TYPE_SV : 0)

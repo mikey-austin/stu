@@ -38,6 +38,8 @@
 
 <p>The interpreter <i>Stu</i> object encapsulates all interpreter state information; more than one instance may be used in the same program.</p>
 
+<p>All returned <i>StuVal</i> objects are automatically <i>exempt</i> from garbage collection. Once a <i>StuVal</i> object is no longer required, it must be explicitly released via <i>Stu_release_val</i>.</p>
+
 <h1 id="STRUCTURES">STRUCTURES</h1>
 
 <p>The <b>libstu</b> routines all operate on the following structures.</p>
@@ -74,7 +76,11 @@
 
 <p>Same as <i>Stu_eval_file</i>, but parse the NUL-terminated buffer instead.</p>
 
-<h2 id="void-Stu_dump_sv-Stu-stu-StuVal-val-FILE-out">void Stu_dump_sv(Stu *<i>stu</i>, StuVal *<i>val</i>, FILE *<i>out</i>)</h2>
+<h2 id="void-Stu_release_val-Stu-stu-StuVal-val">void Stu_release_val(Stu *<i>stu</i>, StuVal *<i>val</i>)</h2>
+
+<p>Release the specified <i>val</i> back to the mercy of the garbage collector, to be cleaned up at some unspecified time in the future.</p>
+
+<h2 id="void-Stu_dump_val-Stu-stu-StuVal-val-FILE-out">void Stu_dump_val(Stu *<i>stu</i>, StuVal *<i>val</i>, FILE *<i>out</i>)</h2>
 
 <p>Dump the string representation of <i>val</i> to <i>out</i> in the context of the <i>stu</i> interpreter instance.</p>
 

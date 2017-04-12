@@ -93,7 +93,7 @@ Stu_destroy(Stu **stu)
     s = *stu;
     if (s) {
         Symtab_destroy(s);
-        Gc_sweep(s, 0);
+        Gc_sweep(s, 1);
         free(s);
     }
 
@@ -134,6 +134,7 @@ extern Sv
     PUSH_SCOPE(stu);
     forms = Stu_parse_file(stu, file);
     result = Svlist_eval(stu, stu->main_env, forms);
+    GC_LOCK(result);
     Svlist_destroy(&forms);
     POP_SCOPE(stu);
 
@@ -168,6 +169,7 @@ extern Sv
     PUSH_SCOPE(stu);
     forms = Stu_parse_buf(stu, buf);
     result = Svlist_eval(stu, stu->main_env, forms);
+    GC_LOCK(result);
     Svlist_destroy(&forms);
     POP_SCOPE(stu);
 
@@ -175,7 +177,13 @@ extern Sv
 }
 
 extern void
-Stu_dump_sv(Stu *stu, Sv *sv, FILE *out)
+Stu_release_val(Stu *stu, Sv *sv)
+{
+    GC_UNLOCK(sv);
+}
+
+extern void
+Stu_dump_val(Stu *stu, Sv *sv, FILE *out)
 {
     PUSH_N_SAVE(stu, sv);
     Sv_dump(stu, sv, out);

@@ -41,13 +41,15 @@ main(int argc, char **argv)
         case 'f':
             files = 1;
             result = Stu_eval_file(stu, optarg);
-            Stu_dump_sv(stu, result, stdout);
+            Stu_dump_val(stu, result, stdout);
+            Stu_release_val(stu, result);
             printf("\n");
             break;
 
         case 'l':
             files = 1;
-            Stu_eval_file(stu, optarg);
+            result = Stu_eval_file(stu, optarg);
+            Stu_release_val(stu, result);
             break;
 
         case 'r':
@@ -71,7 +73,8 @@ main(int argc, char **argv)
             if (*input != '\0') {
                 add_history(input);
                 result = Stu_eval_buf(stu, input);
-                Stu_dump_sv(stu, result, stdout);
+                Stu_dump_val(stu, result, stdout);
+                Stu_release_val(stu, result);
                 printf("\n");
             }
 

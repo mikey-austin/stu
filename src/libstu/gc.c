@@ -107,7 +107,7 @@ Gc_collect(Stu *stu)
         Gc_mark(stu, (Gc *) stu->main_env);
         for (i = 0; i < stu->gc_stack_size; i++)
             Gc_mark_scope(stu, stu->gc_scope_stack[i]);
-        Gc_sweep(stu, 1);
+        Gc_sweep(stu, 0);
         stu->gc_allocs = 0;
         stu->stats_gc_cleaned += (before_collect - stu->stats_gc_managed_objects);
         stu->stats_gc_collections++;
@@ -236,7 +236,7 @@ Gc_mark(Stu *stu, Gc *gc)
 }
 
 extern void
-Gc_sweep(Stu *stu, int only_unmarked)
+Gc_sweep(Stu *stu, int unconditional)
 {
     Sv *sv = NULL;
     Env *env = NULL;
@@ -244,7 +244,7 @@ Gc_sweep(Stu *stu, int only_unmarked)
 
     while (cur) {
         next = cur->prev;
-        if (!only_unmarked || (only_unmarked && !GC_MARKED(cur))) {
+        if (unconditional || GC_SWEEPABLE(cur)) {
             Gc_del(stu, cur);
             switch (cur->flags >> GC_TYPE_BITS) {
             case GC_TYPE_SV:

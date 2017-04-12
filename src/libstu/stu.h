@@ -47,6 +47,10 @@
  * The interpreter I<Stu> object encapsulates all interpreter state information;
  * more than one instance may be used in the same program.
  *
+ * All returned I<StuVal> objects are automatically I<exempt> from garbage
+ * collection. Once a I<StuVal> object is no longer required, it must be explicitly
+ * released via I<Stu_release_val>.
+ *
  * =head1 STRUCTURES
  *
  * The B<libstu> routines all operate on the following structures.
@@ -122,13 +126,22 @@ extern StuVal *Stu_eval_file(Stu *, const char *);
 extern StuVal *Stu_eval_buf(Stu *, const char *);
 
 /**
- * =head2 void Stu_dump_sv(Stu *I<stu>, StuVal *I<val>, FILE *I<out>)
+ * =head2 void Stu_release_val(Stu *I<stu>, StuVal *I<val>)
+ *
+ * Release the specified I<val> back to the mercy of the garbage collector,
+ * to be cleaned up at some unspecified time in the future.
+ *
+ */
+extern void Stu_release_val(Stu *, StuVal *);
+
+/**
+ * =head2 void Stu_dump_val(Stu *I<stu>, StuVal *I<val>, FILE *I<out>)
  *
  * Dump the string representation of I<val> to I<out> in the context of the
  * I<stu> interpreter instance.
  *
  */
-extern void Stu_dump_sv(Stu *, StuVal *, FILE *);
+extern void Stu_dump_val(Stu *, StuVal *, FILE *);
 
 /**
  * =head2 void Stu_dump_stats(Stu *I<stu>, FILE *I<out>)
