@@ -18,7 +18,7 @@
 #include <err.h>
 #include <string.h>
 
-#include "stu.h"
+#include "stu_private.h"
 #include "hash.h"
 #include "symtab.h"
 

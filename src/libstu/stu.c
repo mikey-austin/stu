@@ -27,7 +27,7 @@
 #include "parser.h"
 #include "symtab.h"
 #include "hash.h"
-#include "stu.h"
+#include "stu_private.h"
 
 /*
  * NIL singleton object. This object is shared among multiple
@@ -101,25 +101,6 @@ Stu_destroy(Stu **stu)
 }
 
 extern Svlist
-*Stu_parse_buf(Stu *stu, const char *buf)
-{
-    Svlist *list = Svlist_new();
-
-    if (buf) {
-        YY_BUFFER_STATE bp = yy_scan_string(buf);
-        yy_switch_to_buffer(bp);
-        switch (yyparse(stu, &list)) {
-        case 2:
-            errx(1, "Parser memory allocation error");
-            break;
-        }
-        yy_delete_buffer(bp);
-    }
-
-    return list;
-}
-
-extern Svlist
 *Stu_parse_file(Stu *stu, const char *file)
 {
     Svlist *list = Svlist_new();
@@ -157,6 +138,25 @@ extern Sv
     POP_SCOPE(stu);
 
     return result;
+}
+
+extern Svlist
+*Stu_parse_buf(Stu *stu, const char *buf)
+{
+    Svlist *list = Svlist_new();
+
+    if (buf) {
+        YY_BUFFER_STATE bp = yy_scan_string(buf);
+        yy_switch_to_buffer(bp);
+        switch (yyparse(stu, &list)) {
+        case 2:
+            errx(1, "Parser memory allocation error");
+            break;
+        }
+        yy_delete_buffer(bp);
+    }
+
+    return list;
 }
 
 extern Sv

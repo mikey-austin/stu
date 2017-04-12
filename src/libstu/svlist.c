@@ -22,7 +22,7 @@
 #include "gc.h"
 #include "sv.h"
 #include "env.h"
-#include "stu.h"
+#include "stu_private.h"
 #include "svlist.h"
 
 extern Svlist

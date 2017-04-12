@@ -21,7 +21,7 @@
 #include "gc.h"
 #include "svlist.h"
 #include "builtins.h"
-#include "stu.h"
+#include "stu_private.h"
 
 struct Builtin {
     const char *name;

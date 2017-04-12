@@ -46,13 +46,9 @@
 
 <p>The main structure encapsulating the atomic lisp object. The contents of this structure are intentionally opaque.</p>
 
-<h2 id="StuVals">StuVals</h2>
-
-<p>A linked list of <i>StuVal</i> objects. These lists are not managed by the garbage collector, so they must be explicitly cleaned up.</p>
-
 <h2 id="Stu">Stu</h2>
 
-<p>The main <a href="/stu/stu.html">stu</a> interpreter structure. TODO: make opaque.</p>
+<p>The main <a href="/stu/stu.html">stu</a> interpreter structure.</p>
 
 <h2 id="NIL">NIL</h2>
 
@@ -69,14 +65,6 @@
 <h2 id="void-Stu_destroy-Stu-stu">void Stu_destroy(Stu **<i>stu</i>)</h2>
 
 <p>Destroy an interpreter instance created with <i>Stu_new</i>.</p>
-
-<h2 id="StuVals-Stu_parse_buf-Stu-stu-const-char-buf">StuVals *Stu_parse_buf(Stu *<i>stu</i>, const char *<i>buf</i>)</h2>
-
-<p>Parse a NUL-terminated buffer into a list of forms. No forms are evaluated.</p>
-
-<h2 id="StuVals-Stu_parse_file-Stu-stu-const-char-file">StuVals *Stu_parse_file(Stu *<i>stu</i>, const char *<i>file</i>)</h2>
-
-<p>Parse a NUL-terminated file path into a list of forms. No forms are evaluated.</p>
 
 <h2 id="StuVal-Stu_eval_file-Stu-stu-const-char-file">StuVal *Stu_eval_file(Stu *<i>stu</i>, const char *<i>file</i>)</h2>
 

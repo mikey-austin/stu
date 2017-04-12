@@ -27,7 +27,7 @@
 #include "sv.h"
 #include "env.h"
 #include "svlist.h"
-#include "stu.h"
+#include "stu_private.h"
 #include "parser.h"
 %}
 

@@ -17,7 +17,7 @@
 #include <stdlib.h>
 #include <err.h>
 
-#include "stu.h"
+#include "stu_private.h"
 #include "gc.h"
 #include "env.h"
 #include "symtab.h"

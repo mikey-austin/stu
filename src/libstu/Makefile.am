@@ -1,6 +1,6 @@
 ACLOCAL_AMFLAGS = -I m4
 include_HEADERS = stu.h
-noinst_HEADERS = builtins.h env.h gc.h hash.h symtab.h utils.h sv.h svlist.h
+noinst_HEADERS = builtins.h env.h gc.h hash.h symtab.h utils.h sv.h svlist.h stu_private.h
 
 lib_LTLIBRARIES = libstu.la
 libstu_la_SOURCES = parser.y lexer.l builtins.c env.c gc.c hash.c stu.c sv.c svlist.c symtab.c utils.c

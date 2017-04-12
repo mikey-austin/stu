@@ -19,16 +19,15 @@
 #include <stdlib.h>
 #include <err.h>
 
-#include "stu.h"
 #include "gc.h"
 #include "sv.h"
 #include "env.h"
 #include "svlist.h"
-
-struct Stu;
+#include "stu_private.h"
 
 extern int yylex(void);
 extern void yyerror(struct Stu *, Svlist **, char const *);
+extern int yyparse(struct Stu *, Svlist **);
 
 void yyerror (struct Stu *stu, Svlist **list, char const *s)
 {

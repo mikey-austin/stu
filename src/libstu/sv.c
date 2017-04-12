@@ -19,7 +19,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "stu.h"
+#include "stu_private.h"
 #include "gc.h"
 #include "sv.h"
 #include "env.h"
