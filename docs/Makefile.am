@@ -1,7 +1,7 @@
 dist_man1_MANS = libstu.3 stu.1
 html_DATA = stu.html libstu.html man.css
 
-CLEANFILES = stu.1 stu.html libstu.3 libstu.html libstu.pod
+CLEANFILES = stu.1 libstu.3 libstu.pod
 stu.1: stu.pod
 	$(POD2MAN) --section=1 --center="General Commands Manual" --release="Stu @VERSION@" $< >$@
 
