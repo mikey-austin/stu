@@ -1,6 +1,4 @@
-### Stu; another lisp implementation
-
-[![Build Status](https://travis-ci.org/mikey-austin/stu.svg?branch=master)](https://travis-ci.org/mikey-austin/stu)
+### Stu; another lisp implementation [![Build Status](https://travis-ci.org/mikey-austin/stu.svg?branch=master)](https://travis-ci.org/mikey-austin/stu)
 
 Stu is a simple & minimal lisp implementation in C. To build, you need the following installed:
 - autoconf, automake & libtool
@@ -30,6 +28,10 @@ Or you can use the repl by specifying no arguments:
     4
     stu> ^D
     Bye!
+
+### Documentation
+
+Online manual pages are generated from both _docs/*.pod_ files and various headers in the source. The HTML docs are automatically made available at the [stu github page](https://mikey-austin.github.io/stu/stu.html). The equivalent roff manual pages are installed during a _sudo make install_.
 
 ### Tests
 
