@@ -81,6 +81,7 @@ typedef struct Stu Stu;
  * to I<Stu_new>; any subsequent calls will make use of the same instance.
  *
  */
+
 extern StuVal *Sv_nil;
 #define NIL Sv_nil
 

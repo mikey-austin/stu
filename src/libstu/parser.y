@@ -48,7 +48,7 @@ void yyerror (struct Stu *stu, Svlist **list, char const *s)
 %token <str> STRING SYMBOL
 %token <rational> RATIONAL
 
-%type <sv> list sexp forms atom elements
+%type <sv> list vector sexp forms atom elements
 
 %start stu
 %parse-param { struct Stu *stu }
@@ -64,6 +64,10 @@ forms: forms sexp           { Svlist_push(*list, $1); $$ = $2; }
     | sexp                  { $$ = $1; }
     ;
 
+vector: '[' ']'             { $$ = Sv_new_vector(stu, NIL); }
+      | '[' elements ']'    { $$ = Sv_new_vector(stu, $2); }
+      ;
+
 list: '(' ')'               { $$ = NIL; }
     | '(' elements ')'      { $$ = $2; }
     | '(' sexp '.' sexp ')' { $$ = Sv_cons(stu, $2, $4); }
@@ -75,6 +79,7 @@ elements: sexp              { $$ = Sv_cons(stu, $1, NIL); }
 
 sexp: atom                  { $$ = $1; }
     | list                  { $$ = $1; }
+    | vector                { $$ = $1; }
     | '\'' sexp             { $$ = Sv_cons(stu, Sv_new_sym(stu, "quote"), Sv_cons(stu, $2, NIL)); }
     | '`' sexp              { $$ = Sv_new_special(stu, SV_SPECIAL_BACKQUOTE, $2); }
     | ',' '@' sexp          { $$ = Sv_new_special(stu, SV_SPECIAL_COMMA_SPREAD, $3); }

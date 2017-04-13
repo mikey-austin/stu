@@ -52,5 +52,8 @@ extern Sv *Builtin_gte(struct Stu *, Env *, Sv **);
 extern Sv *Builtin_lte(struct Stu *, Env *, Sv **);
 extern Sv *Builtin_read(struct Stu *, Env *, Sv **);
 extern Sv *Builtin_print(struct Stu *, Env *, Sv **);
-
+extern Sv *Builtin_vector(struct Stu *, Env *, Sv **);
+extern Sv *Builtin_tuple_constructor(struct Stu *, Env *, Sv **);
+extern Sv *Builtin_size(struct Stu *, Env *, Sv **);
+extern Sv *Builtin_at(struct Stu *, Env *, Sv **);
 #endif

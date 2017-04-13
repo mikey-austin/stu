@@ -61,6 +61,10 @@ Builtin_init(Stu *stu)
     DEF("<", Builtin_lt, 1, 1);
     DEF(">=", Builtin_gte, 1, 1);
     DEF("<=", Builtin_lte, 1, 1);
+    DEF("vector", Builtin_vector, 1, 1);
+    DEF("tuple-constructor", Builtin_tuple_constructor, 2, 0);
+    DEF("size", Builtin_size, 1, 0);
+    DEF("at", Builtin_at, 2, 0);
 }
 #undef DEF
 
@@ -617,4 +621,58 @@ extern Sv
 *Builtin_lte(Stu *stu, Env *env, Sv **args)
 {
     CMP_SV(OP_LTE);
+}
+
+extern Sv
+*Builtin_vector(Stu *stu, Env *env, Sv **args)
+{
+    return Sv_new_vector(stu, args[0]);
+}
+
+extern Sv
+*Builtin_tuple_constructor(Stu *stu, Env *env, Sv **args)
+{
+    Sv *name = args[0];
+    Sv *arity = args[1];
+
+    if (name->type != SV_SYM || arity->type != SV_INT)
+        return NULL;
+
+    long num = arity->val.i;
+    if (num < 0)
+        return NULL;
+
+    Sv_tuple_type *tt = malloc(sizeof(*tt));
+    if (tt == NULL)
+        return NULL;
+    tt->name = name->val.i;
+    tt->arity = num;
+
+    return Sv_new_tuple_constructor(stu, tt);
+}
+
+extern Sv
+*Builtin_size(Stu *stu, Env *env, Sv **args)
+{
+    Sv *tuple = args[0];
+    if (tuple->type != SV_TUPLE)
+        return NULL;
+    return Sv_new_int(stu, tuple->val.tuple->type->arity);
+}
+
+extern Sv
+*Builtin_at(Stu *stu, Env *env, Sv **args)
+{
+    Sv *index = args[0];
+    Sv *tuple_sv = args[1];
+    if (index->type != SV_INT)
+        return NULL;
+    if (tuple_sv->type != SV_TUPLE)
+        return NULL;
+    Sv_tuple *tuple = tuple_sv->val.tuple;
+    long i = index->val.i;
+    if (i < 0 || i > tuple->type->arity)
+        return NULL;
+    return tuple->values[i];
+
 }

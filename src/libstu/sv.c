@@ -48,7 +48,7 @@ extern Sv
 {
     Sv *x = Sv_new(stu, SV_INT);
     x->val.i = i;
-    return  x;
+    return x;
 }
 
 extern Sv
@@ -56,7 +56,7 @@ extern Sv
 {
     Sv *x = Sv_new(stu, SV_FLOAT);
     x->val.f = f;
-    return  x;
+    return x;
 }
 
 extern Sv
@@ -81,7 +81,7 @@ extern Sv
     x->val.rational.n = n;
     x->val.rational.d = d;
 
-    return  x;
+    return x;
 }
 
 extern Sv
@@ -89,7 +89,7 @@ extern Sv
 {
     Sv *x = Sv_new(stu, SV_BOOL);
     x->val.i = (int) i;
-    return  x;
+    return x;
 }
 
 extern Sv
@@ -98,7 +98,7 @@ extern Sv
     Sv *x = Sv_new(stu, SV_STR);
     if ((x->val.buf = strdup(str)) == NULL)
         err(1, "Sv_new_str");
-    return  x;
+    return x;
 }
 
 extern Sv
@@ -160,6 +160,53 @@ extern Sv
 
     return x;
 }
+
+extern Sv
+*Sv_new_vector(struct Stu *stu, Sv *sv)
+{
+    unsigned count = 0;
+    for (Sv *tmp = sv; !IS_NIL(tmp); tmp = CDR(tmp))
+        if (tmp->type == SV_CONS)
+            ++count;
+        else
+            return Sv_new_err(stu, "Vector argument is not a proper list");
+
+    Sv_tuple_type *type = CHECKED_MALLOC(sizeof *type);
+
+    type->name = Sv_new_sym(stu, "vector")->val.i;
+    type->arity = count;
+
+    return Sv_new_tuple(stu, type, sv);
+
+}
+
+extern Sv
+*Sv_new_tuple(struct Stu *stu, Sv_tuple_type *type, Sv *args) {
+    Sv *x = Sv_new(stu, SV_TUPLE);
+    Sv_tuple *tup = CHECKED_MALLOC(sizeof(*tup) + type->arity * sizeof(Sv*));
+
+    unsigned i = 0;
+    while (!IS_NIL(args) && args->type == SV_CONS && i < type->arity) {
+        tup->values[i++] = CAR(args);
+        args = CDR(args);
+    }
+
+    if (!IS_NIL(args) || i != type->arity)
+        return Sv_new_err(stu, "List length doesn't match tuple arity");
+
+    tup->type = type;
+    x->val.tuple = tup;
+
+    return x;
+}
+
+extern Sv
+*Sv_new_tuple_constructor(struct Stu *stu, Sv_tuple_type *tuple_type) {
+    Sv *x = Sv_new(stu, SV_TUPLE_CONSTRUCTOR);
+    x->val.tuple_constructor = tuple_type;
+    return x;
+}
+
 
 extern void
 Sv_destroy(Stu *stu, Sv **sv)
@@ -322,6 +369,21 @@ Sv_dump(Stu *stu, Sv *sv, FILE *out)
         case SV_NIL:
             printf("nil");
             break;
+
+        case SV_TUPLE_CONSTRUCTOR:
+            printf("<TUPLE_CONSTRUCTOR %s %u>",
+                   Symtab_get_name(stu, sv->val.tuple_constructor->name),
+                   sv->val.tuple_constructor->arity);
+            break;
+
+        case SV_TUPLE:
+            printf("[%s", Symtab_get_name(stu, sv->val.tuple->type->name));
+            for (unsigned i = 0; i < sv->val.tuple->type->arity; ++i) {
+                putchar(' ');
+                Sv_dump(stu, sv->val.tuple->values[i], out);
+            }
+            puts("]");
+            break;
         }
     }
 }
@@ -334,6 +396,21 @@ static Sv
     y->val.i = x->val.i;
     return y;
 }
+
+static Sv
+*Sv_copy_tuple(Stu *stu, Sv *x)
+{
+    Sv_tuple *t = x->val.tuple;
+    size_t size = sizeof(Sv_tuple) + t->type->arity * sizeof(Sv*);
+    Sv_tuple *t_copy = malloc(size);
+    if (t_copy == NULL)
+        err(1, "Sv_copy_tuple");
+    memcpy(t_copy, t, size);
+    Sv *copy = Sv_new(stu, SV_TUPLE);
+    copy->val.tuple =  t_copy;
+    return copy;
+}
+
 
 extern Sv
 *Sv_copy(Stu *stu, Sv *x)
@@ -393,6 +470,10 @@ extern Sv
                 y = Sv_new_lambda(
                     stu, x->val.ufunc->env, x->val.ufunc->formals, x->val.ufunc->body);
             }
+            break;
+
+        case SV_TUPLE:
+            y = Sv_copy_tuple(stu, x);
             break;
         }
     }
@@ -475,6 +556,17 @@ extern Sv
     return x;
 }
 
+static Sv
+*Sv_eval_tuple(Stu *stu, Env *env, Sv *x)
+{
+    Sv *copy = Sv_copy(stu, x);
+    Sv_tuple *t = copy->val.tuple;
+    unsigned size = t->type->arity;
+    for (unsigned i = 0; i < size; ++i)
+        t->values[i] = Sv_eval(stu, env, t->values[i]);
+    return copy;
+}
+
 extern Sv
 *Sv_eval(Stu *stu, Env *env, Sv *x)
 {
@@ -501,6 +593,10 @@ extern Sv
 
     case SV_CONS:
         y = Sv_eval_sexp(stu, env, x);
+        break;
+
+    case SV_TUPLE:
+        y = Sv_eval_tuple(stu, env, x);
         break;
 
     default:
@@ -632,6 +728,7 @@ extern Sv
         case SV_NATIVE_FUNC:
         case SV_NATIVE_CLOS:
         case SV_LAMBDA:
+        case SV_TUPLE_CONSTRUCTOR:
             return Sv_call(stu, env, y, CDR(x));
         }
 
@@ -654,6 +751,9 @@ extern Sv
 
     if (f->type == SV_NATIVE_CLOS)
         return Sv_native_closure_call(stu, env, f->val.clos, a);
+
+    if (f->type == SV_TUPLE_CONSTRUCTOR)
+        return Sv_new_tuple(stu, f->val.tuple_constructor, a);
 
     if (f->type == SV_LAMBDA) {
         /* Bind the formals to the arguments. */
