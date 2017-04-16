@@ -39,7 +39,7 @@ extern Hash
     Hash *new = NULL;
 
     if ((new = calloc(1, sizeof(*new))) == NULL)
-        err(1, "Hash_create");
+        err(1, "Hash_new");
     new->destroy = destroy;
 
     return new;

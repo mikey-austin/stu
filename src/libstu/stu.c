@@ -19,6 +19,7 @@
 #include <string.h>
 #include <err.h>
 
+#include "alloc/alloc.h"
 #include "builtins.h"
 #include "gc.h"
 #include "sv.h"
@@ -43,6 +44,10 @@ extern Stu
         err(1, "Stu_new");
     }
 
+    /* Initialize allocators. */
+    stu->sv_alloc = Alloc_new(stu, sizeof(Sv));
+    stu->env_alloc = Alloc_new(stu, sizeof(Env));
+    
     /* Initialize interpreter. */
     stu->gc_scope_stack = NULL;
     stu->gc_stack_size = 0;
@@ -94,6 +99,8 @@ Stu_destroy(Stu **stu)
     if (s) {
         Symtab_destroy(s);
         Gc_sweep(s, 1);
+        Alloc_destroy(&(s->sv_alloc));
+        Alloc_destroy(&(s->env_alloc));
         free(s);
     }
 

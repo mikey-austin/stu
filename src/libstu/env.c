@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <err.h>
 
+#include "alloc/alloc.h"
 #include "stu_private.h"
 #include "gc.h"
 #include "env.h"
@@ -27,20 +28,19 @@ extern Env
 {
     Env *new = NULL;
 
-    if ((new = calloc(1, sizeof(*new))) == NULL)
+    if ((new = Alloc_allocate(stu->env_alloc)) == NULL)
         err(1, "Env_new");
-
     GC_INIT(stu, new, GC_TYPE_ENV);
 
     return new;
 }
 
 extern void
-Env_destroy(Env **env)
+Env_destroy(Stu *stu, Env **env)
 {
     Env *e = *env;
     if (env && e) {
-        free(*env);
+        Alloc_release(stu->env_alloc, *env);
         *env = NULL;
     }
 }

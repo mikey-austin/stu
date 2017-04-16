@@ -32,6 +32,14 @@ AC_FUNC_STRNLEN
 AC_ARG_VAR([DOC_CSS], [CSS styles for HTML documentation])
 AS_IF([test -z ${DOC_CSS}], [DOC_CSS="man.css"])
 
+AC_ARG_VAR([ALLOCATOR], [Memory allocator module])
+AS_IF([test -z ${ALLOCATOR} || "x${ALLOCATOR}" = "xsystem" ], [
+    AC_DEFINE([ALLOC_SYSTEM], 1, [use standard system allocator])
+])
+AS_IF([test "x${ALLOCATOR}" = "xslab" ], [
+    AC_DEFINE([ALLOC_SLAB], 1, [use slab memory allocator])
+])
+
 # Readline support for repl.
 PKG_CHECK_MODULES([LIBEDIT], [libedit])
 AC_CHECK_HEADERS([editline/readline.h])
@@ -43,6 +51,7 @@ AC_CONFIG_FILES([
     src/Makefile
     src/repl/Makefile
     src/libstu/Makefile
+    src/libstu/alloc/Makefile
     src/libstu/libstu.pc
     check/Makefile
     docs/Makefile

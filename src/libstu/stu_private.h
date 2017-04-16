@@ -22,11 +22,16 @@ struct Scope;
 struct Env;
 struct Hash;
 struct Sv;
+struct Alloc;
 
 /*
  * Main stu interpreter structure.
  */
 typedef struct Stu {
+    /* Memory allocators. */
+    struct Alloc *sv_alloc;
+    struct Alloc *env_alloc;
+    
     /* GC structures. */
     struct Scope **gc_scope_stack;
     int gc_stack_size;

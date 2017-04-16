@@ -113,7 +113,7 @@ extern Sv *Sv_new_lambda(struct Stu *, struct Env *, Sv *, Sv *);
 extern Sv *Sv_new_special(struct Stu *, enum Sv_special_type type, Sv *body);
 
 extern void Sv_dump(struct Stu *, Sv *sv, FILE *);
-extern void Sv_destroy(Sv **);
+extern void Sv_destroy(struct Stu *, Sv **);
 extern Sv *Sv_cons(struct Stu *, Sv *, Sv *);
 extern Sv *Sv_reverse(struct Stu *, Sv *);
 extern Sv *Sv_list(struct Stu *, Sv *);

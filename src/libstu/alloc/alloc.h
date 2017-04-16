@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, 2017 Mikey Austin <mikey@jackiemclean.net>
+ * Copyright (c) 2017 Mikey Austin <mikey@jackiemclean.net>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,32 +14,21 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ENV_DEFINED
-#define ENV_DEFINED
+#ifndef ALLOC_DEFINED
+#define ALLOC_DEFINED
 
-#include "hash.h"
-#include "sv.h"
+#include <stddef.h>
 
-/* Forward declarations. */
-struct Gc;
-struct Env;
-struct Stu;
+typedef struct Stu Stu;
 
-typedef struct Env {
-    struct Gc gc;
-    struct Env *prev;
-    long sym;
-    Sv *val;
-} Env;
+typedef struct Alloc {
+    Stu *stu;
+    size_t size;
+} Alloc;
 
-extern Env *Env_new(struct Stu *);
-extern void Env_destroy(struct Stu *, Env **);
-extern Env *Env_main_put(struct Stu *, Sv *, Sv *);
-extern Sv *Env_main_get(struct Stu *, Sv *);
-extern int Env_main_exists(struct Stu *, Sv *);
-extern Env *Env_main(struct Stu *);
-extern Env *Env_put(struct Stu *, Env *, Sv *, Sv *);
-extern Sv *Env_get(Env *, Sv *);
-extern int Env_exists(Env *, Sv *);
+extern Alloc *Alloc_new(Stu *, size_t);
+extern void Alloc_destroy(Alloc **);
+extern void *Alloc_allocate(Alloc *);
+extern void Alloc_release(Alloc *, void *);
 
 #endif

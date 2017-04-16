@@ -249,12 +249,12 @@ Gc_sweep(Stu *stu, int unconditional)
             switch (cur->flags >> GC_TYPE_BITS) {
             case GC_TYPE_SV:
                 sv = (Sv *) cur;
-                Sv_destroy(&sv);
+                Sv_destroy(stu, &sv);
                 break;
 
             case GC_TYPE_ENV:
                 env = (Env *) cur;
-                Env_destroy(&env);
+                Env_destroy(stu, &env);
                 break;
             }
         } else {

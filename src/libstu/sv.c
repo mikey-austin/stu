@@ -19,6 +19,7 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "alloc/alloc.h"
 #include "stu_private.h"
 #include "gc.h"
 #include "sv.h"
@@ -31,7 +32,7 @@ extern Sv
 {
     Sv *x = NULL;
 
-    if ((x = calloc(1, sizeof(*x))) != NULL) {
+    if ((x = Alloc_allocate(stu->sv_alloc)) != NULL) {
         GC_INIT(stu, x, GC_TYPE_SV);
         x->type = type;
     } else {
@@ -168,7 +169,7 @@ extern Sv
 }
 
 extern void
-Sv_destroy(Sv **sv)
+Sv_destroy(Stu *stu, Sv **sv)
 {
     int i;
 
@@ -212,7 +213,7 @@ Sv_destroy(Sv **sv)
             break;
         }
 
-        free(*sv);
+        Alloc_release(stu->env_alloc, *sv);
         *sv = NULL;
     }
 }
