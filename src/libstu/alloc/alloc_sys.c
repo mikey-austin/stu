@@ -14,12 +14,46 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ALLOC_SYSTEM_DEFINED
-#define ALLOC_SYSTEM_DEFINED
+#include <stdlib.h>
+#include <err.h>
 
-typedef struct Alloc Alloc;
+#include "config.h"
+#include "alloc.h"
+#include "alloc_sys.h"
 
-extern void *System_allocate(Alloc *);
-extern void System_release(Alloc *, void *);
+extern Alloc
+*AllocSys_new(Alloc allocator)
+{
+    Alloc *new = NULL;
 
-#endif
+    if ((new = calloc(1, sizeof(*new))) == NULL)
+        err(1, "AllocSys_new");
+
+    /*
+     * We don't need any special subobject, so just copy onto
+     * the heap and return.
+     */
+    *new = allocator;
+    new->allocate = AllocSys_allocate;
+    new->release = AllocSys_release;
+    new->destroy = NULL;
+
+    return new;
+}
+
+extern void
+*AllocSys_allocate(Alloc *allocator)
+{
+    void *block = NULL;
+
+    if ((block = calloc(1, allocator->size)) == NULL)
+        err(1, "System_allocate");
+
+    return block;
+}
+
+extern void
+AllocSys_release(Alloc *allocator, void *to_release)
+{
+    free(to_release);
+}

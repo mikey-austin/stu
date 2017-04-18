@@ -19,6 +19,7 @@
 #include <string.h>
 #include <err.h>
 
+#include "config.h"
 #include "alloc/alloc.h"
 #include "builtins.h"
 #include "gc.h"
@@ -40,14 +41,20 @@ extern Stu
 *Stu_new(void)
 {
     Stu *stu = NULL;
+    enum Alloc_type default_alloc;
     if ((stu = calloc(1, sizeof(*stu))) == NULL) {
         err(1, "Stu_new");
     }
 
     /* Initialize allocators. */
-    stu->sv_alloc = Alloc_new(stu, sizeof(Sv));
-    stu->env_alloc = Alloc_new(stu, sizeof(Env));
-    
+#ifdef ALLOC_SYSTEM
+    default_alloc = ALLOC_SYS;
+#elif ALLOC_SLAB
+    default_alloc = ALLOC_SLAB;
+#endif
+    stu->sv_alloc = Alloc_new(stu, sizeof(Sv), default_alloc);
+    stu->env_alloc = Alloc_new(stu, sizeof(Env), default_alloc);
+
     /* Initialize interpreter. */
     stu->gc_scope_stack = NULL;
     stu->gc_stack_size = 0;

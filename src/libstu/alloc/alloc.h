@@ -19,14 +19,24 @@
 
 #include <stddef.h>
 
-typedef struct Stu Stu;
+enum Alloc_type {
+    ALLOC_SYS,
+    ALLOC_SLAB
+};
 
-typedef struct Alloc {
+typedef struct Stu Stu;
+typedef struct Alloc Alloc;
+
+struct Alloc {
+    enum Alloc_type type;
     Stu *stu;
     size_t size;
-} Alloc;
+    void (*destroy)(Alloc *);
+    void *(*allocate)(Alloc *);
+    void (*release)(Alloc *, void *);
+};
 
-extern Alloc *Alloc_new(Stu *, size_t);
+extern Alloc *Alloc_new(Stu *, size_t, enum Alloc_type);
 extern void Alloc_destroy(Alloc **);
 extern void *Alloc_allocate(Alloc *);
 extern void Alloc_release(Alloc *, void *);

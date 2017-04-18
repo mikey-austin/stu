@@ -14,27 +14,13 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <err.h>
+#ifndef ALLOC_SYSTEM_DEFINED
+#define ALLOC_SYSTEM_DEFINED
 
-#include "config.h"
-#include "alloc.h"
-#include "system.h"
+typedef struct Alloc Alloc;
 
-extern void
-*System_allocate(Alloc *alloc)
-{
-    void *block = NULL;
+extern Alloc *AllocSys_new(Alloc);
+extern void *AllocSys_allocate(Alloc *);
+extern void AllocSys_release(Alloc *, void *);
 
-    if ((block = calloc(1, alloc->size)) == NULL)
-        err(1, "System_allocate");
-
-    return block;
-}
-
-extern void
-System_release(Alloc *alloc, void *to_release)
-{
-    free(to_release);
-}
-
+#endif

@@ -15,25 +15,39 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include <err.h>
 
 #include "config.h"
 #include "alloc.h"
 #ifdef ALLOC_SYSTEM
-#  include "system.h"
+#  include "alloc_sys.h"
 #elif ALLOC_SLAB
-#  include "slab.h"
+#  include "alloc_slab.h"
 #endif
 
 extern Alloc
-*Alloc_new(Stu *stu, size_t size)
+*Alloc_new(Stu *stu, size_t size, enum Alloc_type type)
 {
-    Alloc *new = NULL;
+    Alloc *new = NULL, base;
 
-    if ((new = calloc(1, sizeof(*new))) == NULL)
-        err(1, "Alloc_new");
-    new->stu = stu;
-    new->size = size;
+    memset(&base, 0, sizeof(base));
+    base.type = type;
+    base.stu = stu;
+    base.size = size;
+
+    switch (type) {
+    case ALLOC_SYS:
+        new = AllocSys_new(base);
+        break;
+#ifdef ALLOC_SLAB
+    case ALLOC_SLAB:
+        new = AllocSlab_new(base);
+        break;
+#endif
+    default:
+        err(1, "Unknown allocator requested");
+    }
 
     return new;
 }
@@ -41,33 +55,26 @@ extern Alloc
 extern void
 Alloc_destroy(Alloc **to_destroy)
 {
-    Alloc *alloc = NULL;
+    Alloc *allocator = NULL;
 
-    if (to_destroy == NULL || (alloc = *to_destroy) == NULL)
+    if (to_destroy == NULL || (allocator = *to_destroy) == NULL)
         return;
 
-    free(alloc);
+    if (allocator->destroy != NULL)
+        allocator->destroy(allocator);
+
+    free(allocator);
     *to_destroy = NULL;
 }
 
 extern void
-*Alloc_allocate(Alloc *alloc)
+*Alloc_allocate(Alloc *allocator)
 {
-#ifdef ALLOC_SYSTEM
-    return System_allocate(alloc);
-#elif ALLOC_SLAB
-    return Slab_allocate(alloc);
-#else
-#  error "No ALLOCATOR defined!"
-#endif
+    return allocator->allocate(allocator);
 }
 
 extern void
-Alloc_release(Alloc *alloc, void *to_release)
+Alloc_release(Alloc *allocator, void *to_release)
 {
-#ifdef ALLOC_SYSTEM
-    System_release(alloc, to_release);
-#elif ALLOC_SLAB
-    Slab_release(alloc, to_release);
-#endif
+    allocator->release(allocator, to_release);
 }
