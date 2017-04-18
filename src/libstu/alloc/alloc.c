@@ -20,11 +20,8 @@
 
 #include "config.h"
 #include "alloc.h"
-#ifdef ALLOC_SYSTEM
-#  include "alloc_sys.h"
-#elif ALLOC_SLAB
-#  include "alloc_slab.h"
-#endif
+#include "alloc_sys.h"
+#include "alloc_slab.h"
 
 extern Alloc
 *Alloc_new(Stu *stu, size_t size, enum Alloc_type type)
@@ -40,11 +37,11 @@ extern Alloc
     case ALLOC_SYS:
         new = AllocSys_new(base);
         break;
-#ifdef ALLOC_SLAB
+
     case ALLOC_SLAB:
         new = AllocSlab_new(base);
         break;
-#endif
+
     default:
         err(1, "Unknown allocator requested");
     }

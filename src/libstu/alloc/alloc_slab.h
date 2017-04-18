@@ -14,46 +14,14 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <err.h>
+#ifndef ALLOC_SLAB_DEFINED
+#define ALLOC_SLAB_DEFINED
 
-#include "config.h"
-#include "alloc.h"
-#include "alloc_sys.h"
+typedef struct Alloc Alloc;
 
-extern Alloc
-*AllocSys_new(Alloc base)
-{
-    Alloc *new = NULL;
+extern Alloc *AllocSlab_new(Alloc);
+extern void AllocSlab_destroy(Alloc *);
+extern void *AllocSlab_allocate(Alloc *);
+extern void AllocSlab_release(Alloc *, void *);
 
-    if ((new = calloc(1, sizeof(*new))) == NULL)
-        err(1, "AllocSys_new");
-
-    /*
-     * We don't need any special subobject, so just copy onto
-     * the heap and return.
-     */
-    *new = base;
-    new->allocate = AllocSys_allocate;
-    new->release = AllocSys_release;
-    new->destroy = NULL;
-
-    return new;
-}
-
-extern void
-*AllocSys_allocate(Alloc *allocator)
-{
-    void *block = NULL;
-
-    if ((block = calloc(1, allocator->size)) == NULL)
-        err(1, "AllocSys_allocate");
-
-    return block;
-}
-
-extern void
-AllocSys_release(Alloc *allocator, void *to_release)
-{
-    free(to_release);
-}
+#endif

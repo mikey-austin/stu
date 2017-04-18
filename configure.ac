@@ -29,15 +29,23 @@ AC_TYPE_SIZE_T
 AM_PROG_CC_C_O
 AC_FUNC_STRNLEN
 
+# Documentation generation.
 AC_ARG_VAR([DOC_CSS], [CSS styles for HTML documentation])
 AS_IF([test -z ${DOC_CSS}], [DOC_CSS="man.css"])
 
+# Memory allocation configuration.
 AC_ARG_VAR([ALLOCATOR], [Memory allocator module])
 AS_IF([test -z ${ALLOCATOR} || "x${ALLOCATOR}" = "xsystem" ], [
     AC_DEFINE([ALLOC_SYSTEM], 1, [use standard system allocator])
 ])
 AS_IF([test "x${ALLOCATOR}" = "xslab" ], [
     AC_DEFINE([ALLOC_SLAB], 1, [use slab memory allocator])
+])
+
+# Only relevant if the slab allocator is specified above.
+AC_ARG_VAR([SLAB_SIZE], [Default slab size for the slab allocator])
+AS_IF([test -z ${SLAB_SIZE} ], [
+    AC_DEFINE([SLAB_SIZE], 1000, [slab allocator slab size])
 ])
 
 # Readline support for repl.
