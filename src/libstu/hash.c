@@ -14,12 +14,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <err.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "utils.h"
 #include "hash.h"
+#include "utils.h"
 
 unsigned int
 hash_key(const char *key)
@@ -36,12 +35,8 @@ hash_key(const char *key)
 extern Hash
 *Hash_new(void (*destroy)(Hash_ent *entry))
 {
-    Hash *new = NULL;
-
-    if ((new = calloc(1, sizeof(*new))) == NULL)
-        err(1, "Hash_new");
+    Hash *new = CHECKED_CALLOC(1, sizeof(*new));
     new->destroy = destroy;
-
     return new;
 }
 
@@ -75,8 +70,7 @@ Hash_put(Hash *hash, const char *key, void *value)
 
     Hash_del(hash, key);
     hash->num_entries++;
-    if ((new = calloc(1, sizeof(*new))) == NULL)
-        err(1, "Hash_put");
+    new = CHECKED_CALLOC(1, sizeof(*new));
 
     sstrncpy(new->k, key, MAX_KEY_LEN);
     new->v = value;

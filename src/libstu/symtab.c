@@ -15,19 +15,20 @@
  */
 
 #include <stdlib.h>
-#include <err.h>
 #include <string.h>
 
-#include "stu_private.h"
 #include "hash.h"
+#include "stu_private.h"
 #include "symtab.h"
+#include "utils.h"
 
 extern void
 Symtab_init(Stu *stu)
 {
     stu->sym_name_to_id = Hash_new(NULL);
-    if ((stu->sym_id_to_name = calloc(stu->sym_num_ids, sizeof(*(stu->sym_id_to_name)))) == NULL)
-        err(1, "Symtab_init");
+    stu->sym_id_to_name = CHECKED_CALLOC(
+        stu->sym_num_ids,
+        sizeof(*(stu->sym_id_to_name)));
 }
 
 extern
@@ -57,12 +58,9 @@ Symtab_get_id(Stu *stu, const char *name)
 
         if (stu->sym_name_to_id->num_entries > stu->sym_num_ids) {
             stu->sym_num_ids *= 2;
-            if ((stu->sym_id_to_name = realloc(
+            stu->sym_id_to_name = CHECKED_REALLOC(
                 stu->sym_id_to_name,
-                stu->sym_num_ids * sizeof(*stu->sym_id_to_name))) == NULL)
-            {
-                err(1, "Symtab_get_id");
-            }
+                stu->sym_num_ids * sizeof(*stu->sym_id_to_name));
         }
         stu->sym_id_to_name[id] = strdup(name);
     } else {

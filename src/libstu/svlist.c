@@ -15,7 +15,6 @@
  */
 
 #include <stdlib.h>
-#include <err.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -24,16 +23,12 @@
 #include "env.h"
 #include "stu_private.h"
 #include "svlist.h"
+#include "utils.h"
 
 extern Svlist
 *Svlist_new(void)
 {
-    Svlist *x = NULL;
-
-    if ((x = calloc(1, sizeof(*x))) == NULL)
-        err(1, "Svlist_new");
-
-    return x;
+    return CHECKED_CALLOC(1, sizeof(Svlist));
 }
 
 extern void
@@ -62,8 +57,7 @@ Svlist_push(Svlist *list, Sv *sv)
     if (!list)
         return;
 
-    if ((x = calloc(1, sizeof(*x))) == NULL)
-        err(1, "Svlist_push");
+    x = CHECKED_CALLOC(1, sizeof(*x));
 
     x->sv = sv;
     if (list->tail) {

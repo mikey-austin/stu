@@ -14,10 +14,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <err.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <err.h>
 
 #include "config.h"
 #include "alloc/alloc.h"
@@ -30,6 +30,7 @@
 #include "symtab.h"
 #include "hash.h"
 #include "stu_private.h"
+#include "utils.h"
 
 /*
  * NIL singleton object. This object is shared among multiple
@@ -40,11 +41,8 @@ Sv *Sv_nil = NULL;
 extern Stu
 *Stu_new(void)
 {
-    Stu *stu = NULL;
     enum Alloc_type default_alloc;
-    if ((stu = calloc(1, sizeof(*stu))) == NULL) {
-        err(1, "Stu_new");
-    }
+    Stu *stu = CHECKED_CALLOC(1, sizeof(*stu));;
 
     /* Initialize allocators. */
 #ifdef ALLOC_SYSTEM

@@ -20,7 +20,14 @@
 #include <pwd.h>
 #include <stdlib.h>
 
+#define CHECKED_MALLOC(size) checked_malloc((size), 1, __func__)
+#define CHECKED_CALLOC(num, size) checked_calloc((num), (size), 1, __func__)
+#define CHECKED_REALLOC(ptr, size) checked_realloc((ptr), (size), 1, __func__)
+
 extern size_t sstrncat(char *dst, const char *src, size_t dsize);
 extern size_t sstrncpy(char *dst, const char *src, size_t dsize);
+extern void *checked_malloc(size_t, int, const char *);
+extern void *checked_calloc(size_t, size_t, int, const char *);
+extern void *checked_realloc(void *, size_t, int, const char *);
 
 #endif

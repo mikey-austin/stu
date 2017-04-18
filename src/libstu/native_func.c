@@ -17,9 +17,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "env.h"
 #include "native_func.h"
 #include "stu_private.h"
-#include "env.h"
+#include "utils.h"
 
 typedef struct Sv_native_func {
     Sv_native_func_t func;
@@ -35,9 +36,7 @@ typedef struct Sv_native_closure {
 static void
 resize_args(Stu *stu, unsigned size)
 {
-    Sv **array = realloc(stu->native_func_args, size * sizeof(Sv*));
-    if (array == NULL)
-        return;
+    Sv **array = CHECKED_REALLOC(stu->native_func_args, size * sizeof(Sv*));
     stu->native_func_args = array;
     stu->native_func_args_capacity = size;
 }
@@ -45,9 +44,7 @@ resize_args(Stu *stu, unsigned size)
 extern Sv_native_func
 *Sv_native_func_new(Stu *stu, Sv_native_func_t func, unsigned arity, unsigned rest)
 {
-    Sv_native_func *f = malloc(sizeof *f);
-    if (f == NULL)
-        return NULL;
+    Sv_native_func *f = CHECKED_MALLOC(sizeof(*f));
     f->func = func;
     f->arity = arity;
     f->rest = rest;
@@ -71,25 +68,23 @@ static Sv
     }
 
     if (arity > 0) {
-        Sv_native_closure *c = malloc(sizeof(*c) + bound_num * sizeof(Sv*));
-        if (c != NULL) {
-            c->arity = arity;
-            c->rest = rest;
-            c->func = f;
-            c->bound_num = bound_num;
-            memcpy(c->bound_args, stu->native_func_args, bound_num);
-            Sv *sv = Sv_new(stu, SV_NATIVE_CLOS);
-            sv->val.clos = c;
-            return sv;
-        }
-        return NULL;
+        Sv_native_closure *c = CHECKED_MALLOC(
+            sizeof(*c) + bound_num * sizeof(Sv*));
+        c->arity = arity;
+        c->rest = rest;
+        c->func = f;
+        c->bound_num = bound_num;
+        memcpy(c->bound_args, stu->native_func_args, bound_num);
+        Sv *sv = Sv_new(stu, SV_NATIVE_CLOS);
+        sv->val.clos = c;
+        return sv;
     } else {
         if (rest) {
             *arg_array = args;
             ++bound_num;
         }
         else if (!IS_NIL(args))
-            return NULL;
+            return Sv_new_err(stu, "Wrong number of arguments");
         return f(stu, env, stu->native_func_args);
     }
 }

@@ -15,6 +15,7 @@
  */
 
 #include <string.h>
+#include <err.h>
 
 #include "utils.h"
 
@@ -49,3 +50,32 @@ sstrncpy(char *dst, const char *src, size_t dsize)
 
     return slen;
 }
+
+extern void
+*checked_malloc(size_t size, int code, const char *str)
+{
+    void *ptr = malloc(size);
+    if (ptr == NULL)
+      err(code, str);
+    return ptr;
+}
+
+extern void
+*checked_calloc(size_t num, size_t size, int code, const char *str)
+{
+    void *ptr = calloc(num, size);
+    if (ptr == NULL)
+      err(code, str);
+    return ptr;
+}
+
+extern void
+*checked_realloc(void *ptr, size_t size, int code, const char *str)
+{
+    ptr = realloc(ptr, size);
+    if (ptr == NULL)
+      err(code, str);
+    return ptr;
+}
+
+

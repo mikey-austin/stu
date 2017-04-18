@@ -26,10 +26,8 @@
 extern Env
 *Env_new(Stu *stu)
 {
-    Env *new = NULL;
+    Env *new = Alloc_allocate(stu->env_alloc);
 
-    if ((new = Alloc_allocate(stu->env_alloc)) == NULL)
-        err(1, "Env_new");
     GC_INIT(stu, new, GC_TYPE_ENV);
 
     return new;

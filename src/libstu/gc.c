@@ -34,12 +34,13 @@
 #include <stdlib.h>
 #include <err.h>
 
-#include "stu_private.h"
-#include "gc.h"
-#include "sv.h"
 #include "env.h"
+#include "gc.h"
 #include "hash.h"
+#include "stu_private.h"
+#include "sv.h"
 #include "symtab.h"
+#include "utils.h"
 
 /*
  * Private scope structure to protect unregistered gc objects
@@ -117,12 +118,7 @@ Gc_collect(Stu *stu)
 static Scope
 *Gc_new_scope()
 {
-    Scope *new = NULL;
-
-    if ((new = calloc(1, sizeof(*new))) == NULL)
-        err(1, "Gc_new_scope");
-
-    return new;
+    return CHECKED_CALLOC(1, sizeof(Scope));
 }
 
 extern void

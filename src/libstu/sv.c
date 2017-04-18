@@ -20,12 +20,13 @@
 #include <stdio.h>
 
 #include "alloc/alloc.h"
-#include "stu_private.h"
-#include "gc.h"
-#include "sv.h"
 #include "env.h"
-#include "symtab.h"
+#include "gc.h"
 #include "native_func.h"
+#include "stu_private.h"
+#include "sv.h"
+#include "symtab.h"
+#include "utils.h"
 
 extern Sv
 *Sv_new(Stu *stu, enum Sv_type type)
@@ -136,15 +137,11 @@ extern Sv
 *Sv_new_special(Stu *stu, enum Sv_special_type type, Sv *body)
 {
     Sv *x = Sv_new(stu, SV_SPECIAL);
-    Sv_special *s = NULL;
+    Sv_special *s = CHECKED_MALLOC(sizeof(*s));
 
-    if ((s = malloc(sizeof(*s))) != NULL) {
-        s->type = type;
-        s->body = Sv_copy(stu, body);
-        x->val.special = s;
-    } else {
-        err(1, "Sv_new_special");
-    }
+    s->type = type;
+    s->body = Sv_copy(stu, body);
+    x->val.special = s;
 
     return x;
 }
@@ -153,17 +150,13 @@ extern Sv
 *Sv_new_lambda(Stu *stu, Env *env, Sv *formals, Sv *body)
 {
     Sv *x = Sv_new(stu, SV_LAMBDA);
-    Sv_ufunc *f = NULL;
+    Sv_ufunc *f = CHECKED_MALLOC(sizeof(*f));
 
-    if ((f = malloc(sizeof(*f))) != NULL) {
-        f->env = env;
-        f->formals = formals;
-        f->body = body;
-        f->is_macro = 0;
-        x->val.ufunc = f;
-    } else {
-        err(1, "Sv_new_lambda");
-    }
+    f->env = env;
+    f->formals = formals;
+    f->body = body;
+    f->is_macro = 0;
+    x->val.ufunc = f;
 
     return x;
 }
@@ -411,12 +404,9 @@ extern Sv
 *Sv_cons(Stu *stu, Sv *x, Sv *y)
 {
     Sv *z = Sv_new(stu, SV_CONS);
-    if (z != NULL) {
-        z->val.reg[SV_CAR_REG] = x;
-        z->val.reg[SV_CDR_REG] = y;
-    } else {
-        err(1, "Sv_cons");
-    }
+
+    z->val.reg[SV_CAR_REG] = x;
+    z->val.reg[SV_CDR_REG] = y;
 
     return z;
 }
