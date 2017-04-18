@@ -43,7 +43,8 @@ enum Sv_type {
     SV_BOOL,
     SV_STR,
     SV_CONS,
-    SV_FUNC,
+    SV_NATIVE_FUNC,
+    SV_NATIVE_CLOS,
     SV_LAMBDA,
     SV_SPECIAL,
 };
@@ -60,8 +61,7 @@ struct Env;
 struct Sv;
 struct Stu;
 
-/* Function value definition. */
-typedef struct Sv *(*Sv_func)(struct Stu *, struct Env *, struct Sv *);
+typedef struct Sv *(*Sv_native_func_t)(struct Stu *, struct Env *, struct Sv **);
 
 typedef struct Sv_ufunc {
     struct Env *env;
@@ -85,8 +85,9 @@ union Sv_val {
     long i;
     double f;
     char *buf;
-    Sv_func func;
     Sv_rational rational;
+    struct Sv_native_func *func;
+    struct Sv_native_closure *clos;
     struct Sv_special *special;
     struct Sv *reg[SV_CONS_REGISTERS];
     struct Sv_ufunc *ufunc;
@@ -108,7 +109,7 @@ extern Sv *Sv_new_bool(struct Stu *, short);
 extern Sv *Sv_new_str(struct Stu *, const char *);
 extern Sv *Sv_new_sym(struct Stu *, const char *);
 extern Sv *Sv_new_err(struct Stu *, const char *);
-extern Sv *Sv_new_func(struct Stu *, Sv_func);
+extern Sv *Sv_new_native_func(struct Stu *, Sv_native_func_t, unsigned, unsigned);
 extern Sv *Sv_new_lambda(struct Stu *, struct Env *, Sv *, Sv *);
 extern Sv *Sv_new_special(struct Stu *, enum Sv_special_type type, Sv *body);
 

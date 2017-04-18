@@ -25,7 +25,7 @@
 #include "sv.h"
 #include "env.h"
 #include "symtab.h"
-#include "builtins.h"
+#include "native_func.h"
 
 extern Sv
 *Sv_new(Stu *stu, enum Sv_type type)
@@ -125,10 +125,10 @@ extern Sv
 }
 
 extern Sv
-*Sv_new_func(Stu *stu, Sv_func func)
+*Sv_new_native_func(Stu *stu, Sv_native_func_t f, unsigned arity, unsigned rest)
 {
-    Sv *x = Sv_new(stu, SV_FUNC);
-    x->val.func = func;
+    Sv *x = Sv_new(stu, SV_NATIVE_FUNC);
+    x->val.func = Sv_native_func_new(stu, f, arity, rest);
     return x;
 }
 
@@ -207,6 +207,16 @@ Sv_destroy(Stu *stu, Sv **sv)
                 free((*sv)->val.special);
                 (*sv)->val.special = NULL;
             }
+            break;
+
+        case SV_NATIVE_FUNC:
+            free((*sv)->val.func);
+            (*sv)->val.func = NULL;
+            break;
+
+        case SV_NATIVE_CLOS:
+            free((*sv)->val.clos);
+            (*sv)->val.clos = NULL;
             break;
 
         default:
@@ -298,8 +308,12 @@ Sv_dump(Stu *stu, Sv *sv, FILE *out)
             printf("%s", sv->val.i ? "#t" : "#f");
             break;
 
-        case SV_FUNC:
-            printf("<builtin>");
+        case SV_NATIVE_FUNC:
+            printf("<native-function>");
+            break;
+
+        case SV_NATIVE_CLOS:
+            printf("<native-closure>");
             break;
 
         case SV_LAMBDA:
@@ -379,10 +393,6 @@ extern Sv
 
         case SV_BOOL:
             y = Sv_new_bool(stu, (short) x->val.i);
-            break;
-
-        case SV_FUNC:
-            y = Sv_new_func(stu, x->val.func);
             break;
 
         case SV_LAMBDA:
@@ -627,9 +637,13 @@ extern Sv
     }
 
     /* The car should now be a function. */
-    if (y && (y->type == SV_FUNC || y->type == SV_LAMBDA)) {
-        return Sv_call(stu, env, y, CDR(x));
-    }
+    if (y)
+        switch (y->type) {
+        case SV_NATIVE_FUNC:
+        case SV_NATIVE_CLOS:
+        case SV_LAMBDA:
+            return Sv_call(stu, env, y, CDR(x));
+        }
 
     return Sv_new_err(stu, "first element is not a function");
 }
@@ -645,8 +659,11 @@ extern Sv
     if (!f)
         return f;
 
-    if (f->type == SV_FUNC)
-        return f->val.func(stu, env, a);
+    if (f->type == SV_NATIVE_FUNC)
+        return Sv_native_func_call(stu, env, f->val.func, a);
+
+    if (f->type == SV_NATIVE_CLOS)
+        return Sv_native_closure_call(stu, env, f->val.clos, a);
 
     if (f->type == SV_LAMBDA) {
         /* Bind the formals to the arguments. */

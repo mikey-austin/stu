@@ -51,6 +51,9 @@ typedef struct Stu {
     int stats_gc_scope_pushes;
     int stats_gc_scope_pops;
 
+    struct Sv **native_func_args;
+    unsigned native_func_args_capacity;
+
     /* Main environment. */
     struct Env *main_env;
 

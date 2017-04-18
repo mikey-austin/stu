@@ -77,6 +77,9 @@ extern Stu
     stu->sym_id_to_name = NULL;
     stu->sym_num_ids = HASH_SIZE;
 
+    stu->native_func_args = NULL;
+    stu->native_func_args_capacity = 0;
+
     PUSH_SCOPE(stu);
     Symtab_init(stu);
 
@@ -108,6 +111,7 @@ Stu_destroy(Stu **stu)
         Gc_sweep(s, 1);
         Alloc_destroy(&(s->sv_alloc));
         Alloc_destroy(&(s->env_alloc));
+        free(s->native_func_args);
         free(s);
     }
 
