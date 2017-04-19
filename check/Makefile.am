@@ -34,4 +34,5 @@ TESTS = 001_curried.input \
 		019_read.input \
 		020_lambda_no_args.input \
 		021_macroexpand.input \
+		022_native_closure.input \
 		test_hash.test

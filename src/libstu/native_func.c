@@ -74,7 +74,7 @@ static Sv
         c->rest = rest;
         c->func = f;
         c->bound_num = bound_num;
-        memcpy(c->bound_args, stu->native_func_args, bound_num);
+        memcpy(c->bound_args, stu->native_func_args, bound_num * sizeof(Sv*));
         Sv *sv = Sv_new(stu, SV_NATIVE_CLOS);
         sv->val.clos = c;
         return sv;
@@ -99,7 +99,7 @@ extern Sv
 extern Sv
 *Sv_native_closure_call(Stu *stu, Env *env, Sv_native_closure *f, Sv *args)
 {
-    memcpy(stu->native_func_args, f->bound_args, f->bound_num);
+    memcpy(stu->native_func_args, f->bound_args, f->bound_num * sizeof(Sv*));
     return Native_call(
         stu, env, f->func, f->arity, f->rest, f->bound_num,
         stu->native_func_args + f->bound_num, args);

@@ -1,0 +1,8 @@
+;; Test partial application of native functions
+
+(def c5 (cons 5))
+(list
+  (cons 5 (list 1 2 3))
+  (c5 (list 1 2 3))
+  (c5 'a)
+  (c5 '(a)))
