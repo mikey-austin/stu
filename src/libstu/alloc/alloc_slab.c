@@ -26,7 +26,7 @@
 
 typedef struct Slab {
     unsigned short *free_list;
-    void *entries;
+    void *chunks;
     unsigned short num_released;
 } Slab;
 
@@ -42,22 +42,15 @@ typedef struct AllocSlab {
 static void
 init_slab(AllocSlab *allocator, Slab *slab)
 {
-    slab->entries = calloc(
+    slab->chunks = calloc(
         allocator->slab_size, allocator->base.size);
-    if (slab->entries == NULL)
-        err(1, "init_slab; could not allocate slab entries");
+    if (slab->chunks == NULL)
+        err(1, "init_slab; could not allocate slab chunks");
 
     slab->free_list = calloc(
         allocator->slab_size, sizeof(*slab->free_list));
     if (slab->free_list == NULL)
         err(1, "init_slab; could not allocate free list");
-}
-
-static void
-free_slab(Slab *slab)
-{
-    free(slab->entries);
-    free(slab->free_list);
 }
 
 extern Alloc
@@ -86,11 +79,18 @@ extern Alloc
     return (Alloc *) new;
 }
 
+static void
+free_slab(Slab *slab)
+{
+    free(slab->chunks);
+    free(slab->free_list);
+}
+
 extern void
 AllocSlab_destroy(Alloc *base)
 {
-    int i;
     AllocSlab *allocator = (AllocSlab *) base;
+    int i;
 
     for (i = 0; i < allocator->used_slabs; i++)
         free_slab(allocator->slabs[i]);
@@ -98,14 +98,99 @@ AllocSlab_destroy(Alloc *base)
     free(allocator->slabs);
 }
 
-extern void
-*AllocSlab_allocate(Alloc *allocator)
+static Slab
+*next_slab(AllocSlab *allocator)
 {
-    // TODO
+    Slab *slab = NULL;
+
+    if (allocator->used_slabs == allocator->num_slabs) {
+        allocator->num_slabs *= 2;
+        allocator->slabs = realloc(allocator->slabs,
+            allocator->num_slabs * sizeof(*(allocator->slabs)));
+        if (allocator->slabs == NULL)
+            err(1, "next_slab; could not re-allocate slabs");
+    }
+
+    slab = allocator->slabs[allocator->used_slabs++];
+    init_slab(allocator, slab);
+
+    return slab;
+}
+
+static void
+*next_chunk(Slab *slab)
+{
+    // TODO: find next available chunk in this slab:
+    // 1. first check the free list
+    // 2. then check the next unallocated chunk
+    // 3. else return NULL
+    // 4. zero the chunk
+
+    return NULL;
 }
 
 extern void
-AllocSlab_release(Alloc *allocator, void *to_release)
+*AllocSlab_allocate(Alloc *base)
 {
-    // TODO
+    AllocSlab *allocator = (AllocSlab *) base;
+    void *chunk = NULL;
+    Slab *slab = NULL;
+    int i;
+
+    for (i = 0; i < allocator->used_slabs; i++) {
+        if ((chunk = next_chunk(allocator->slabs[i])) != NULL)
+            return chunk;
+    }
+
+    /* No available chunks in allocated slabs, make a new slab. */
+    slab = next_slab(allocator);
+
+    return next_chunk(slab);
+}
+
+static int
+in_slab(AllocSlab *allocator, Slab *slab, void *chunk)
+{
+    unsigned long start, end, query;
+
+    query = (unsigned long) chunk;
+    start = (unsigned long) slab;
+    end = start + (allocator->slab_size - 1) * allocator->base.size;
+
+    return query >= start && query <= end;
+}
+
+static Slab
+*find_slab(AllocSlab *allocator, void *chunk)
+{
+    int i;
+
+    for (i = 0; i < allocator->used_slabs; i++) {
+        if (in_slab(allocator, allocator->slabs[i], chunk))
+            return allocator->slabs[i];
+    }
+
+    return NULL;
+}
+
+static void
+release_chunk(Slab *slab, void *chunk)
+{
+    // TODO: add chunk to the free list of this slab
+    // 1. calculate chunk offset in slab
+    // 2. update free list with free offset
+}
+
+extern void
+AllocSlab_release(Alloc *base, void *to_release)
+{
+    AllocSlab *allocator = (AllocSlab *) base;
+    Slab *slab = NULL;
+
+    if ((slab = find_slab(allocator, to_release)) != NULL) {
+        release_chunk(slab, to_release);
+    } else {
+        warnx("Chunk 0x%x not found in any slabs, ignoring",
+              (unsigned long) to_release);
+    }
 }
