@@ -7,7 +7,7 @@ compiler:
 before_install:
     - sudo apt-get update
     - sudo apt-get install autoconf automake libtool valgrind libedit-dev pkg-config
-script: ./configure --disable-shared && make check
+script: ./configure CFLAGS="-std=c99" --disable-shared && make check
 before_script: autoreconf -i
 branches:
   only:
