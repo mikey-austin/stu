@@ -2,12 +2,14 @@ language: c
 sudo: required
 dist: trusty
 compiler:
-    - clang
-    - gcc
+  - clang
+  - gcc
 before_install:
-    - sudo apt-get update
-    - sudo apt-get install autoconf automake libtool valgrind libedit-dev pkg-config
-script: ./configure CFLAGS="-std=gnu11" --disable-shared && make check
+  - sudo apt-get update
+  - sudo apt-get install autoconf automake libtool valgrind libedit-dev pkg-config
+script:
+  - ./configure GC_THRESHOLD=5 ALLOCATOR=system CFLAGS="-std=gnu11" --disable-shared && make check
+  - ./configure GC_THRESHOLD=5 ALLOCATOR=slab SLAB_SIZE=10 CFLAGS="-std=gnu11" --disable-shared && make check
 before_script: autoreconf -i
 branches:
   only:
