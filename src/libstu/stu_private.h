@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2016, 2017 Mikey Austin <mikey@jackiemclean.net>
+ * Copyright (c) 2017 Raphael Sousa Santos <contact@raphaelss.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -31,7 +32,7 @@ typedef struct Stu {
     /* Memory allocators. */
     struct Alloc *sv_alloc;
     struct Alloc *env_alloc;
-    
+
     /* GC structures. */
     struct Scope **gc_scope_stack;
     int gc_stack_size;

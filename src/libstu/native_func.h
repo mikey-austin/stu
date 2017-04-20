@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, 2017 Mikey Austin <mikey@jackiemclean.net>
+ * Copyright (c) 2017 Raphael Sousa Santos <contact@raphaelss.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -17,8 +17,9 @@
 #ifndef NATIVE_FUNC_DEFINED
 #define NATIVE_FUNC_DEFINED
 
-#define NATIVE_FUNC_SIMPLE 0
-#define NATIVE_FUNC_REST_ARG 1
+#define SV_NATIVE_FUNC_DEFAULT 0x00
+#define SV_NATIVE_FUNC_REST 0x01
+#define SV_NATIVE_FUNC_PURE 0x02
 
 /* Forward declarations */
 typedef struct Stu Stu;
@@ -29,10 +30,9 @@ typedef struct Sv_native_func Sv_native_func;
 typedef struct Sv_native_closure Sv_native_closure;
 typedef Sv *(*Sv_native_func_t)(Stu *, Env *, Sv **);
 
-extern Sv_native_func *Sv_native_func_new(Stu *, Sv_native_func_t, unsigned, unsigned);
+extern Sv_native_func *Sv_native_func_new(Stu *, Sv_native_func_t, unsigned, unsigned char);
 extern Sv *Sv_native_func_call(Stu *,  Env *, Sv_native_func *, Sv *);
 extern Sv *Sv_native_closure_call(Stu *, Env *, Sv_native_closure *, Sv *);
 extern Sv *Sv_native_func_register(Stu *, const char *, Sv_native_func_t, unsigned, unsigned);
-
 
 #endif

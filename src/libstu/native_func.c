@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, 2017 Mikey Austin <mikey@jackiemclean.net>
+ * Copyright (c) 2017 Raphael Sousa Santos <contact@raphaelss.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -24,12 +24,14 @@
 
 typedef struct Sv_native_func {
     Sv_native_func_t func;
-    unsigned arity, rest;
+    unsigned arity;
+    unsigned char flags;
 } Sv_native_func;
 
 typedef struct Sv_native_closure {
     Sv_native_func_t func;
-    unsigned arity, rest, bound_num;
+    unsigned arity, bound_num;
+    unsigned char flags;
     Sv *bound_args[];
 } Sv_native_closure;
 
@@ -42,12 +44,12 @@ resize_args(Stu *stu, unsigned size)
 }
 
 extern Sv_native_func
-*Sv_native_func_new(Stu *stu, Sv_native_func_t func, unsigned arity, unsigned rest)
+*Sv_native_func_new(Stu *stu, Sv_native_func_t func, unsigned arity, unsigned char flags)
 {
     Sv_native_func *f = CHECKED_MALLOC(sizeof(*f));
     f->func = func;
     f->arity = arity;
-    f->rest = rest;
+    f->flags = flags;
     if (arity > stu->native_func_args_capacity)
         resize_args(stu, arity);
     return f;
@@ -55,9 +57,10 @@ extern Sv_native_func
 
 static Sv
 *Native_call(Stu *stu, Env *env, Sv_native_func_t f,
-             unsigned arity, unsigned rest, unsigned bound_num,
+             unsigned arity, unsigned flags, unsigned bound_num,
              Sv **arg_array, Sv *args)
 {
+    int rest = flags & SV_NATIVE_FUNC_REST;
     if (rest)
         --arity;
     while (!IS_NIL(args) && arity > 0) {
@@ -71,7 +74,7 @@ static Sv
         Sv_native_closure *c = CHECKED_MALLOC(
             sizeof(*c) + bound_num * sizeof(Sv*));
         c->arity = arity;
-        c->rest = rest;
+        c->flags = flags;
         c->func = f;
         c->bound_num = bound_num;
         memcpy(c->bound_args, stu->native_func_args, bound_num * sizeof(Sv*));
@@ -93,7 +96,7 @@ extern Sv
 *Sv_native_func_call(Stu *stu, Env *env, Sv_native_func *f, Sv *args)
 {
     return Native_call(
-        stu, env, f->func, f->arity, f->rest, 0, stu->native_func_args, args);
+        stu, env, f->func, f->arity, f->flags, 0, stu->native_func_args, args);
 }
 
 extern Sv
@@ -101,14 +104,14 @@ extern Sv
 {
     memcpy(stu->native_func_args, f->bound_args, f->bound_num * sizeof(Sv*));
     return Native_call(
-        stu, env, f->func, f->arity, f->rest, f->bound_num,
+        stu, env, f->func, f->arity, f->flags, f->bound_num,
         stu->native_func_args + f->bound_num, args);
 }
 
 extern Sv
-*Sv_native_func_register(Stu *stu, const char *name, Sv_native_func_t f, unsigned args, unsigned rest)
+*Sv_native_func_register(Stu *stu, const char *name, Sv_native_func_t f, unsigned args, unsigned flags)
 {
-    Sv *x = Sv_new_native_func(stu, f, args, rest);
+    Sv *x = Sv_new_native_func(stu, f, args, flags);
     Env_main_put(stu, Sv_new_sym(stu, name), x);
     return x;
 }

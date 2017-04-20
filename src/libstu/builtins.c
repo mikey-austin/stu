@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2016, 2017 Mikey Austin <mikey@jackiemclean.net>
+ * Copyright (c) 2017 Raphael Sousa Santos <contact@raphaelss.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,12 +19,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "gc.h"
-#include "svlist.h"
 #include "builtins.h"
+#include "env.h"
+#include "gc.h"
+#include "native_func.h"
 #include "stu_private.h"
 #include "sv.h"
-#include "native_func.h"
+#include "svlist.h"
 
 typedef enum {
   INTEGER,
@@ -32,41 +34,45 @@ typedef enum {
 } value_type;
 
 #define DEF(name, func, nargs, rest) Sv_native_func_register((stu), (name), (func), (nargs), (rest))
+#define DEFAULT SV_NATIVE_FUNC_DEFAULT
+#define REST SV_NATIVE_FUNC_REST
+#define PURE SV_NATIVE_FUNC_PURE
 extern void
 Builtin_init(Stu *stu)
 {
-    DEF("defmacro", Builtin_defmacro, 3, 1 );
-    DEF("+", Builtin_add, 1, 1);
-    DEF("-", Builtin_sub, 1, 1);
-    DEF("*", Builtin_mul, 1, 1);
-    DEF("/", Builtin_div, 1, 1);
-    DEF("quote", Builtin_quote, 1, 0);
-    DEF("def", Builtin_def, 2, 0);
-    DEF("cons", Builtin_cons, 2, 0);
-    DEF("list", Builtin_list, 1, 1);
-    DEF("\xce\xbb", Builtin_lambda, 2, 1);
-    DEF("lambda", Builtin_lambda, 2, 1);
-    DEF("macroexpand-1", Builtin_macroexpand_1, 1, 0);
-    DEF("macroexpand", Builtin_macroexpand, 1, 0);
-    DEF("progn", Builtin_progn, 1, 0);
-    DEF("eval", Builtin_eval, 1, 0);
-    DEF("car", Builtin_car, 1, 0);
-    DEF("cdr", Builtin_cdr, 1, 0);
-    DEF("reverse", Builtin_reverse, 1, 0);
-    DEF("if", Builtin_if, 3, 1);
-    DEF("read", Builtin_read, 1, 0);
-    DEF("print", Builtin_print, 1, 0);
-    DEF("=", Builtin_eq, 1, 1);
-    DEF(">", Builtin_gt, 1, 1);
-    DEF("<", Builtin_lt, 1, 1);
-    DEF(">=", Builtin_gte, 1, 1);
-    DEF("<=", Builtin_lte, 1, 1);
-    DEF("vector", Builtin_vector, 1, 1);
-    DEF("tuple-constructor", Builtin_tuple_constructor, 2, 0);
-    DEF("size", Builtin_size, 1, 0);
-    DEF("at", Builtin_at, 2, 0);
+    Sv *lambda = Sv_new_native_func(stu, Builtin_lambda, 2, REST);
+    Env_main_put(stu, Sv_new_sym(stu, "lambda"), lambda);
+    Env_main_put(stu, Sv_new_sym(stu, "\xce\xbb"), lambda);
+
+    DEF("defmacro", Builtin_defmacro, 3, REST);
+    DEF("+", Builtin_add, 1, REST | PURE);
+    DEF("-", Builtin_sub, 1, REST | PURE);
+    DEF("*", Builtin_mul, 1, REST | PURE);
+    DEF("/", Builtin_div, 1, REST | PURE);
+    DEF("quote", Builtin_quote, 1, PURE);
+    DEF("def", Builtin_def, 2, DEFAULT);
+    DEF("cons", Builtin_cons, 2, PURE);
+    DEF("list", Builtin_list, 1, REST | PURE);
+    DEF("macroexpand-1", Builtin_macroexpand_1, 1, DEFAULT);
+    DEF("macroexpand", Builtin_macroexpand, 1, DEFAULT);
+    DEF("progn", Builtin_progn, 1, DEFAULT);
+    DEF("eval", Builtin_eval, 1, DEFAULT);
+    DEF("car", Builtin_car, 1, PURE);
+    DEF("cdr", Builtin_cdr, 1, PURE);
+    DEF("reverse", Builtin_reverse, 1, PURE);
+    DEF("if", Builtin_if, 3, REST);
+    DEF("read", Builtin_read, 1, DEFAULT);
+    DEF("print", Builtin_print, 1, DEFAULT);
+    DEF("=", Builtin_eq, 1, REST | PURE);
+    DEF(">", Builtin_gt, 1, REST | PURE);
+    DEF("<", Builtin_lt, 1, REST | PURE);
+    DEF(">=", Builtin_gte, 1, REST | PURE);
+    DEF("<=", Builtin_lte, 1, REST | PURE);
+    DEF("vector", Builtin_vector, 1, REST | PURE);
+    DEF("tuple-constructor", Builtin_tuple_constructor, 2, PURE);
+    DEF("size", Builtin_size, 1, PURE);
+    DEF("at", Builtin_at, 2, PURE);
 }
-#undef DEF
 
 #define INIT_ACC(init) value_type acc_type = INTEGER, cur_type = INTEGER; \
                        Sv_rational racc, r; \

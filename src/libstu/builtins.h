@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2016, 2017 Mikey Austin <mikey@jackiemclean.net>
+ * Copyright (c) 2017 Raphael Sousa Santos <contact@raphaelss.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -17,43 +18,38 @@
 #ifndef BUILTINS_DEFINED
 #define BUILTINS_DEFINED
 
-#include "gc.h"
-#include "env.h"
-#include "sv.h"
+typedef struct Stu Stu;
+typedef struct Env Env;
+typedef struct Sv Sv;
 
-#define BUILTIN_SIMPLE 0
-#define BUILTIN_REST 1
-
-struct Stu;
-
-extern void Builtin_init(struct Stu *);
-extern Sv *Builtin_add(struct Stu *, Env *, Sv **);
-extern Sv *Builtin_sub(struct Stu *, Env *, Sv **);
-extern Sv *Builtin_mul(struct Stu *, Env *, Sv **);
-extern Sv *Builtin_div(struct Stu *, Env *, Sv **);
-extern Sv *Builtin_quote(struct Stu *, Env *, Sv **);
-extern Sv *Builtin_def(struct Stu *, Env *, Sv **);
-extern Sv *Builtin_cons(struct Stu *, Env *, Sv **);
-extern Sv *Builtin_list(struct Stu *, Env *, Sv **);
-extern Sv *Builtin_lambda(struct Stu *, Env *, Sv **);
-extern Sv *Builtin_defmacro(struct Stu *, Env *, Sv **);
-extern Sv *Builtin_macroexpand_1(struct Stu *, Env *, Sv **);
-extern Sv *Builtin_macroexpand(struct Stu *, Env *, Sv **);
-extern Sv *Builtin_progn(struct Stu *, Env *, Sv **);
-extern Sv *Builtin_eval(struct Stu *, Env *, Sv **);
-extern Sv *Builtin_car(struct Stu *, Env *, Sv **);
-extern Sv *Builtin_cdr(struct Stu *, Env *, Sv **);
-extern Sv *Builtin_reverse(struct Stu *, Env *, Sv **);
-extern Sv *Builtin_if(struct Stu *, Env *, Sv **);
-extern Sv *Builtin_eq(struct Stu *, Env *, Sv **);
-extern Sv *Builtin_gt(struct Stu *, Env *, Sv **);
-extern Sv *Builtin_lt(struct Stu *, Env *, Sv **);
-extern Sv *Builtin_gte(struct Stu *, Env *, Sv **);
-extern Sv *Builtin_lte(struct Stu *, Env *, Sv **);
-extern Sv *Builtin_read(struct Stu *, Env *, Sv **);
-extern Sv *Builtin_print(struct Stu *, Env *, Sv **);
-extern Sv *Builtin_vector(struct Stu *, Env *, Sv **);
-extern Sv *Builtin_tuple_constructor(struct Stu *, Env *, Sv **);
-extern Sv *Builtin_size(struct Stu *, Env *, Sv **);
-extern Sv *Builtin_at(struct Stu *, Env *, Sv **);
+extern void Builtin_init(Stu *);
+extern Sv *Builtin_add(Stu *, Env *, Sv **);
+extern Sv *Builtin_sub(Stu *, Env *, Sv **);
+extern Sv *Builtin_mul(Stu *, Env *, Sv **);
+extern Sv *Builtin_div(Stu *, Env *, Sv **);
+extern Sv *Builtin_quote(Stu *, Env *, Sv **);
+extern Sv *Builtin_def(Stu *, Env *, Sv **);
+extern Sv *Builtin_cons(Stu *, Env *, Sv **);
+extern Sv *Builtin_list(Stu *, Env *, Sv **);
+extern Sv *Builtin_lambda(Stu *, Env *, Sv **);
+extern Sv *Builtin_defmacro(Stu *, Env *, Sv **);
+extern Sv *Builtin_macroexpand_1(Stu *, Env *, Sv **);
+extern Sv *Builtin_macroexpand(Stu *, Env *, Sv **);
+extern Sv *Builtin_progn(Stu *, Env *, Sv **);
+extern Sv *Builtin_eval(Stu *, Env *, Sv **);
+extern Sv *Builtin_car(Stu *, Env *, Sv **);
+extern Sv *Builtin_cdr(Stu *, Env *, Sv **);
+extern Sv *Builtin_reverse(Stu *, Env *, Sv **);
+extern Sv *Builtin_if(Stu *, Env *, Sv **);
+extern Sv *Builtin_eq(Stu *, Env *, Sv **);
+extern Sv *Builtin_gt(Stu *, Env *, Sv **);
+extern Sv *Builtin_lt(Stu *, Env *, Sv **);
+extern Sv *Builtin_gte(Stu *, Env *, Sv **);
+extern Sv *Builtin_lte(Stu *, Env *, Sv **);
+extern Sv *Builtin_read(Stu *, Env *, Sv **);
+extern Sv *Builtin_print(Stu *, Env *, Sv **);
+extern Sv *Builtin_vector(Stu *, Env *, Sv **);
+extern Sv *Builtin_tuple_constructor(Stu *, Env *, Sv **);
+extern Sv *Builtin_size(Stu *, Env *, Sv **);
+extern Sv *Builtin_at(Stu *, Env *, Sv **);
 #endif
