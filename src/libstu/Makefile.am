@@ -1,11 +1,11 @@
 SUBDIRS = alloc
 ACLOCAL_AMFLAGS = -I m4
 include_HEADERS = stu.h
-noinst_HEADERS = builtins.h env.h gc.h hash.h native_func.h symtab.h utils.h sv.h svlist.h stu_private.h
+noinst_HEADERS = builtins.h env.h gc.h hash.h native_func.h symtab.h utils.h sv.h svlist.h stu_private.h types.h
 
 lib_LTLIBRARIES = libstu.la
 libstu_la_LIBADD = alloc/liballoc.la
-libstu_la_SOURCES = parser.y lexer.l builtins.c env.c gc.c hash.c native_func.c stu.c sv.c svlist.c symtab.c utils.c
+libstu_la_SOURCES = parser.y lexer.l builtins.c env.c gc.c hash.c native_func.c stu.c sv.c svlist.c symtab.c types.c utils.c
 libstu_la_LDFLAGS = -version-info 0:0:0
 
 pkgconfig_DATA = libstu.pc

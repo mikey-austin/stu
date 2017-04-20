@@ -172,27 +172,25 @@ extern Sv
         else
             return Sv_new_err(stu, "Vector argument is not a proper list");
 
-    Sv_tuple_type *type = CHECKED_MALLOC(sizeof *type);
+    Type t = Type_new(stu, Sv_new_sym(stu, "vector")->val.i, count);
 
-    type->name = Sv_new_sym(stu, "vector")->val.i;
-    type->arity = count;
-
-    return Sv_new_tuple(stu, type, sv);
+    return Sv_new_tuple(stu, t, sv);
 
 }
 
 extern Sv
-*Sv_new_tuple(struct Stu *stu, Sv_tuple_type *type, Sv *args) {
+*Sv_new_tuple(struct Stu *stu, Type type, Sv *args) {
+    unsigned arity = Type_arity(stu, type);
     Sv *x = Sv_new(stu, SV_TUPLE);
-    Sv_tuple *tup = CHECKED_MALLOC(sizeof(*tup) + type->arity * sizeof(Sv*));
+    Sv_tuple *tup = CHECKED_MALLOC(sizeof(*tup) + arity * sizeof(Sv*));
 
     unsigned i = 0;
-    while (!IS_NIL(args) && args->type == SV_CONS && i < type->arity) {
+    while (!IS_NIL(args) && args->type == SV_CONS && i < arity) {
         tup->values[i++] = CAR(args);
         args = CDR(args);
     }
 
-    if (!IS_NIL(args) || i != type->arity)
+    if (!IS_NIL(args) || i != arity)
         return Sv_new_err(stu, "List length doesn't match tuple arity");
 
     tup->type = type;
@@ -202,12 +200,11 @@ extern Sv
 }
 
 extern Sv
-*Sv_new_tuple_constructor(struct Stu *stu, Sv_tuple_type *tuple_type) {
+*Sv_new_tuple_constructor(struct Stu *stu, Type t) {
     Sv *x = Sv_new(stu, SV_TUPLE_CONSTRUCTOR);
-    x->val.tuple_constructor = tuple_type;
+    x->val.tuple_constructor = t;
     return x;
 }
-
 
 extern void
 Sv_destroy(Stu *stu, Sv **sv)
@@ -373,17 +370,17 @@ Sv_dump(Stu *stu, Sv *sv, FILE *out)
 
         case SV_TUPLE_CONSTRUCTOR:
             printf("<TUPLE_CONSTRUCTOR %s %u>",
-                   Symtab_get_name(stu, sv->val.tuple_constructor->name),
-                   sv->val.tuple_constructor->arity);
+                Symtab_get_name(stu, Type_name(stu, sv->val.tuple_constructor)),
+                Type_arity(stu, sv->val.tuple_constructor));
             break;
 
         case SV_TUPLE:
-            printf("[%s", Symtab_get_name(stu, sv->val.tuple->type->name));
-            for (unsigned i = 0; i < sv->val.tuple->type->arity; ++i) {
+            printf("[%s", Symtab_get_name(stu, Type_name(stu, sv->val.tuple->type)));
+            for (unsigned i = 0; i < Type_arity(stu, sv->val.tuple->type); ++i) {
                 putchar(' ');
                 Sv_dump(stu, sv->val.tuple->values[i], out);
             }
-            puts("]");
+            putchar(']');
             break;
         }
     }
@@ -402,13 +399,11 @@ static Sv
 *Sv_copy_tuple(Stu *stu, Sv *x)
 {
     Sv_tuple *t = x->val.tuple;
-    size_t size = sizeof(Sv_tuple) + t->type->arity * sizeof(Sv*);
-    Sv_tuple *t_copy = malloc(size);
-    if (t_copy == NULL)
-        err(1, "Sv_copy_tuple");
+    size_t size = sizeof(Sv_tuple) + Type_arity(stu, t->type) * sizeof(Sv*);
+    Sv_tuple *t_copy = CHECKED_MALLOC(size);
     memcpy(t_copy, t, size);
     Sv *copy = Sv_new(stu, SV_TUPLE);
-    copy->val.tuple =  t_copy;
+    copy->val.tuple = t_copy;
     return copy;
 }
 
@@ -562,7 +557,7 @@ static Sv
 {
     Sv *copy = Sv_copy(stu, x);
     Sv_tuple *t = copy->val.tuple;
-    unsigned size = t->type->arity;
+    unsigned size = Type_arity(stu, t->type);
     for (unsigned i = 0; i < size; ++i)
         t->values[i] = Sv_eval(stu, env, t->values[i]);
     return copy;

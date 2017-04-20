@@ -26,6 +26,7 @@
 #include "stu_private.h"
 #include "sv.h"
 #include "svlist.h"
+#include "types.h"
 
 typedef enum {
   INTEGER,
@@ -641,18 +642,17 @@ extern Sv
     Sv *name = args[0];
     Sv *arity = args[1];
 
-    if (name->type != SV_SYM || arity->type != SV_INT)
-        return NULL;
+    if (name->type != SV_SYM)
+        return Sv_new_err(stu, "tuple-constructor first argument not a symbol");
+
+    if (arity->type != SV_INT)
+        return Sv_new_err(stu, "tuple-constructor second argument not an integer");
 
     long num = arity->val.i;
     if (num < 0)
-        return NULL;
+        return Sv_new_err(stu, "tuple-costructor second argument lower than zero");
 
-    Sv_tuple_type *tt = malloc(sizeof(*tt));
-    if (tt == NULL)
-        return NULL;
-    tt->name = name->val.i;
-    tt->arity = num;
+    Type tt = Type_new(stu, name->val.i, arity->val.i);
 
     return Sv_new_tuple_constructor(stu, tt);
 }
@@ -662,8 +662,8 @@ extern Sv
 {
     Sv *tuple = args[0];
     if (tuple->type != SV_TUPLE)
-        return NULL;
-    return Sv_new_int(stu, tuple->val.tuple->type->arity);
+        return Sv_new_err(stu, "size argument not a tuple");
+    return Sv_new_int(stu, Type_arity(stu, tuple->val.tuple->type));
 }
 
 extern Sv
@@ -672,13 +672,12 @@ extern Sv
     Sv *index = args[0];
     Sv *tuple_sv = args[1];
     if (index->type != SV_INT)
-        return NULL;
+        return Sv_new_err(stu, "at first argument not an integer");
     if (tuple_sv->type != SV_TUPLE)
-        return NULL;
+        return Sv_new_err(stu, "at second argument not a tuple");
     Sv_tuple *tuple = tuple_sv->val.tuple;
     long i = index->val.i;
-    if (i < 0 || i > tuple->type->arity)
-        return NULL;
+    if (i < 0 || i > Type_arity(stu, tuple->type))
+        return Sv_new_err(stu, "at index out of bounds");
     return tuple->values[i];
-
 }

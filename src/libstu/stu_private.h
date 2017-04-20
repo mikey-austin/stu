@@ -18,6 +18,8 @@
 #ifndef STU_PRIVATE_DEFINED
 #define STU_PRIVATE_DEFINED
 
+#include "types.h"
+
 struct Svlist;
 struct Scope;
 struct Env;
@@ -52,8 +54,12 @@ typedef struct Stu {
     int stats_gc_scope_pushes;
     int stats_gc_scope_pops;
 
+    /* Native functions */
     struct Sv **native_func_args;
     unsigned native_func_args_capacity;
+
+    /* Types data */
+    struct Type_registry type_registry;
 
     /* Main environment. */
     struct Env *main_env;

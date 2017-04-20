@@ -21,6 +21,7 @@
 #include <stdio.h>
 
 #include "gc.h"
+#include "types.h"
 
 #define SV_CONS_REGISTERS 2
 #define SV_CAR_REG 0
@@ -66,13 +67,8 @@ struct Stu;
 
 typedef struct Sv *(*Sv_native_func_t)(struct Stu *, struct Env *, struct Sv **);
 
-typedef struct Sv_tuple_type {
-    long name;
-    unsigned arity;
-} Sv_tuple_type;
-
 typedef struct Sv_tuple {
-    Sv_tuple_type *type;
+    Type type;
     struct Sv *values[];
 } Sv_tuple;
 
@@ -105,7 +101,7 @@ union Sv_val {
     struct Sv *reg[SV_CONS_REGISTERS];
     struct Sv_ufunc *ufunc;
     struct Sv_tuple *tuple;
-    struct Sv_tuple_type *tuple_constructor;
+    struct Type tuple_constructor;
 };
 
 /* Core stu value. */
@@ -128,8 +124,8 @@ extern Sv *Sv_new_native_func(struct Stu *, Sv_native_func_t, unsigned, unsigned
 extern Sv *Sv_new_lambda(struct Stu *, struct Env *, Sv *, Sv *);
 extern Sv *Sv_new_special(struct Stu *, enum Sv_special_type type, Sv *body);
 extern Sv *Sv_new_vector(struct Stu *, Sv *);
-extern Sv *Sv_new_tuple(struct Stu *, Sv_tuple_type *, Sv *);
-extern Sv *Sv_new_tuple_constructor(struct Stu *, Sv_tuple_type *);
+extern Sv *Sv_new_tuple(struct Stu *, Type, Sv *);
+extern Sv *Sv_new_tuple_constructor(struct Stu *, Type);
 
 extern void Sv_dump(struct Stu *, Sv *sv, FILE *);
 extern void Sv_destroy(struct Stu *, Sv **);

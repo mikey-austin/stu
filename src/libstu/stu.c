@@ -80,6 +80,8 @@ extern Stu
     stu->native_func_args = NULL;
     stu->native_func_args_capacity = 0;
 
+    Type_registry_init(&stu->type_registry);
+
     PUSH_SCOPE(stu);
     Symtab_init(stu);
 
@@ -111,6 +113,7 @@ Stu_destroy(Stu **stu)
         Gc_sweep(s, 1);
         Alloc_destroy(&(s->sv_alloc));
         Alloc_destroy(&(s->env_alloc));
+        Type_registry_release(&s->type_registry);
         free(s->native_func_args);
         free(s);
     }
