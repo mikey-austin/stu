@@ -15,6 +15,7 @@
  */
 
 #include "stu_private.h"
+#include "sv.h"
 #include "types.h"
 #include "utils.h"
 
@@ -52,12 +53,13 @@ resize_arrays(Type_registry *reg)
 }
 
 extern Type
-Type_new(Stu *stu, long name, unsigned arity)
+Type_new(Stu *stu, Sv *name, unsigned arity)
 {
     Type t = {0};
     Type_registry *reg = &(stu->type_registry);
+    long name_i = name->val.i;
     for (unsigned i = 0; i < reg->size; ++i) {
-        if (reg->name[i] == name && reg->arity[i] == arity) {
+        if (reg->name[i] == name_i && reg->arity[i] == arity) {
             t.i = i;
             return t;
         }
@@ -65,10 +67,17 @@ Type_new(Stu *stu, long name, unsigned arity)
     if (reg->size == reg->capacity)
         resize_arrays(reg);
     t.i = reg->size++;
-    reg->name[t.i] = name;
+    reg->name[t.i] = name_i;
     reg->arity[t.i] = arity;
-    reg->value[t.i] = NULL;
+    reg->value[t.i] = Sv_new_tuple(stu, Type_new_str(stu, "tuple-type", 2),
+        Sv_cons(stu, name, Sv_cons(stu, Sv_new_int(stu, arity), Sv_nil)));
     return t;
+}
+
+extern Type
+Type_new_str(Stu *stu, const char *str, unsigned arity)
+{
+    return Type_new(stu, Sv_new_sym(stu, str), arity);
 }
 
 extern long
@@ -86,8 +95,5 @@ Type_arity(Stu *stu, Type t)
 extern Sv
 *Type_value(Stu *stu, Type t)
 {
-    Sv **value_ptr = stu->type_registry.value + t.i;
-    if (value_ptr == NULL) {
-    }
-    return *value_ptr;
+    return stu->type_registry.value[t.i];
 }

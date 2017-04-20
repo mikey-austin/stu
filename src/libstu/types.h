@@ -34,7 +34,8 @@ typedef struct Type {
 
 extern void Type_registry_init(Type_registry *);
 extern void Type_registry_release(Type_registry *);
-extern Type Type_new(Stu *, long, unsigned);
+extern Type Type_new(Stu *, Sv*, unsigned);
+extern Type Type_new_str(Stu *stu, const char *, unsigned);
 extern long Type_name(Stu *, Type);
 extern unsigned Type_arity(Stu *, Type);
 extern Sv *Type_value(Stu *, Type);

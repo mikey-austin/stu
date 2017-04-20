@@ -172,7 +172,7 @@ extern Sv
         else
             return Sv_new_err(stu, "Vector argument is not a proper list");
 
-    Type t = Type_new(stu, Sv_new_sym(stu, "vector")->val.i, count);
+    Type t = Type_new(stu, Sv_new_sym(stu, "vector"), count);
 
     return Sv_new_tuple(stu, t, sv);
 
@@ -255,6 +255,11 @@ Sv_destroy(Stu *stu, Sv **sv)
         case SV_NATIVE_CLOS:
             free((*sv)->val.clos);
             (*sv)->val.clos = NULL;
+            break;
+
+        case SV_TUPLE:
+            free((*sv)->val.tuple);
+            (*sv)->val.tuple = NULL;
             break;
 
         default:

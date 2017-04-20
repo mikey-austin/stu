@@ -73,6 +73,7 @@ Builtin_init(Stu *stu)
     DEF("tuple-constructor", Builtin_tuple_constructor, 2, PURE);
     DEF("size", Builtin_size, 1, PURE);
     DEF("at", Builtin_at, 2, PURE);
+    DEF("type-of", Builtin_type_of, 1, PURE);
 }
 
 #define INIT_ACC(init) value_type acc_type = INTEGER, cur_type = INTEGER; \
@@ -652,7 +653,7 @@ extern Sv
     if (num < 0)
         return Sv_new_err(stu, "tuple-costructor second argument lower than zero");
 
-    Type tt = Type_new(stu, name->val.i, arity->val.i);
+    Type tt = Type_new(stu, name, arity->val.i);
 
     return Sv_new_tuple_constructor(stu, tt);
 }
@@ -680,4 +681,39 @@ extern Sv
     if (i < 0 || i > Type_arity(stu, tuple->type))
         return Sv_new_err(stu, "at index out of bounds");
     return tuple->values[i];
+}
+
+extern Sv
+*Builtin_type_of(Stu *stu, Env *env, Sv **args)
+{
+    Sv *x = *args;
+    switch (x->type) {
+    case SV_NIL:
+        return x;
+    case SV_SYM:
+        return Sv_new_sym(stu, "symbol");
+    case SV_INT:
+        return Sv_new_sym(stu, "integer");
+    case SV_FLOAT:
+        return Sv_new_sym(stu, "float");
+    case SV_RATIONAL:
+        return Sv_new_sym(stu, "rational");
+    case SV_BOOL:
+        return Sv_new_sym(stu, "boolean");
+    case SV_STR:
+        return Sv_new_sym(stu, "string");
+    case SV_CONS:
+        return Sv_new_sym(stu, "cons");
+    case SV_NATIVE_FUNC:
+    case SV_NATIVE_CLOS:
+    case SV_LAMBDA:
+    case SV_TUPLE_CONSTRUCTOR:
+        return Sv_new_sym(stu, "function");
+    case SV_TUPLE:
+        return Type_value(stu, x->val.tuple->type);
+    case SV_SPECIAL:
+    case SV_ERR:
+    default:
+        return Sv_new_err(stu, "unknown type found in type-of");
+    }
 }
