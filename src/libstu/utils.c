@@ -57,7 +57,7 @@ extern void
 {
     void *ptr = malloc(size);
     if (ptr == NULL)
-      err(code, str);
+      err(code, "%s", str);
     return ptr;
 }
 
@@ -66,7 +66,7 @@ extern void
 {
     void *ptr = calloc(num, size);
     if (ptr == NULL)
-      err(code, str);
+      err(code, "%s", str);
     return ptr;
 }
 
@@ -75,7 +75,7 @@ extern void
 {
     ptr = realloc(ptr, size);
     if (ptr == NULL)
-      err(code, str);
+      err(code, "%s", str);
     return ptr;
 }
 

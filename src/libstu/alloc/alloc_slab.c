@@ -42,13 +42,13 @@ typedef struct AllocSlab {
 static void
 init_slab(AllocSlab *allocator, Slab *slab)
 {
-    slab->chunks = calloc(
-        allocator->slab_size, allocator->base.size);
+    slab->chunks = malloc(
+        allocator->slab_size * allocator->base.size);
     if (slab->chunks == NULL)
         err(1, "init_slab; could not allocate slab chunks");
 
-    slab->free_list = calloc(
-        allocator->slab_size, sizeof(*slab->free_list));
+    slab->free_list = malloc(
+        allocator->slab_size * sizeof(*slab->free_list));
     if (slab->free_list == NULL)
         err(1, "init_slab; could not allocate free list");
 }
@@ -190,7 +190,7 @@ AllocSlab_release(Alloc *base, void *to_release)
     if ((slab = find_slab(allocator, to_release)) != NULL) {
         release_chunk(slab, to_release);
     } else {
-        warnx("Chunk 0x%x not found in any slabs, ignoring",
+        warnx("Chunk 0x%lx not found in any slabs, ignoring",
               (unsigned long) to_release);
     }
 }
