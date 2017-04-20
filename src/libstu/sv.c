@@ -476,10 +476,10 @@ extern Sv
         case SV_TUPLE:
             y = Sv_copy_tuple(stu, x);
             break;
-        }
 
         default:
-            /* Fall through. */
+            break;
+        }
     }
 
     return y;
@@ -736,7 +736,7 @@ extern Sv
             return Sv_call(stu, env, y, CDR(x));
 
         default:
-            /* Fall through. */
+            break;
         }
 
     return Sv_new_err(stu, "first element is not a function");
