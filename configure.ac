@@ -35,7 +35,7 @@ AS_IF([test -z ${DOC_CSS}], [DOC_CSS="man.css"])
 
 # Memory allocation configuration.
 AC_ARG_VAR([ALLOCATOR], [Memory allocator module])
-AS_IF([test -z ${ALLOCATOR} || "x${ALLOCATOR}" = "xsystem" ], [
+AS_IF([test -z ${ALLOCATOR} -o "x${ALLOCATOR}" = "xsystem" ], [
     AC_DEFINE([ALLOC_SYSTEM], 1, [use standard system allocator])
 ])
 AS_IF([test "x${ALLOCATOR}" = "xslab" ], [

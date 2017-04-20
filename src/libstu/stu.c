@@ -51,6 +51,8 @@ extern Stu
     default_alloc = ALLOC_TYPE_SYS;
 #elif ALLOC_SLAB
     default_alloc = ALLOC_TYPE_SLAB;
+#else
+#  error "no memory allocator defined!"
 #endif
     stu->sv_alloc = Alloc_new(stu, sizeof(Sv), default_alloc);
     stu->env_alloc = Alloc_new(stu, sizeof(Env), default_alloc);
