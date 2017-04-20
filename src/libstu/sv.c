@@ -266,7 +266,7 @@ Sv_destroy(Stu *stu, Sv **sv)
             break;
         }
 
-        Alloc_release(stu->env_alloc, *sv);
+        Alloc_release(stu->sv_alloc, *sv);
         *sv = NULL;
     }
 }

@@ -48,9 +48,9 @@ extern Stu
 
     /* Initialize allocators. */
 #ifdef ALLOC_SYSTEM
-    default_alloc = ALLOC_SYS;
+    default_alloc = ALLOC_TYPE_SYS;
 #elif ALLOC_SLAB
-    default_alloc = ALLOC_SLAB;
+    default_alloc = ALLOC_TYPE_SLAB;
 #endif
     stu->sv_alloc = Alloc_new(stu, sizeof(Sv), default_alloc);
     stu->env_alloc = Alloc_new(stu, sizeof(Env), default_alloc);

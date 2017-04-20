@@ -34,11 +34,11 @@ extern Alloc
     base.size = size;
 
     switch (type) {
-    case ALLOC_SYS:
+    case ALLOC_TYPE_SYS:
         new = AllocSys_new(base);
         break;
 
-    case ALLOC_SLAB:
+    case ALLOC_TYPE_SLAB:
         new = AllocSlab_new(base);
         break;
 

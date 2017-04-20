@@ -20,8 +20,8 @@
 #include <stddef.h>
 
 enum Alloc_type {
-    ALLOC_SYS,
-    ALLOC_SLAB
+    ALLOC_TYPE_SYS,
+    ALLOC_TYPE_SLAB
 };
 
 typedef struct Stu Stu;

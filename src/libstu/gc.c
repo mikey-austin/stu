@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <err.h>
 
+#include "config.h"
 #include "env.h"
 #include "gc.h"
 #include "hash.h"

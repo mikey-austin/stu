@@ -25,7 +25,6 @@
 #define GC_TYPE_BITS  4
 #define GC_TYPE_SV    0x01
 #define GC_TYPE_ENV   0x02
-#define GC_THRESHOLD  10000
 
 #define PUSH_SCOPE(s)     Gc_scope_push((s))
 #define POP_SCOPE(s)      Gc_scope_pop((s))

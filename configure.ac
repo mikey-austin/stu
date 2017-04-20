@@ -44,8 +44,17 @@ AS_IF([test "x${ALLOCATOR}" = "xslab" ], [
 
 # Only relevant if the slab allocator is specified above.
 AC_ARG_VAR([SLAB_SIZE], [Default slab size for the slab allocator])
-AS_IF([test -z ${SLAB_SIZE} ], [
+AS_IF([test -z $SLAB_SIZE], [
     AC_DEFINE([SLAB_SIZE], 1000, [slab allocator slab size])
+], [
+    AC_DEFINE_UNQUOTED([SLAB_SIZE], $SLAB_SIZE, [slab allocator slab size])
+])
+
+AC_ARG_VAR([GC_THRESHOLD], [Number of allocations before a gc])
+AS_IF([test -z $GC_THRESHOLD], [
+    AC_DEFINE([GC_THRESHOLD], 1000, [number of allocations before a gc])
+], [
+    AC_DEFINE_UNQUOTED([GC_THRESHOLD], $GC_THRESHOLD, [number of allocations before a gc])
 ])
 
 # Readline support for repl.
