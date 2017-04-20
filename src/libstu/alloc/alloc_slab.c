@@ -26,10 +26,10 @@
 #define INITIAL_NUM_SLABS 5
 
 typedef struct Slab {
-    short *free_list;
+    int *free_list;
     void *chunks;
-    short free_list_head;
-    short chunk_head;
+    int free_list_head;
+    int chunk_head;
 } Slab;
 
 /* Slab allocator child class. */
@@ -38,7 +38,7 @@ typedef struct AllocSlab {
     Slab *slabs;
     int num_slabs;
     int used_slabs;
-    short slab_size;
+    int slab_size;
 } AllocSlab;
 
 static void
@@ -124,7 +124,7 @@ static Slab
 static void
 *next_chunk(AllocSlab *allocator, Slab *slab)
 {
-    short i;
+    int i;
     unsigned long start = (unsigned long) slab->chunks;
     void *chunk = NULL;
 
@@ -191,7 +191,7 @@ static Slab
 static void
 release_chunk(AllocSlab *allocator, Slab *slab, void *chunk)
 {
-    short i = (((unsigned long) chunk) - ((unsigned long) slab->chunks))
+    int i = (((unsigned long) chunk) - ((unsigned long) slab->chunks))
         / allocator->base.size;
 
     if (i > 0
