@@ -50,7 +50,8 @@ enum Sv_type {
     SV_LAMBDA,
     SV_SPECIAL,
     SV_TUPLE,
-    SV_TUPLE_CONSTRUCTOR
+    SV_TUPLE_CONSTRUCTOR,
+    SV_FOREIGN
 };
 
 enum Sv_special_type {
@@ -89,6 +90,13 @@ typedef struct Sv_rational {
     long d;
 } Sv_rational;
 
+typedef void (*Sv_foreign_destructor_t)(void *);
+
+typedef struct Sv_foreign {
+    void *obj;
+    Sv_foreign_destructor_t destructor;
+} Sv_foreign;
+
 /* Actual value container. */
 union Sv_val {
     long i;
@@ -102,6 +110,7 @@ union Sv_val {
     struct Sv_ufunc *ufunc;
     struct Sv_tuple *tuple;
     struct Type tuple_constructor;
+    struct Sv_foreign foreign;
 };
 
 /* Core stu value. */
@@ -126,6 +135,7 @@ extern Sv *Sv_new_special(struct Stu *, enum Sv_special_type type, Sv *body);
 extern Sv *Sv_new_vector(struct Stu *, Sv *);
 extern Sv *Sv_new_tuple(struct Stu *, Type, Sv *);
 extern Sv *Sv_new_tuple_constructor(struct Stu *, Type);
+extern Sv *Sv_new_foreign(struct Stu *, void *, Sv_foreign_destructor_t);
 
 extern void Sv_dump(struct Stu *, Sv *sv, FILE *);
 extern void Sv_destroy(struct Stu *, Sv **);
@@ -135,6 +145,7 @@ extern Sv *Sv_list(struct Stu *, Sv *);
 extern Sv *Sv_copy(struct Stu *, Sv *);
 extern Sv *Sv_expand(struct Stu *, Sv *);
 extern Sv *Sv_expand_1(struct Stu *, Sv *);
+extern void *Sv_get_foreign_obj(struct Stu *, Sv *);
 
 extern Sv *Sv_eval(struct Stu *, struct Env *, Sv *);
 extern Sv *Sv_eval_list(struct Stu *, struct Env *, Sv *);

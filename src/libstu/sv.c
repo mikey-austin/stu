@@ -206,6 +206,14 @@ extern Sv
     return x;
 }
 
+extern Sv
+*Sv_new_foreign(struct Stu *stu, void *o, Sv_foreign_destructor_t d) {
+    Sv *x = Sv_new(stu, SV_FOREIGN);
+    x->val.foreign.obj = o;
+    x->val.foreign.destructor = d;
+    return x;
+}
+
 extern void
 Sv_destroy(Stu *stu, Sv **sv)
 {
@@ -260,6 +268,14 @@ Sv_destroy(Stu *stu, Sv **sv)
         case SV_TUPLE:
             free((*sv)->val.tuple);
             (*sv)->val.tuple = NULL;
+            break;
+
+        case SV_FOREIGN:
+            if ((*sv)->val.foreign.destructor != NULL) {
+                (*sv)->val.foreign.destructor((*sv)->val.foreign.obj);
+                (*sv)->val.foreign.destructor = NULL;
+            }
+            (*sv)->val.foreign.obj = NULL;
             break;
 
         default:
@@ -558,6 +574,12 @@ extern Sv
     } while (IS_MACRO(Env_main_get(stu, head)));
 
     return x;
+}
+
+extern void
+*Sv_get_foreign_obj(Stu *stu, Sv *x)
+{
+    return x->type == SV_FOREIGN ? x->val.foreign.obj : NULL;
 }
 
 static Sv
