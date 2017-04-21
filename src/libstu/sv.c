@@ -390,7 +390,7 @@ Sv_dump(Stu *stu, Sv *sv, FILE *out)
             break;
 
         case SV_NIL:
-            printf("nil");
+            printf("()");
             break;
 
         case SV_TUPLE_CONSTRUCTOR:
