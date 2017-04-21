@@ -409,7 +409,7 @@ Sv_dump(Stu *stu, Sv *sv, FILE *out)
             break;
 
         case SV_FOREIGN:
-            printf("<foreign %x>", Sv_get_foreign_obj(stu, sv));
+            printf("<foreign %p>", Sv_get_foreign_obj(stu, sv));
             break;
         }
     }
