@@ -1,1 +1,1 @@
-((car (quote (100 200 300))) "read expects a string argument" "read argument must contain exactly one form")
+((car (quote (100 200 300))) <err "read expects a string argument"> <err "read argument must contain exactly one form">)

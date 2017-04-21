@@ -324,6 +324,10 @@ Sv_dump(Stu *stu, Sv *sv, FILE *out)
             break;
 
         case SV_ERR:
+            if (sv->val.buf)
+                printf("<err \"%s\">", sv->val.buf);
+            break;
+
         case SV_STR:
             if (sv->val.buf)
                 printf("\"%s\"", sv->val.buf);
@@ -390,7 +394,7 @@ Sv_dump(Stu *stu, Sv *sv, FILE *out)
             break;
 
         case SV_TUPLE_CONSTRUCTOR:
-            printf("<TUPLE_CONSTRUCTOR %s %u>",
+            printf("<tuple-constructor %s %u>",
                 Symtab_get_name(stu, Type_name(stu, sv->val.tuple_constructor)),
                 Type_arity(stu, sv->val.tuple_constructor));
             break;
@@ -402,6 +406,10 @@ Sv_dump(Stu *stu, Sv *sv, FILE *out)
                 Sv_dump(stu, sv->val.tuple->values[i], out);
             }
             putchar(']');
+            break;
+
+        case SV_FOREIGN:
+            printf("<foreign %x>", Sv_get_foreign_obj(stu, sv));
             break;
         }
     }
