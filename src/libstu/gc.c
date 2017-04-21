@@ -39,26 +39,32 @@ typedef struct Scope {
 } Scope;
 
 static void
-Gc_mark_sv(Stu *stu, Sv *sv)
+Gc_visit_sv(Stu *stu, Sv *sv, void (*action)(Stu *, Gc *))
 {
     if (sv) {
         switch (sv->type) {
         case SV_CONS:
-            Gc_mark(stu, (Gc *) CAR(sv));
-            Gc_mark(stu, (Gc *) CDR(sv));
+            action(stu, (Gc *) CAR(sv));
+            action(stu, (Gc *) CDR(sv));
             break;
 
         case SV_SPECIAL:
             if (sv->val.special) {
-                Gc_mark(stu, (Gc *) sv->val.special->body);
+                action(stu, (Gc *) sv->val.special->body);
+            }
+            break;
+
+        case SV_TUPLE:
+            for (unsigned i = 0; i < Type_arity(stu, sv->val.tuple->type); i++) {
+                action(stu, (Gc *) sv->val.tuple->values[i]);
             }
             break;
 
         case SV_LAMBDA:
             if (sv->val.ufunc) {
-                Gc_mark(stu, (Gc *) sv->val.ufunc->env);
-                Gc_mark(stu, (Gc *) sv->val.ufunc->formals);
-                Gc_mark(stu, (Gc *) sv->val.ufunc->body);
+                action(stu, (Gc *) sv->val.ufunc->env);
+                action(stu, (Gc *) sv->val.ufunc->formals);
+                action(stu, (Gc *) sv->val.ufunc->body);
             }
             break;
 
@@ -70,11 +76,11 @@ Gc_mark_sv(Stu *stu, Sv *sv)
 }
 
 static void
-Gc_mark_env(Stu *stu, Env *env)
+Gc_visit_env(Stu *stu, Env *env, void (*action)(Stu *, Gc *))
 {
     for (; env; env = env->prev) {
-        Gc_mark(stu, (Gc *) env);
-        Gc_mark(stu, (Gc *) env->val);
+        action(stu, (Gc *) env);
+        action(stu, (Gc *) env->val);
     }
 }
 
@@ -207,11 +213,45 @@ Gc_mark(Stu *stu, Gc *gc)
         GC_MARK(gc);
         switch (gc->flags >> GC_TYPE_BITS) {
         case GC_TYPE_SV:
-            Gc_mark_sv(stu, (Sv *) gc);
+            Gc_visit_sv(stu, (Sv *) gc, Gc_mark);
             break;
 
         case GC_TYPE_ENV:
-            Gc_mark_env(stu, (Env *) gc);
+            Gc_visit_env(stu, (Env *) gc, Gc_mark);
+            break;
+        }
+    }
+}
+
+extern void
+Gc_lock(Stu *stu, Gc *gc)
+{
+    if (gc && !GC_LOCKED(gc)) {
+        GC_LOCK(gc);
+        switch (gc->flags >> GC_TYPE_BITS) {
+        case GC_TYPE_SV:
+            Gc_visit_sv(stu, (Sv *) gc, Gc_lock);
+            break;
+
+        case GC_TYPE_ENV:
+            Gc_visit_env(stu, (Env *) gc, Gc_lock);
+            break;
+        }
+    }
+}
+
+extern void
+Gc_unlock(Stu *stu, Gc *gc)
+{
+    if (gc && !GC_LOCKED(gc)) {
+        GC_UNLOCK(gc);
+        switch (gc->flags >> GC_TYPE_BITS) {
+        case GC_TYPE_SV:
+            Gc_visit_sv(stu, (Sv *) gc, Gc_unlock);
+            break;
+
+        case GC_TYPE_ENV:
+            Gc_visit_env(stu, (Env *) gc, Gc_unlock);
             break;
         }
     }

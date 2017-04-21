@@ -56,6 +56,8 @@ extern Stu
 #endif
     stu->sv_alloc = Alloc_new(stu, sizeof(Sv), default_alloc);
     stu->env_alloc = Alloc_new(stu, sizeof(Env), default_alloc);
+    stu->sv_special_alloc = Alloc_new(stu, sizeof(Sv_special), default_alloc);
+    stu->sv_ufunc_alloc = Alloc_new(stu, sizeof(Sv_ufunc), default_alloc);
 
     /* Initialize interpreter. */
     stu->gc_scope_stack = NULL;
@@ -115,6 +117,8 @@ Stu_destroy(Stu **stu)
         Gc_sweep(s, 1);
         Alloc_destroy(&(s->sv_alloc));
         Alloc_destroy(&(s->env_alloc));
+        Alloc_destroy(&(s->sv_special_alloc));
+        Alloc_destroy(&(s->sv_ufunc_alloc));
         Type_registry_release(&s->type_registry);
         free(s->native_func_args);
         free(s);
@@ -157,7 +161,7 @@ extern Sv
     PUSH_SCOPE(stu);
     forms = Stu_parse_file(stu, file);
     result = Svlist_eval(stu, stu->main_env, forms);
-    GC_LOCK(result);
+    Gc_lock(stu, (Gc *) result);
     Svlist_destroy(&forms);
     POP_SCOPE(stu);
 
@@ -192,7 +196,7 @@ extern Sv
     PUSH_SCOPE(stu);
     forms = Stu_parse_buf(stu, buf);
     result = Svlist_eval(stu, stu->main_env, forms);
-    GC_LOCK(result);
+    Gc_lock(stu, (Gc *) result);
     Svlist_destroy(&forms);
     POP_SCOPE(stu);
 
@@ -202,7 +206,7 @@ extern Sv
 extern void
 Stu_release_val(Stu *stu, Sv *sv)
 {
-    GC_UNLOCK(sv);
+    Gc_unlock(stu, (Gc *) sv);
 }
 
 extern void

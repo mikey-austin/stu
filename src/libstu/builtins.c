@@ -690,27 +690,37 @@ extern Sv
     switch (x->type) {
     case SV_NIL:
         return x;
+
     case SV_SYM:
         return Sv_new_sym(stu, "symbol");
+
     case SV_INT:
         return Sv_new_sym(stu, "integer");
+
     case SV_FLOAT:
         return Sv_new_sym(stu, "float");
+
     case SV_RATIONAL:
         return Sv_new_sym(stu, "rational");
+
     case SV_BOOL:
         return Sv_new_sym(stu, "boolean");
+
     case SV_STR:
         return Sv_new_sym(stu, "string");
+
     case SV_CONS:
         return Sv_new_sym(stu, "cons");
+
     case SV_NATIVE_FUNC:
     case SV_NATIVE_CLOS:
     case SV_LAMBDA:
     case SV_TUPLE_CONSTRUCTOR:
         return Sv_new_sym(stu, "function");
+
     case SV_TUPLE:
         return Type_value(stu, x->val.tuple->type);
+
     case SV_SPECIAL:
     case SV_ERR:
     default:

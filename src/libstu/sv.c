@@ -138,7 +138,7 @@ extern Sv
 *Sv_new_special(Stu *stu, enum Sv_special_type type, Sv *body)
 {
     Sv *x = Sv_new(stu, SV_SPECIAL);
-    Sv_special *s = CHECKED_MALLOC(sizeof(*s));
+    Sv_special *s = Alloc_allocate(stu->sv_special_alloc);
 
     s->type = type;
     s->body = Sv_copy(stu, body);
@@ -151,7 +151,7 @@ extern Sv
 *Sv_new_lambda(Stu *stu, Env *env, Sv *formals, Sv *body)
 {
     Sv *x = Sv_new(stu, SV_LAMBDA);
-    Sv_ufunc *f = CHECKED_MALLOC(sizeof(*f));
+    Sv_ufunc *f = Alloc_allocate(stu->sv_ufunc_alloc);
 
     f->env = env;
     f->formals = formals;
@@ -241,7 +241,7 @@ Sv_destroy(Stu *stu, Sv **sv)
                 (*sv)->val.ufunc->env = NULL;
                 (*sv)->val.ufunc->formals = NULL;
                 (*sv)->val.ufunc->body = NULL;
-                free((*sv)->val.ufunc);
+                Alloc_release(stu->sv_ufunc_alloc, (*sv)->val.ufunc);
                 (*sv)->val.ufunc = NULL;
             }
             break;
@@ -250,7 +250,7 @@ Sv_destroy(Stu *stu, Sv **sv)
             /* GC will clean up special body. */
             if ((*sv)->val.special) {
                 (*sv)->val.special->body = NULL;
-                free((*sv)->val.special);
+                Alloc_release(stu->sv_special_alloc, (*sv)->val.special);
                 (*sv)->val.special = NULL;
             }
             break;
@@ -310,7 +310,7 @@ Sv_cons_dump(Stu *stu, Sv *sv, FILE *out)
             break;
         }
     } else {
-        err(1, "NULL value in CDR");
+        warnx("NULL value in CDR");
     }
 }
 
@@ -341,15 +341,17 @@ Sv_dump(Stu *stu, Sv *sv, FILE *out)
 
         case SV_SPECIAL:
             switch (sv->val.special->type) {
-                case SV_SPECIAL_COMMA:
-                    printf(",");
-                    break;
-                case SV_SPECIAL_COMMA_SPREAD:
-                    printf(",@");
-                    break;
-                case SV_SPECIAL_BACKQUOTE:
-                    printf("`");
-                    break;
+            case SV_SPECIAL_COMMA:
+                printf(",");
+                break;
+
+            case SV_SPECIAL_COMMA_SPREAD:
+                printf(",@");
+                break;
+
+            case SV_SPECIAL_BACKQUOTE:
+                printf("`");
+                break;
             }
 
             Sv_dump(stu, sv->val.special->body, out);

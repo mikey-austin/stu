@@ -58,6 +58,8 @@ typedef struct Gc {
 extern void Gc_collect(struct Stu *);
 extern void Gc_add(struct Stu *, Gc *);
 extern void Gc_del(struct Stu *, Gc *);
+extern void Gc_lock(struct Stu *, Gc *);
+extern void Gc_unlock(struct Stu *, Gc *);
 extern void Gc_mark(struct Stu *, Gc *);
 extern void Gc_sweep(struct Stu *, int);
 extern void Gc_scope_push(struct Stu *);

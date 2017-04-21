@@ -58,26 +58,35 @@ Type_new(Stu *stu, Sv *name, unsigned arity)
     Type t = {0};
     Type_registry *reg = &(stu->type_registry);
     long name_i = name->val.i;
+
     for (unsigned i = 0; i < reg->size; ++i) {
         if (reg->name[i] == name_i && reg->arity[i] == arity) {
             t.i = i;
             return t;
         }
     }
+
     if (reg->size == reg->capacity)
         resize_arrays(reg);
+
+    PUSH_SCOPE(stu);
     t.i = reg->size++;
     reg->name[t.i] = name_i;
     reg->arity[t.i] = arity;
     reg->value[t.i] = Sv_new_tuple(stu, Type_new_str(stu, "tuple-type", 2),
-        Sv_cons(stu, name, Sv_cons(stu, Sv_new_int(stu, arity), Sv_nil)));
+        Sv_cons(stu, name, Sv_cons(stu, Sv_new_int(stu, arity), NIL)));
+    Gc_lock(stu, (Gc *) reg->value[t.i]);
+    POP_SCOPE(stu);
+
     return t;
 }
 
 extern Type
 Type_new_str(Stu *stu, const char *str, unsigned arity)
 {
-    return Type_new(stu, Sv_new_sym(stu, str), arity);
+    Sv *name = Sv_new_sym(stu, str);
+    Gc_lock(stu, (Gc *) name);
+    return Type_new(stu, name, arity);
 }
 
 extern long
