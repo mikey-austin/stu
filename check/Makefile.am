@@ -6,11 +6,15 @@ INPUT_LOG_COMPILER = ./runner.sh
 
 # Functional test programs.
 TEST_LOG_COMPILER = ./test_prog_runner.sh
-check_PROGRAMS = test_hash.test
+check_PROGRAMS = test_hash.test test_multi_stu.test
 
 test_hash_test_CFLAGS = -I$(top_srcdir)/src
 test_hash_test_LDADD = $(top_builddir)/src/libstu/libstu.la
 test_hash_test_SOURCES = test_hash.c
+
+test_multi_stu_test_CFLAGS = -I$(top_srcdir)/src
+test_multi_stu_test_LDADD = $(top_builddir)/src/libstu/libstu.la
+test_multi_stu_test_SOURCES = test_multi_stu.c
 
 # All tests specified below.
 TESTS = 001_curried.input \
@@ -36,4 +40,5 @@ TESTS = 001_curried.input \
 		021_macroexpand.input \
 		022_native_closure.input \
 		023_type_of.input \
-		test_hash.test
+		test_hash.test \
+		test_multi_stu.test

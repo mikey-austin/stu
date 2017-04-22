@@ -39,6 +39,7 @@
  * stu interpreter instances.
  */
 Sv *Sv_nil = NULL;
+int Sv_interpreters = 0;
 
 extern Stu
 *Stu_new(void)
@@ -87,10 +88,13 @@ extern Stu
     PUSH_SCOPE(stu);
     Symtab_init(stu);
 
-    /* Setup NIL singleton. */
-    if (Sv_nil == NULL)
-        Sv_nil = Sv_new(stu, SV_NIL);
+    /* Setup NIL singleton outside of allocators and GC. */
+    if (Sv_nil == NULL) {
+        Sv_nil = CHECKED_CALLOC(1, sizeof(*Sv_nil));
+        Sv_nil->type = SV_NIL;
+    }
     Env_main_put(stu, Sv_new_sym(stu, "nil"), Sv_nil);
+    Sv_interpreters += 1;
 
     /* Make sure nil is the first symbol with an id of zero. */
     Symtab_get_id(stu, "nil");
@@ -111,6 +115,12 @@ Stu_destroy(Stu **stu)
 
     s = *stu;
     if (s) {
+        Sv_interpreters -= 1;
+        if (Sv_interpreters <= 0) {
+            free(Sv_nil);
+            Sv_nil = NULL;
+            Sv_interpreters = 0;
+        }
         Symtab_destroy(s);
         Gc_sweep(s, 1);
         Alloc_destroy(&(s->sv_alloc));
