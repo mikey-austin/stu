@@ -20,6 +20,7 @@
 #include <err.h>
 
 #include "config.h"
+#include "alloc/alloc.h"
 #include "env.h"
 #include "gc.h"
 #include "hash.h"
@@ -27,16 +28,6 @@
 #include "sv.h"
 #include "symtab.h"
 #include "utils.h"
-
-/*
- * Private scope structure to protect unregistered gc objects
- * from premature collection.
- */
-struct Scope;
-typedef struct Scope {
-    struct Scope *prev;
-    Gc *val;
-} Scope;
 
 static void
 Gc_visit_sv(Stu *stu, Sv *sv, void (*action)(Stu *, Gc *))
@@ -107,16 +98,10 @@ Gc_collect(Stu *stu)
     }
 }
 
-static Scope
-*Gc_new_scope()
-{
-    return CHECKED_CALLOC(1, sizeof(Scope));
-}
-
 extern void
 Gc_scope_push(Stu *stu)
 {
-    Scope *new = Gc_new_scope();
+    Scope *new = Alloc_allocate(stu->gc_scope_alloc);
 
     if (!stu->gc_scope_stack
         || (stu->gc_stack_size + 1) > stu->max_gc_stack_size)
@@ -143,7 +128,7 @@ Gc_scope_pop(Stu *stu)
 
     while (old) {
         prev = old->prev;
-        free(old);
+        Alloc_release(stu->gc_scope_alloc, old);
         old = prev;
     }
 
@@ -164,7 +149,7 @@ void Gc_scope_save(Stu *stu, Gc *gc)
         : NULL;
 
     if (top) {
-        new = Gc_new_scope();
+        new = Alloc_allocate(stu->gc_scope_alloc);
         new->prev = top;
         new->val = gc;
         stu->gc_scope_stack[stu->gc_stack_size - 1] = new;

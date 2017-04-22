@@ -58,6 +58,7 @@ extern Stu
     stu->env_alloc = Alloc_new(stu, sizeof(Env), default_alloc);
     stu->sv_special_alloc = Alloc_new(stu, sizeof(Sv_special), default_alloc);
     stu->sv_ufunc_alloc = Alloc_new(stu, sizeof(Sv_ufunc), default_alloc);
+    stu->gc_scope_alloc = Alloc_new(stu, sizeof(Scope), default_alloc);
 
     /* Initialize interpreter. */
     stu->gc_scope_stack = NULL;
@@ -119,6 +120,7 @@ Stu_destroy(Stu **stu)
         Alloc_destroy(&(s->env_alloc));
         Alloc_destroy(&(s->sv_special_alloc));
         Alloc_destroy(&(s->sv_ufunc_alloc));
+        Alloc_destroy(&(s->gc_scope_alloc));
         Type_registry_release(&s->type_registry);
         free(s->native_func_args);
         free(s);

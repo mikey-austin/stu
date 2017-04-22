@@ -36,6 +36,7 @@ typedef struct Stu {
     struct Alloc *env_alloc;
     struct Alloc *sv_special_alloc;
     struct Alloc *sv_ufunc_alloc;
+    struct Alloc *gc_scope_alloc;
 
     /* GC structures. */
     struct Scope **gc_scope_stack;

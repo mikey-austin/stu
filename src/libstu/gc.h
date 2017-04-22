@@ -46,14 +46,20 @@
                               Gc_collect(s)
 
 /* Forward declarations. */
-struct Gc;
 struct Stu;
 
+struct Gc;
 typedef struct Gc {
     struct Gc *next;
     struct Gc *prev;
     unsigned char flags; /* Contains "mark" & object type. */
 } Gc;
+
+struct Scope;
+typedef struct Scope {
+    struct Scope *prev;
+    Gc *val;
+} Scope;
 
 extern void Gc_collect(struct Stu *);
 extern void Gc_add(struct Stu *, Gc *);
