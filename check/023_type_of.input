@@ -17,5 +17,6 @@
   (type-of +)
   (type-of person)
   (type-of (person "Someone" 25))
+  (type-of (person "Someone else" 30))
   (type-of (at 0))
   (type-of (func 2)))

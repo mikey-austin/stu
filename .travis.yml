@@ -1,3 +1,7 @@
+notifications:
+  email:
+    - mikey@mikeyaustin.com
+    - contact@raphaelss.com
 language: c
 sudo: required
 dist: trusty
