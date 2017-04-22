@@ -19,8 +19,7 @@
 #include <string.h>
 
 #include <libstu/hash.h>
-#define TEST_OK(cond, msg) printf("%s...%s\n", (msg), ((cond) ? "OK" : "FAIL")); \
-                           if (!(cond)) failed++;
+#include "test.h"
 
 #define TEST_KEY1 "test key 1 - big"
 #define TEST_KEY2 "test key 2 - test data"
@@ -48,10 +47,12 @@ main(void)
 {
     Hash *hash;
     char *s, *s1, *s2, *s3, *s4, *s5, *s6, *key;
-    int i, failed = 0;
+    int i;
 
     /* Test hash creation. */
     hash = Hash_new(destroy);
+
+    TEST_START;
 
     /* Create a hash string keys to string values. */
     TEST_OK((HASH_NUM_ENTRIES(hash) == 0), "Hash number of entries is zero as expected");
@@ -125,5 +126,5 @@ main(void)
     /* Destroy the hash. */
     Hash_destroy(&hash);
 
-    return failed;
+    TEST_FINISH;
 }
