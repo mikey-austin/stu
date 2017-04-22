@@ -89,8 +89,8 @@ Gc_collect(Stu *stu)
 
     if (stu->gc_allocs > GC_THRESHOLD) {
         Gc_mark(stu, (Gc *) stu->main_env);
-        for (i = 0; i < stu->gc_stack_size; i++)
-            Gc_mark_scope(stu, stu->gc_scope_stack[i]);
+        for (Scope *scope = stu->gc_scope_stack; scope; scope = scope->stack_prev)
+            Gc_mark_scope(stu, scope);
         Gc_sweep(stu, 0);
         stu->gc_allocs = 0;
         stu->stats_gc_cleaned += (before_collect - stu->stats_gc_managed_objects);
@@ -102,39 +102,25 @@ extern void
 Gc_scope_push(Stu *stu)
 {
     Scope *new = Alloc_allocate(stu->gc_scope_alloc);
-
-    if (!stu->gc_scope_stack
-        || (stu->gc_stack_size + 1) > stu->max_gc_stack_size)
-    {
-        if (stu->gc_scope_stack)
-            stu->max_gc_stack_size *= 2;
-        stu->gc_scope_stack = realloc(
-            stu->gc_scope_stack,
-            stu->max_gc_stack_size * sizeof(*(stu->gc_scope_stack)));
-        if (stu->gc_scope_stack == NULL)
-            err(1, "Gc_scope_push");
-    }
-
-    stu->gc_scope_stack[stu->gc_stack_size++] = new;
+    new->stack_prev = stu->gc_scope_stack;
+    stu->gc_scope_stack = new;
     stu->stats_gc_scope_pushes += 1;
 }
 
 extern void
 Gc_scope_pop(Stu *stu)
 {
-    Scope *old = stu->gc_scope_stack[stu->gc_stack_size - 1], *prev = NULL;
-    stu->gc_scope_stack[stu->gc_stack_size - 1] = NULL;
-    stu->gc_stack_size -= 1;
+    Scope *old = stu->gc_scope_stack, *prev = NULL;
+
+    if (old != NULL)
+        stu->gc_scope_stack = old->stack_prev;
+    else
+        return;
 
     while (old) {
         prev = old->prev;
         Alloc_release(stu->gc_scope_alloc, old);
         old = prev;
-    }
-
-    if (stu->gc_stack_size == 0) {
-        free(stu->gc_scope_stack);
-        stu->gc_scope_stack = NULL;
     }
 
     stu->stats_gc_scope_pops += 1;
@@ -144,15 +130,13 @@ Gc_scope_pop(Stu *stu)
 extern
 void Gc_scope_save(Stu *stu, Gc *gc)
 {
-    Scope *new, *top = stu->gc_stack_size > 0
-        ? stu->gc_scope_stack[stu->gc_stack_size - 1]
-        : NULL;
+    Scope *new, *top = stu->gc_scope_stack;
 
     if (top) {
         new = Alloc_allocate(stu->gc_scope_alloc);
-        new->prev = top;
+        new->prev = top->prev;
+        top->prev = new;
         new->val = gc;
-        stu->gc_scope_stack[stu->gc_stack_size - 1] = new;
     }
 }
 

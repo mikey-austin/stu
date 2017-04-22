@@ -57,6 +57,7 @@ typedef struct Gc {
 
 struct Scope;
 typedef struct Scope {
+    struct Scope *stack_prev;
     struct Scope *prev;
     Gc *val;
 } Scope;

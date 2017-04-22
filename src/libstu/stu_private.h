@@ -39,9 +39,7 @@ typedef struct Stu {
     struct Alloc *gc_scope_alloc;
 
     /* GC structures. */
-    struct Scope **gc_scope_stack;
-    int gc_stack_size;
-    int max_gc_stack_size;
+    struct Scope *gc_scope_stack;
 
     /* Entry points of interpreter gc-managed structure list. */
     struct Gc *gc_head;

@@ -62,9 +62,6 @@ extern Stu
 
     /* Initialize interpreter. */
     stu->gc_scope_stack = NULL;
-    stu->gc_stack_size = 0;
-    stu->max_gc_stack_size = 20;
-
     stu->gc_head = NULL;
     stu->gc_tail = NULL;
     stu->gc_allocs = 0;
