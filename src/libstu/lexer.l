@@ -71,6 +71,6 @@
 
 [ \t\n]
 
-. { fprintf(stderr, "Unknown character %c\n", *yytext); }
+.
 
 %%
