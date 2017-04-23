@@ -20,11 +20,9 @@
 #include <string.h>
 
 #include <config.h>
-#ifdef HAVE_EDITLINE_READLINE_H
-#  include <editline/readline.h>
-#endif
-
 #include <libstu/stu.h>
+
+#include "prompt.h"
 
 extern char *optarg;
 extern int optind, opterr, optopt;
@@ -32,6 +30,7 @@ extern int optind, opterr, optopt;
 int
 main(int argc, char **argv)
 {
+    char *input = NULL;
     int option = 0, repl = 0, files = 0, debug = 0;
     StuVal *result = NULL;
     Stu *stu = Stu_new();
@@ -63,23 +62,27 @@ main(int argc, char **argv)
     }
 
     if (!files || repl) {
+        Prompt_init(argv[0]);
+
         for (;;) {
-            char *input = readline("stu> ");
+            int nread = Prompt_readline(&input);
             if (input == NULL) {
                 printf("\nBye!\n");
                 break;
             }
 
-            if (*input != '\0') {
-                add_history(input);
+            if (*input != '\0' && *input != '\n') {
                 result = Stu_eval_buf(stu, input);
                 Stu_dump_val(stu, result, stdout);
                 Stu_release_val(stu, result);
+                Prompt_save(input);
                 printf("\n");
             }
 
             free(input);
         }
+
+        Prompt_finish();
     }
 
     if (debug)

@@ -60,6 +60,7 @@ AS_IF([test -z $GC_THRESHOLD], [
 # Readline support for repl.
 PKG_CHECK_MODULES([LIBEDIT], [libedit])
 AC_CHECK_HEADERS([editline/readline.h])
+AC_CHECK_HEADERS([histedit.h])
 CFLAGS="${CFLAGS} ${LIBEDIT_CFLAGS}"
 LIBS="${LIBS} ${LIBEDIT_LIBS}"
 
