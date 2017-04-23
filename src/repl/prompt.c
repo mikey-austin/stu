@@ -19,17 +19,19 @@
 #include <string.h>
 #include <err.h>
 
+#include <libstu/stu.h>
 #include "prompt.h"
 
 static EditLine *__editor = NULL;
 static History *__history = NULL;
 static HistEvent __hist_event;
+static int __cont = 0;
+static char *__form = NULL;
 
 static char
 *stu_prompt(EditLine *el)
 {
-    // TODO: change prompt depending on the context (eg continuation, ...)
-    return "stu> ";
+    return __cont ? "> " : "stu> ";
 }
 
 extern void
@@ -47,18 +49,44 @@ Prompt_init(const char *progname)
 }
 
 extern int
-Prompt_readline(char **line)
+Prompt_readline(char **form)
 {
-    int count = -1;
-    char const *input = NULL;
+    int count = 0, total = 0, size;
+    char const *line = NULL;
+    char *partial;
 
-    if ((input = el_gets(__editor, &count)) != NULL) {
-        *line = strdup(input);
-    } else {
-        *line = NULL;
-    }
+    *form = NULL;
+    do {
+        if ((line = el_gets(__editor, &count)) != NULL) {
+            total += count;
+            partial = strdup(line);
+            if (*form == NULL) {
+                *form = partial;
+            } else {
+                size = strlen(*form) + strlen(partial) + 1;
+                *form = realloc(*form, size);
+                strcat(*form, partial);
+                free(partial);
+            }
 
-    return count;
+            if (Stu_is_valid_form(NULL, *form) < 0) {
+                __cont = 1;
+            } else {
+                break;
+            }
+        } else if (!__cont) {
+            free(*form);
+            *form = NULL;
+            break;
+        } else {
+            break;
+        }
+    } while (__cont);
+
+    /* Explicitly reset continuation flag. */
+    __cont = 0;
+
+    return total;
 }
 
 extern void

@@ -127,6 +127,16 @@ extern StuVal *Stu_eval_file(Stu *, const char *);
 extern StuVal *Stu_eval_buf(Stu *, const char *);
 
 /**
+ * =head2 int Stu_is_valid_form(Stu *I<stu>, const char *I<buf>)
+ *
+ * Returns 1 if the form contained in I<buf> is syntactically valid
+ *         0 if the form is invalid
+ *        -1 if the form is valid so far, but incomplete
+ *
+ */
+extern int Stu_is_valid_form(Stu *, const char *);
+
+/**
  * =head2 void Stu_release_val(Stu *I<stu>, StuVal *I<val>)
  *
  * Release the specified I<val> back to the mercy of the garbage collector,

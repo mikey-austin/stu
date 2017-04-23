@@ -76,6 +76,10 @@
 
 <p>Same as <i>Stu_eval_file</i>, but parse the NUL-terminated buffer instead.</p>
 
+<h2 id="int-Stu_is_valid_form-Stu-stu-const-char-buf">int Stu_is_valid_form(Stu *<i>stu</i>, const char *<i>buf</i>)</h2>
+
+<p>Returns 1 if the form contained in <i>buf</i> is syntactically valid 0 if the form is invalid -1 if the form is valid so far, but incomplete</p>
+
 <h2 id="void-Stu_release_val-Stu-stu-StuVal-val">void Stu_release_val(Stu *<i>stu</i>, StuVal *<i>val</i>)</h2>
 
 <p>Release the specified <i>val</i> back to the mercy of the garbage collector, to be cleaned up at some unspecified time in the future.</p>

@@ -34,6 +34,11 @@
 #include "stu_private.h"
 #include "utils.h"
 
+#define VALIDATOR_STACK_SIZE 256
+#define FORM_VALID    1
+#define FORM_INVALID  0
+#define FORM_PARTIAL -1
+
 /*
  * NIL singleton object. This object is shared among multiple
  * stu interpreter instances.
@@ -210,6 +215,54 @@ extern Sv
     POP_SCOPE(stu);
 
     return result;
+}
+
+extern int
+Stu_is_valid_form(Stu *stu, const char *buf)
+{
+    int valid = FORM_VALID, tok = 0, top = -1;
+    char stack[VALIDATOR_STACK_SIZE], opposite;
+
+    if (buf) {
+        YY_BUFFER_STATE bp = yy_scan_string(buf);
+        yy_switch_to_buffer(bp);
+        while (tok = yylex()) {
+            switch (tok) {
+            case '(':
+            case '[':
+                if (++top >= VALIDATOR_STACK_SIZE) {
+                    warnx("cannot validate nested forms > %d levels",
+                          VALIDATOR_STACK_SIZE);
+                    valid = FORM_INVALID;
+                    goto done;
+                }
+                stack[top] = tok;
+                break;
+
+            case ')':
+            case ']':
+                opposite = tok == ')'
+                    ? '('
+                    : '[';
+                if (top < 0 || stack[top--] != opposite) {
+                    warnx("form contains unbalanced %c", (char) tok);
+                    valid = FORM_INVALID;
+                    goto done;
+                }
+                break;
+            }
+        }
+
+    done:
+        yy_delete_buffer(bp);
+    }
+
+    if (valid && top >= 0) {
+        /* This is valid *so far*, but is incomplete. */
+        valid = FORM_PARTIAL;
+    }
+
+    return valid;
 }
 
 extern void
