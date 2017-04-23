@@ -36,7 +36,7 @@ Evaluate the specified file and dump the result to STDOUT. If I<file> is "-", th
 
 =head1 AUTHOR
 
-B<stu> is written by Mikey Austin, Dmitry Petrov and others.
+B<stu> is written by Mikey Austin, Dmitry Petrov and Raphael Santos.
 
 =head1 SEE ALSO
 

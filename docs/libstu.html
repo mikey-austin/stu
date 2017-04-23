@@ -78,7 +78,20 @@
 
 <h2 id="int-Stu_is_valid_form-Stu-stu-const-char-buf">int Stu_is_valid_form(Stu *<i>stu</i>, const char *<i>buf</i>)</h2>
 
-<p>Returns 1 if the form contained in <i>buf</i> is syntactically valid 0 if the form is invalid -1 if the form is valid so far, but incomplete</p>
+<p>Scan the supplied <i>buf</i> and report on it&#39;s validity by returning:</p>
+
+<ul>
+
+<li><p>1 if the form contained in <i>buf</i> is syntactically valid</p>
+
+</li>
+<li><p>0 if the form is invalid</p>
+
+</li>
+<li><p>-1 if the form is valid so far, but incomplete</p>
+
+</li>
+</ul>
 
 <h2 id="void-Stu_release_val-Stu-stu-StuVal-val">void Stu_release_val(Stu *<i>stu</i>, StuVal *<i>val</i>)</h2>
 
@@ -94,7 +107,7 @@
 
 <h1 id="AUTHOR">AUTHOR</h1>
 
-<p><b>stu</b> is written by Mikey Austin, Dmitry Petrov and others.</p>
+<p><b>stu</b> is written by Mikey Austin, Dmitry Petrov and Raphael Santos.</p>
 
 <h1 id="SEE-ALSO">SEE ALSO</h1>
 

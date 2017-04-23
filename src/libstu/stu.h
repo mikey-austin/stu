@@ -129,9 +129,17 @@ extern StuVal *Stu_eval_buf(Stu *, const char *);
 /**
  * =head2 int Stu_is_valid_form(Stu *I<stu>, const char *I<buf>)
  *
- * Returns 1 if the form contained in I<buf> is syntactically valid
- *         0 if the form is invalid
- *        -1 if the form is valid so far, but incomplete
+ * Scan the supplied I<buf> and report on it's validity by returning:
+ *
+ * =over 4
+ *
+ * =item * 1 if the form contained in I<buf> is syntactically valid
+ *
+ * =item * 0 if the form is invalid
+ *
+ * =item * -1 if the form is valid so far, but incomplete
+ *
+ * =back
  *
  */
 extern int Stu_is_valid_form(Stu *, const char *);
@@ -165,7 +173,7 @@ extern void Stu_dump_stats(Stu *, FILE *);
 /**
  * =head1 AUTHOR
  *
- * B<stu> is written by Mikey Austin, Dmitry Petrov and others.
+ * B<stu> is written by Mikey Austin, Dmitry Petrov and Raphael Santos.
  *
  * =head1 SEE ALSO
  *
