@@ -43,6 +43,7 @@ Prompt_init(const char *progname)
         errx(1, "could not init editline");
     el_set(__editor, EL_PROMPT, &stu_prompt);
     el_set(__editor, EL_EDITOR, "emacs");
+    el_set(__editor, EL_BIND, "^R", "em-inc-search-prev", NULL);
 
     if ((__history = history_init()) == NULL)
         errx(1, "could not init editline history");
