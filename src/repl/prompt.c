@@ -22,11 +22,14 @@
 #include <libstu/stu.h>
 #include "prompt.h"
 
+#define HIST_FILE ".stu_history"
+
 static EditLine *__editor = NULL;
 static History *__history = NULL;
 static HistEvent __hist_event;
 static int __cont = 0;
 static char *__form = NULL;
+static char *__save_path = NULL;
 
 static char
 *stu_prompt(EditLine *el)
@@ -46,6 +49,21 @@ Prompt_init(const char *progname)
         errx(1, "could not init editline history");
     history(__history, &__hist_event, H_SETSIZE, 800);
     el_set(__editor, EL_HIST, history, __history);
+
+    /* Try and load history from a file. */
+    char *home = getenv("HOME");
+    if (!home)
+        home = "";
+
+    __save_path = calloc(
+        strlen(home) + strlen("/") + strlen(HIST_FILE) + 1, sizeof(char));
+    if (__save_path == NULL)
+        err(1, "history path");
+    strcat(__save_path, home);
+    strcat(__save_path, "/");
+    strcat(__save_path, HIST_FILE);
+
+    history(__history, &__hist_event, H_LOAD, __save_path);
 }
 
 extern int
@@ -98,6 +116,10 @@ Prompt_save(const char *to_save)
 extern void
 Prompt_finish(void)
 {
+    /* Flush history. */
+    history(__history, &__hist_event, H_SAVE, __save_path);
+    free(__save_path);
+    __save_path = NULL;
     history_end(__history);
     el_end(__editor);
 }
