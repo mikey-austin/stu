@@ -28,7 +28,6 @@ static EditLine *__editor = NULL;
 static History *__history = NULL;
 static HistEvent __hist_event;
 static int __cont = 0;
-static char *__form = NULL;
 static char *__save_path = NULL;
 
 static char
