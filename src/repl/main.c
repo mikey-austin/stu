@@ -80,6 +80,7 @@ main(int argc, char **argv)
             }
 
             free(input);
+            input = NULL;
         }
 
         Prompt_finish();
