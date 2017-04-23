@@ -56,7 +56,7 @@ Builtin_init(Stu *stu)
     DEF("list", Builtin_list, 1, REST | PURE);
     DEF("macroexpand-1", Builtin_macroexpand_1, 1, DEFAULT);
     DEF("macroexpand", Builtin_macroexpand, 1, DEFAULT);
-    DEF("progn", Builtin_progn, 1, DEFAULT);
+    DEF("progn", Builtin_progn, 1, REST);
     DEF("eval", Builtin_eval, 1, DEFAULT);
     DEF("car", Builtin_car, 1, PURE);
     DEF("cdr", Builtin_cdr, 1, PURE);
