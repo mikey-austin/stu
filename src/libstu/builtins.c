@@ -678,7 +678,7 @@ extern Sv
         return Sv_new_err(stu, "at second argument not a tuple");
     Sv_tuple *tuple = tuple_sv->val.tuple;
     long i = index->val.i;
-    if (i < 0 || i > Type_arity(stu, tuple->type))
+    if (i < 0 || i >= Type_arity(stu, tuple->type))
         return Sv_new_err(stu, "at index out of bounds");
     return tuple->values[i];
 }
