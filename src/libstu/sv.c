@@ -735,8 +735,8 @@ extern Sv
     Sv *cur = NULL, *y = NULL, *z = NULL;
     cur = x = Sv_expand(stu, x);
 
-    if (!cur)
-        return NULL;
+    if (x->type != SV_CONS)
+        return Sv_eval(stu, env, x);
 
     z = CAR(cur);
 

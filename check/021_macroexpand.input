@@ -4,7 +4,12 @@
 
 (defmacro top-level-macro (arg) `(inner-macro ,arg))
 
+(defmacro trivial (x) x)
+
 (list
  (inner-macro "world")
  (top-level-macro "universe")
- (macroexpand '(top-level-macro "amsterdam")))
+ (macroexpand '(top-level-macro "amsterdam"))
+ (trivial 2)
+ (trivial (list 1 2 3))
+ (trivial [1 2 3]))
