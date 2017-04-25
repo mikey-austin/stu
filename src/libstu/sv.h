@@ -116,7 +116,6 @@ union Sv_val {
 /* Core stu value. */
 typedef struct Sv {
     struct Gc gc;
-    unsigned char special;
     enum Sv_type type;
     union Sv_val val;
 } Sv;
@@ -153,5 +152,8 @@ extern Sv *Sv_eval_special(struct Stu *, struct Env *, Sv *);
 extern Sv *Sv_eval_special_cons(struct Stu *, struct Env *, Sv *);
 extern Sv *Sv_eval_sexp(struct Stu *, struct Env *, Sv *);
 extern Sv *Sv_call(struct Stu *, struct Env *, Sv *, Sv *);
+
+extern const char *Sv_special_form_sym_strings[];
+extern long Sv_special_form_sym_strings_size(void);
 
 #endif

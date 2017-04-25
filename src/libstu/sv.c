@@ -29,6 +29,24 @@
 #include "symtab.h"
 #include "utils.h"
 
+const char *Sv_special_form_sym_strings[] = {
+    "nil",
+    "quote",
+    "def",
+    "defmacro",
+    "lambda",
+    "λ",
+    "if",
+};
+
+extern long
+Sv_special_form_sym_strings_size(void)
+{
+    return sizeof(Sv_special_form_sym_strings) / sizeof(char *);
+}
+
+#define IS_SPECIAL_FORM_SYM(sv) ((sv)->val.i < Sv_special_form_sym_strings_size())
+
 extern Sv
 *Sv_new(Stu *stu, enum Sv_type type)
 {
@@ -106,15 +124,7 @@ extern Sv
 *Sv_new_sym(Stu *stu, const char *sym)
 {
     Sv *x = Sv_new(stu, SV_SYM);
-
-    x->special = !strcmp(sym, "quote")
-        || !strcmp(sym, "def")
-        || !strcmp(sym, "defmacro")
-        || !strcmp(sym, "lambda")
-        || !strcmp(sym, "λ")
-        || !strcmp(sym, "if");
     x->val.i = Symtab_get_id(stu, sym);
-
     return x;
 }
 
@@ -421,7 +431,6 @@ static Sv
 *Sv_copy_sym(Stu *stu, Sv *x)
 {
     Sv *y = Sv_new(stu, SV_SYM);
-    y->special = x->special;
     y->val.i = x->val.i;
     return y;
 }
@@ -740,7 +749,7 @@ extern Sv
 
     z = CAR(cur);
 
-    if (z && z->special) {
+    if (z->type == SV_SYM && IS_SPECIAL_FORM_SYM(z)) {
         /* Only evaluate the head, leaving tail intact. */
         y = Sv_eval(stu, env, z);
     } else {

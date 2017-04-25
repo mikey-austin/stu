@@ -101,8 +101,10 @@ extern Stu
     Env_main_put(stu, Sv_new_sym(stu, "nil"), Sv_nil);
     Sv_interpreters += 1;
 
-    /* Make sure nil is the first symbol with an id of zero. */
-    Symtab_get_id(stu, "nil");
+    /* Ensure nil and all special form symbols get the ids we expect */
+    for (long i = 0; i < Sv_special_form_sym_strings_size(); ++i)
+        if (Symtab_get_id(stu, Sv_special_form_sym_strings[i]) != i)
+            err(1, "stu_new");
 
     Builtin_init(stu);
     POP_SCOPE(stu);
