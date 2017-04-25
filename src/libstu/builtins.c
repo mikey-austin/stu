@@ -41,17 +41,10 @@ typedef enum {
 extern void
 Builtin_init(Stu *stu)
 {
-    Sv *lambda = Sv_new_native_func(stu, Builtin_lambda, 2, REST);
-    Env_main_put(stu, Sv_new_sym(stu, "lambda"), lambda);
-    Env_main_put(stu, Sv_new_sym(stu, "\xce\xbb"), lambda);
-
-    DEF("defmacro", Builtin_defmacro, 3, REST);
     DEF("+", Builtin_add, 1, REST | PURE);
     DEF("-", Builtin_sub, 1, REST | PURE);
     DEF("*", Builtin_mul, 1, REST | PURE);
     DEF("/", Builtin_div, 1, REST | PURE);
-    DEF("quote", Builtin_quote, 1, PURE);
-    DEF("def", Builtin_def, 2, DEFAULT);
     DEF("cons", Builtin_cons, 2, PURE);
     DEF("list", Builtin_list, 1, REST | PURE);
     DEF("macroexpand-1", Builtin_macroexpand_1, 1, DEFAULT);
@@ -61,7 +54,6 @@ Builtin_init(Stu *stu)
     DEF("car", Builtin_car, 1, PURE);
     DEF("cdr", Builtin_cdr, 1, PURE);
     DEF("reverse", Builtin_reverse, 1, PURE);
-    DEF("if", Builtin_if, 3, REST);
     DEF("read", Builtin_read, 1, DEFAULT);
     DEF("print", Builtin_print, 1, DEFAULT);
     DEF("=", Builtin_eq, 1, REST | PURE);
@@ -314,39 +306,6 @@ extern Sv
 }
 
 extern Sv
-*Builtin_quote(Stu *stu, Env *env, Sv **args)
-{
-    return *args;
-}
-
-extern Sv
-*Builtin_def(Stu *stu, Env *env, Sv **args)
-{
-    Sv *y = args[0];
-    Sv *z = args[1];
-
-    if (y && y->type != SV_SYM)
-        y = Sv_eval(stu, env, y);
-
-    /* We need a symbol in the head. */
-    if (!y || y->type != SV_SYM)
-        return Sv_new_err(stu, "'def' needs a symbol as the first argument");
-
-    /* Def in the top scope. */
-    z = Sv_eval(stu, env, z);
-    Env_main_put(stu, y, z);
-
-    /*
-     * If we installed a lambda, also install in the lambda's env so
-     * it can call itself.
-     */
-    if (z->type == SV_LAMBDA)
-        z->val.ufunc->env = Env_put(stu, z->val.ufunc->env, y, z);
-
-    return NIL;
-}
-
-extern Sv
 *Builtin_cons(Stu *stu, Env *env, Sv **args)
 {
     return Sv_cons(stu, args[0], args[1]);
@@ -356,44 +315,6 @@ extern Sv
 *Builtin_list(Stu *stu, Env *env, Sv **x)
 {
     return Sv_list(stu, *x);
-}
-
-extern Sv
-*Builtin_lambda(Stu *stu, Env *env, Sv **args)
-{
-    Sv *formals = NULL, *cur = NULL;
-
-    /* All formals should be symbols. */
-    formals = args[0];
-    if (formals->type == SV_CONS || IS_NIL(formals)) {
-        while (!IS_NIL(formals) && formals->type == SV_CONS && (cur = CAR(formals))) {
-            if (cur->type != SV_SYM) {
-                return Sv_new_err(
-                    stu, "'lambda' formals need to be symbols");
-            }
-            formals = CDR(formals);
-        }
-    } else {
-        return Sv_new_err(
-            stu, "'lambda' needs a list of symbols as the first argument");
-    }
-
-    formals = args[0];
-    cur = args[1];
-
-    return Sv_new_lambda(stu, env, formals, cur);
-}
-
-extern Sv
-*Builtin_defmacro(Stu *stu, Env *env, Sv **args)
-{
-    Sv *name = args[0];
-    Sv *lambda = Builtin_lambda(stu, env, args + 1);
-
-    lambda->val.ufunc->is_macro = 1;
-    Env_main_put(stu, name, lambda);
-
-    return name;
 }
 
 extern Sv
@@ -445,22 +366,6 @@ extern Sv
     if (x->type != SV_CONS)
         return Sv_new_err(stu, "'reverse' needs a single list argument");
     return Sv_reverse(stu, x);
-}
-
-extern Sv
-*Builtin_if(Stu *stu, Env *env, Sv **args)
-{
-    Sv *cond = args[0], *first = args[1], *second = args[2];
-
-    cond = Sv_eval(stu, env, cond);
-    if (!cond || cond->type != SV_BOOL)
-        return Sv_new_err(stu, "'if' condition must evaluate to a bool");
-
-    if (cond->val.i) {
-        return Sv_eval(stu, env, first);
-    } else {
-        return IS_NIL(second) ? second : Sv_eval(stu, env, CAR(second));
-    }
 }
 
 extern Sv

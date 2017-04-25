@@ -29,6 +29,7 @@
 #include "svlist.h"
 #include "lexer.h"
 #include "parser.h"
+#include "special_form.h"
 #include "symtab.h"
 #include "hash.h"
 #include "stu_private.h"
@@ -102,9 +103,9 @@ extern Stu
     Sv_interpreters += 1;
 
     /* Ensure nil and all special form symbols get the ids we expect */
-    for (long i = 0; i < Sv_special_form_sym_strings_size(); ++i)
-        if (Symtab_get_id(stu, Sv_special_form_sym_strings[i]) != i)
-            err(1, "stu_new");
+    if (Symtab_get_id(stu, "nil") != 0)
+        err(1, "stu_new");
+    Special_form_register_symbols(stu);
 
     Builtin_init(stu);
     POP_SCOPE(stu);

@@ -24,28 +24,11 @@
 #include "env.h"
 #include "gc.h"
 #include "native_func.h"
+#include "special_form.h"
 #include "stu_private.h"
 #include "sv.h"
 #include "symtab.h"
 #include "utils.h"
-
-const char *Sv_special_form_sym_strings[] = {
-    "nil",
-    "quote",
-    "def",
-    "defmacro",
-    "lambda",
-    "λ",
-    "if",
-};
-
-extern long
-Sv_special_form_sym_strings_size(void)
-{
-    return sizeof(Sv_special_form_sym_strings) / sizeof(char *);
-}
-
-#define IS_SPECIAL_FORM_SYM(sv) ((sv)->val.i < Sv_special_form_sym_strings_size())
 
 extern Sv
 *Sv_new(Stu *stu, enum Sv_type type)
@@ -742,6 +725,7 @@ extern Sv
 *Sv_eval_sexp(Stu *stu, Env *env, Sv *x)
 {
     Sv *cur = NULL, *y = NULL, *z = NULL;
+    Special_form_f special = NULL;
     cur = x = Sv_expand(stu, x);
 
     if (x->type != SV_CONS)
@@ -749,23 +733,21 @@ extern Sv
 
     z = CAR(cur);
 
-    if (z->type == SV_SYM && IS_SPECIAL_FORM_SYM(z)) {
-        /* Only evaluate the head, leaving tail intact. */
-        y = Sv_eval(stu, env, z);
-    } else {
-        /* Evaluate all arguments. */
-         while (!IS_NIL(cur)) {
-            if (cur->type == SV_CONS) {
-                y = Sv_cons(stu, Sv_eval(stu, env, CAR(cur)), y);
-                cur = CDR(cur);
-            } else {
-                y = Sv_cons(stu, cur, y);
-                break;
-            }
-         }
-         x = Sv_reverse(stu, y);
-         y = CAR(x);
+    if (z->type == SV_SYM && ((special = Special_form_get_f(stu, z)) != NULL))
+        return special(stu, env, CDR(cur));
+
+    /* Evaluate all arguments. */
+    while (!IS_NIL(cur)) {
+        if (cur->type == SV_CONS) {
+            y = Sv_cons(stu, Sv_eval(stu, env, CAR(cur)), y);
+            cur = CDR(cur);
+        } else {
+            y = Sv_cons(stu, cur, y);
+            break;
+        }
     }
+    x = Sv_reverse(stu, y);
+    y = CAR(x);
 
     /* The car should now be a function. */
     if (y)
