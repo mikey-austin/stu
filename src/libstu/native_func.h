@@ -20,6 +20,7 @@
 #define SV_NATIVE_FUNC_DEFAULT 0x00
 #define SV_NATIVE_FUNC_REST 0x01
 #define SV_NATIVE_FUNC_PURE 0x02
+#define SV_NATIVE_FUNC_MACRO 0x04
 
 /* Forward declarations */
 typedef struct Stu Stu;
@@ -34,5 +35,6 @@ extern Sv_native_func *Sv_native_func_new(Stu *, Sv_native_func_t, unsigned, uns
 extern Sv *Sv_native_func_call(Stu *,  Env *, Sv_native_func *, Sv *);
 extern Sv *Sv_native_closure_call(Stu *, Env *, Sv_native_closure *, Sv *);
 extern Sv *Sv_native_func_register(Stu *, const char *, Sv_native_func_t, unsigned, unsigned);
+extern int Sv_native_func_is_macro(Sv_native_func *);
 
 #endif

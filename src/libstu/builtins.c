@@ -38,6 +38,7 @@ typedef enum {
 #define DEFAULT SV_NATIVE_FUNC_DEFAULT
 #define REST SV_NATIVE_FUNC_REST
 #define PURE SV_NATIVE_FUNC_PURE
+#define MACRO SV_NATIVE_FUNC_MACRO
 extern void
 Builtin_init(Stu *stu)
 {

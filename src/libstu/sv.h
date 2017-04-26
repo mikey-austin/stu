@@ -28,7 +28,8 @@
 #define SV_CDR_REG 1
 
 #define IS_NIL(sv)   ((sv) && (sv)->type == SV_NIL ? 1 : ((sv) ? 0 : 1))
-#define IS_MACRO(sv) ((sv) && (sv)->type == SV_LAMBDA ? ((sv)->val.ufunc->is_macro) : 0)
+#define IS_MACRO(sv) ((sv) && (((sv)->type == SV_LAMBDA && ((sv)->val.ufunc->is_macro)) \
+                               || ((sv)->type == SV_NATIVE_FUNC && Sv_native_func_is_macro(sv->val.func))))
 #define CAR(sv)      ((sv) && (sv)->type == SV_CONS ? (sv)->val.reg[SV_CAR_REG] : NULL)
 #define CDR(sv)      ((sv) && (sv)->type == SV_CONS ? (sv)->val.reg[SV_CDR_REG] : NULL)
 #define CADR(sv)     ((sv) ? CAR(CDR((sv))) : NULL)

@@ -115,3 +115,9 @@ extern Sv
     Env_main_put(stu, Sv_new_sym(stu, name), x);
     return x;
 }
+
+extern int
+Sv_native_func_is_macro(Sv_native_func *f)
+{
+    return f->flags & SV_NATIVE_FUNC_MACRO;
+}
