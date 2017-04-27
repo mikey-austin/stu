@@ -65,6 +65,9 @@
                      (if (p a) (cons a b) b)) nil lst))
 (def filter grep)
 
+(defun append (& lists)
+  (foldl (foldr cons) () lists))
+
 ;; Max & min
 (defun max (a b) (if (> a b) a b))
 (defun min (a b) (if (< a b) a b))
