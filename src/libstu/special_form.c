@@ -23,14 +23,16 @@
 #include "sv.h"
 #include "symtab.h"
 
-static Sv *quote(Stu *stu, Env *env, Sv *args)
+static Sv
+*quote(Stu *stu, Env *env, Sv *args)
 {
     if (args->type != SV_CONS || CDR(args) != NIL)
         return Sv_new_err(stu, "quote requires a single argument");
     return CAR(args);
 }
 
-static Sv *def(Stu *stu, Env *env, Sv *args)
+static Sv
+*def(Stu *stu, Env *env, Sv *args)
 {
     Sv *y = NULL, *z = NULL;
     if (args->type != SV_CONS)
@@ -57,7 +59,8 @@ static Sv *def(Stu *stu, Env *env, Sv *args)
     return NIL;
 }
 
-static Sv *lambda(Stu *stu, Env *env, Sv *args)
+static Sv
+*lambda(Stu *stu, Env *env, Sv *args)
 {
     Sv *formals = NULL, *cur = NULL;
     if (args->type != SV_CONS)
@@ -84,7 +87,8 @@ static Sv *lambda(Stu *stu, Env *env, Sv *args)
     return Sv_new_lambda(stu, env, formals, cur);
 }
 
-static Sv *defmacro(Stu *stu, Env *env, Sv *args)
+static Sv
+*defmacro(Stu *stu, Env *env, Sv *args)
 {
     if (args->type != SV_CONS)
         return Sv_new_err(stu, "'defmacro' args is not a cons");
@@ -101,7 +105,8 @@ static Sv *defmacro(Stu *stu, Env *env, Sv *args)
     return NIL;
 }
 
-static Sv *stu_if(Stu *stu, Env *env, Sv *args)
+static Sv
+*stu_if(Stu *stu, Env *env, Sv *args)
 {
     if (args->type != SV_CONS)
         return Sv_new_err(stu, "'if' args is not a cons");
@@ -125,6 +130,12 @@ static Sv *stu_if(Stu *stu, Env *env, Sv *args)
     }
 }
 
+static Sv
+*progn(Stu *stu, Env *env, Sv *x)
+{
+    return Sv_eval_list(stu, env, x);
+}
+
 static char *sym_strings[] = {
     "nil",  // Not a special form, but already taken as symbol 0
     "quote",
@@ -133,6 +144,7 @@ static char *sym_strings[] = {
     "lambda",
     "λ",
     "if",
+    "progn"
 };
 
 static Special_form_f funcs[] = {
@@ -142,7 +154,8 @@ static Special_form_f funcs[] = {
     defmacro,
     lambda,
     lambda,
-    stu_if
+    stu_if,
+    progn
 };
 
 #define SYM_STRINGS_SIZE (sizeof(sym_strings) / sizeof(*sym_strings))

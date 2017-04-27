@@ -35,7 +35,6 @@ extern Sv *Builtin_lambda(Stu *, Env *, Sv **);
 extern Sv *Builtin_defmacro(Stu *, Env *, Sv **);
 extern Sv *Builtin_macroexpand_1(Stu *, Env *, Sv **);
 extern Sv *Builtin_macroexpand(Stu *, Env *, Sv **);
-extern Sv *Builtin_progn(Stu *, Env *, Sv **);
 extern Sv *Builtin_eval(Stu *, Env *, Sv **);
 extern Sv *Builtin_car(Stu *, Env *, Sv **);
 extern Sv *Builtin_cdr(Stu *, Env *, Sv **);
