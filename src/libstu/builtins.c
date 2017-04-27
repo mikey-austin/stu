@@ -364,7 +364,7 @@ extern Sv
 *Builtin_reverse(Stu *stu, Env *env, Sv **args)
 {
     Sv *x = *args;
-    if (x->type != SV_CONS)
+    if (x->type != SV_CONS && x->type != SV_NIL)
         return Sv_new_err(stu, "'reverse' needs a single list argument");
     return Sv_reverse(stu, x);
 }
