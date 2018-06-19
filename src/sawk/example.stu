@@ -1,0 +1,38 @@
+;;
+;; Example sawk application
+;;
+
+(def my-sawk-matcher
+     (sawk:compile
+      (list
+       (sawk:matcher
+        (sawk:predicate '(= $1 "1"))
+        (sawk:action '(print "hello " $4 "\n")))
+       (sawk:matcher
+        (sawk:predicate '(= $1 "2"))
+        (sawk:action '(print "goodbye!\n"))))))
+
+;;
+;; Should print:
+;;
+;;    hello string
+;;    goodbye!
+;;
+
+(sawk:apply my-sawk-matcher
+            '("1 some input string"
+              "2 some more input"
+              "3 some more input"))
+
+
+;;
+;; When applying my-sawk-matcher to the first line of input above we get:
+;;
+
+(eval (let (($0 "1 : some input string")
+            ($1 "1")
+            ($2 "some")
+            ($3 "input")
+            ($4 "string"))
+        (when (= $1 "1")
+          '(print "hello " $4 "\n"))))
