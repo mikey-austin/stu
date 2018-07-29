@@ -1,0 +1,4 @@
+;; Native posix regexp functionality
+(list
+ (re-match? #/^mary.*[[:digit:]]+/ "mary had 2 lambs") ;; #t
+ (re-match? #/[a-z]+/ "1234")) ;; #f

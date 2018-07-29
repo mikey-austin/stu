@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <regex.h>
 
 #include "builtins.h"
 #include "env.h"
@@ -66,6 +67,8 @@ Builtin_init(Stu *stu)
     DEF("size", Builtin_size, 1, PURE);
     DEF("at", Builtin_at, 2, PURE);
     DEF("type-of", Builtin_type_of, 1, PURE);
+    DEF("re-match?", Builtin_re_match_p, 2, PURE);
+    DEF("re-match", Builtin_re_match, 2, PURE);
 }
 
 #define INIT_ACC(init) value_type acc_type = INTEGER, cur_type = INTEGER; \
@@ -611,6 +614,9 @@ extern Sv
     case SV_CONS:
         return Sv_new_sym(stu, "cons");
 
+    case SV_REGEX:
+        return Sv_new_sym(stu, "regex");
+
     case SV_NATIVE_FUNC:
     case SV_NATIVE_CLOS:
     case SV_LAMBDA:
@@ -625,4 +631,63 @@ extern Sv
     default:
         return Sv_new_err(stu, "unknown type found in type-of");
     }
+}
+
+#define MAX_MATCHES 20
+extern Sv
+*Builtin_re_match(Stu *stu, Env *env, Sv **args)
+{
+    Sv *re = args[0];
+    Sv *str = args[1];
+    if (re->type != SV_REGEX)
+        return Sv_new_err(stu, "re-match first argument not a regex");
+    if (str->type != SV_STR)
+        return Sv_new_err(stu, "re-match second argument not a string");
+
+    regmatch_t matches[MAX_MATCHES + 1];
+    int ret = regexec(&re->val.re.compiled, str->val.buf, MAX_MATCHES + 1, matches, 0);
+    if (ret != 0) {
+        if (ret != REG_NOMATCH) {
+            char re_err[256];
+            regerror(ret, &re->val.re.compiled, re_err, sizeof(re_err));
+            return Sv_new_err(stu, re_err);
+        }
+        return NIL;
+    }
+
+    Sv *results = NIL;
+    size_t n_remaining = strlen(str->val.buf);
+    char match[n_remaining + 1];
+    memset(match, 0, sizeof(match) + 1);
+
+    for (int i = 1; i <= MAX_MATCHES; i++) {
+        int len = matches[i].rm_eo - matches[i].rm_so;
+        if ((n_remaining -= (len + 1)) <= 0) {
+            // Match doesn't fit.
+            break;
+        }
+        strncpy(match, (str->val.buf + matches[i].rm_so), len);
+        match[len] = '\0';
+        results = Sv_cons(stu, Sv_new_str(stu, match), results);
+    }
+
+    return Sv_reverse(stu, results);
+}
+
+extern Sv
+*Builtin_re_match_p(Stu *stu, Env *env, Sv **args)
+{
+    Sv *re = args[0];
+    Sv *str = args[1];
+    if (re->type != SV_REGEX)
+        return Sv_new_err(stu, "re-match first argument not a regex");
+    if (str->type != SV_STR)
+        return Sv_new_err(stu, "re-match second argument not a string");
+
+    regmatch_t matches[MAX_MATCHES + 1];
+    int ret = regexec(&re->val.re.compiled, str->val.buf, MAX_MATCHES + 1, matches, 0);
+    if (ret == REG_NOMATCH) {
+        return Sv_new_bool(stu, 0);
+    }
+    return Sv_new_bool(stu, 1);
 }

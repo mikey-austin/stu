@@ -45,6 +45,7 @@ TESTS = 001_curried.input \
 		022_native_closure.input \
 		023_type_of.input \
 		024_arity_checks.input \
+		025_re.input \
 		test_hash.test \
 		test_multi_stu.test \
 		test_valid_form.test

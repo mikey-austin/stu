@@ -19,4 +19,5 @@
   (type-of (person "Someone" 25))
   (type-of (person "Someone else" 30))
   (type-of (at 0))
-  (type-of (func 2)))
+  (type-of (func 2))
+  (type-of #/[a-z0-9](1|2|3|x|r)/))
