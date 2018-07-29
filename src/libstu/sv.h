@@ -19,6 +19,7 @@
 #define SV_DEFINED
 
 #include <stdio.h>
+#include <regex.h>
 
 #include "gc.h"
 #include "types.h"
@@ -52,7 +53,8 @@ enum Sv_type {
     SV_SPECIAL,
     SV_TUPLE,
     SV_TUPLE_CONSTRUCTOR,
-    SV_FOREIGN
+    SV_FOREIGN,
+    SV_REGEX
 };
 
 enum Sv_special_type {
@@ -98,6 +100,11 @@ typedef struct Sv_foreign {
     Sv_foreign_destructor_t destructor;
 } Sv_foreign;
 
+typedef struct Sv_re {
+    char *spec;
+    regex_t compiled;
+} Sv_re;
+
 /* Actual value container. */
 union Sv_val {
     long i;
@@ -112,6 +119,7 @@ union Sv_val {
     struct Sv_tuple *tuple;
     struct Type tuple_constructor;
     struct Sv_foreign foreign;
+    struct Sv_re re;
 };
 
 /* Core stu value. */
@@ -136,6 +144,7 @@ extern Sv *Sv_new_vector(struct Stu *, Sv *);
 extern Sv *Sv_new_tuple(struct Stu *, Type, Sv *);
 extern Sv *Sv_new_tuple_constructor(struct Stu *, Type);
 extern Sv *Sv_new_foreign(struct Stu *, void *, Sv_foreign_destructor_t);
+extern Sv *Sv_new_regex(struct Stu *, const char *);
 
 extern void Sv_dump(struct Stu *, Sv *sv, FILE *);
 extern void Sv_destroy(struct Stu *, Sv **);

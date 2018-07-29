@@ -172,7 +172,8 @@ extern Sv
 }
 
 extern Sv
-*Sv_new_tuple(struct Stu *stu, Type type, Sv *args) {
+*Sv_new_tuple(struct Stu *stu, Type type, Sv *args)
+{
     unsigned arity = Type_arity(stu, type);
     Sv *x = Sv_new(stu, SV_TUPLE);
     Sv_tuple *tup = CHECKED_MALLOC(sizeof(*tup) + arity * sizeof(Sv*));
@@ -193,17 +194,30 @@ extern Sv
 }
 
 extern Sv
-*Sv_new_tuple_constructor(struct Stu *stu, Type t) {
+*Sv_new_tuple_constructor(struct Stu *stu, Type t)
+{
     Sv *x = Sv_new(stu, SV_TUPLE_CONSTRUCTOR);
     x->val.tuple_constructor = t;
     return x;
 }
 
 extern Sv
-*Sv_new_foreign(struct Stu *stu, void *o, Sv_foreign_destructor_t d) {
+*Sv_new_foreign(struct Stu *stu, void *o, Sv_foreign_destructor_t d)
+{
     Sv *x = Sv_new(stu, SV_FOREIGN);
     x->val.foreign.obj = o;
     x->val.foreign.destructor = d;
+    return x;
+}
+
+extern Sv
+*Sv_new_regex(struct Stu *stu, const char *re)
+{
+    Sv *x = Sv_new(stu, SV_REGEX);
+    if (regcomp(&(x->val.re.compiled), re, REG_EXTENDED) != 0)
+        err(1, "Sv_new_re");
+    if ((x->val.re.spec = strdup(re)) == NULL)
+        err(1, "Sv_new_re");
     return x;
 }
 
@@ -269,6 +283,14 @@ Sv_destroy(Stu *stu, Sv **sv)
                 (*sv)->val.foreign.destructor = NULL;
             }
             (*sv)->val.foreign.obj = NULL;
+            break;
+
+        case SV_REGEX:
+            regfree(&((*sv)->val.re.compiled));
+            if ((*sv)->val.re.spec != NULL) {
+                free((*sv)->val.re.spec);
+                (*sv)->val.re.spec = NULL;
+            }
             break;
 
         default:
@@ -406,6 +428,10 @@ Sv_dump(Stu *stu, Sv *sv, FILE *out)
         case SV_FOREIGN:
             printf("<foreign %p>", Sv_get_foreign_obj(stu, sv));
             break;
+
+        case SV_REGEX:
+            printf("<regex #/%s/>", sv->val.re.spec);
+            break;
         }
     }
 }
@@ -493,6 +519,10 @@ extern Sv
 
         case SV_TUPLE:
             y = Sv_copy_tuple(stu, x);
+            break;
+
+        case SV_REGEX:
+            y = Sv_new_regex(stu, x->val.re.spec);
             break;
 
         default:

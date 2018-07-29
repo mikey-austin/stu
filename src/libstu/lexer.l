@@ -67,6 +67,13 @@
 
 [a-zA-Z0-9._*+~#/$=<>?!&\x80-\xf3-]+ { yylval.str = yytext; return SYMBOL; }
 
+"#"\/(\\.|[^/])*\/                   {
+                                         char *stripped = yytext + 2;
+                                         stripped[strlen(yytext) - 3] = '\0';
+                                         yylval.str = stripped;
+                                         return RE_SPEC;
+                                     }
+
 ";".*
 
 [ \t\n]
