@@ -102,6 +102,7 @@ typedef struct Sv_foreign {
 
 typedef struct Sv_re {
     char *spec;
+    int icase;
     regex_t compiled;
 } Sv_re;
 
@@ -144,7 +145,7 @@ extern Sv *Sv_new_vector(struct Stu *, Sv *);
 extern Sv *Sv_new_tuple(struct Stu *, Type, Sv *);
 extern Sv *Sv_new_tuple_constructor(struct Stu *, Type);
 extern Sv *Sv_new_foreign(struct Stu *, void *, Sv_foreign_destructor_t);
-extern Sv *Sv_new_regex(struct Stu *, const char *);
+extern Sv *Sv_new_regex(struct Stu *, const char *, int);
 
 extern void Sv_dump(struct Stu *, Sv *sv, FILE *);
 extern void Sv_destroy(struct Stu *, Sv **);

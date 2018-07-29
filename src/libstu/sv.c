@@ -211,10 +211,12 @@ extern Sv
 }
 
 extern Sv
-*Sv_new_regex(struct Stu *stu, const char *re)
+*Sv_new_regex(struct Stu *stu, const char *re, int icase)
 {
     Sv *x = Sv_new(stu, SV_REGEX);
-    if (regcomp(&(x->val.re.compiled), re, REG_EXTENDED) != 0)
+    x->val.re.icase = icase;
+    int flags = icase ? REG_ICASE : 0;
+    if (regcomp(&(x->val.re.compiled), re, (flags | REG_EXTENDED)) != 0)
         err(1, "Sv_new_re");
     if ((x->val.re.spec = strdup(re)) == NULL)
         err(1, "Sv_new_re");
@@ -430,7 +432,7 @@ Sv_dump(Stu *stu, Sv *sv, FILE *out)
             break;
 
         case SV_REGEX:
-            printf("<regex #/%s/>", sv->val.re.spec);
+            printf("<regex #/%s/%s>", sv->val.re.spec, (sv->val.re.icase ? "i" : ""));
             break;
         }
     }
@@ -522,7 +524,7 @@ extern Sv
             break;
 
         case SV_REGEX:
-            y = Sv_new_regex(stu, x->val.re.spec);
+            y = Sv_new_regex(stu, x->val.re.spec, x->val.re.icase);
             break;
 
         default:

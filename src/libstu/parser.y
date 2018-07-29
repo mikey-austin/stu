@@ -45,7 +45,7 @@ void yyerror (struct Stu *stu, Svlist **list, char const *s)
 
 %token <f>   FLOAT
 %token <i>   INTEGER BOOLEAN
-%token <str> STRING SYMBOL RE_SPEC
+%token <str> STRING SYMBOL RE_SPEC RE_SPEC_I
 %token <rational> RATIONAL
 
 %type <sv> list vector sexp forms atom elements
@@ -90,7 +90,8 @@ atom: INTEGER               { $$ = Sv_new_int(stu, $1); }
     | FLOAT                 { $$ = Sv_new_float(stu, $1); }
     | STRING                { $$ = Sv_new_str(stu, $1); }
     | SYMBOL                { $$ = Sv_new_sym(stu, $1); }
-    | RE_SPEC               { $$ = Sv_new_regex(stu, $1); }
+    | RE_SPEC               { $$ = Sv_new_regex(stu, $1, 0); }
+    | RE_SPEC_I             { $$ = Sv_new_regex(stu, $1, 1); }
     | RATIONAL              { $$ = Sv_new_rational(stu, $1.n, $1.d); }
     | BOOLEAN               { $$ = Sv_new_bool(stu, (short) $1); }
     ;

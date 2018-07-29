@@ -67,11 +67,13 @@
 
 [a-zA-Z0-9._*+~#/$=<>?!&\x80-\xf3-]+ { yylval.str = yytext; return SYMBOL; }
 
-"#"\/(\\.|[^/])*\/                   {
+"#"\/(\\.|[^/])*\/[i]?               {
                                          char *stripped = yytext + 2;
-                                         stripped[strlen(yytext) - 3] = '\0';
+                                         int trailing = 1;
+                                         if (yytext[strlen(yytext) - 1] == 'i') trailing++;
+                                         stripped[strlen(yytext) - (2 + trailing)] = '\0';
                                          yylval.str = stripped;
-                                         return RE_SPEC;
+                                         return trailing > 1 ? RE_SPEC_I : RE_SPEC;
                                      }
 
 ";".*
