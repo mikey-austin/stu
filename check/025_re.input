@@ -1,4 +1,8 @@
 ;; Native posix regexp functionality
-(list
- (re-match? #/^mary.*[[:digit:]]+/ "mary had 2 lambs") ;; #t
- (re-match? #/[a-z]+/ "1234")) ;; #f
+(let ((animal-re #/there are ([[:digit:]]+) (sheep|cows|mice)/))
+  (list
+   (re-match? #/^mary.*([[:digit:]]+)/ "mary had 2 lambs")
+   (re-match? #/[a-z]+/ "1234")
+   (re-match animal-re "there are 12 cows")
+   (re-match animal-re "there are 663 sheep")
+   (re-match animal-re "nothing to see here folks")))

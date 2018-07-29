@@ -665,7 +665,10 @@ extern Sv
         if ((n_remaining -= (len + 1)) <= 0) {
             // Match doesn't fit.
             break;
+        } else if (len == 0) {
+            continue;
         }
+
         strncpy(match, (str->val.buf + matches[i].rm_so), len);
         match[len] = '\0';
         results = Sv_cons(stu, Sv_new_str(stu, match), results);
