@@ -18,6 +18,8 @@
 #ifndef STU_PRIVATE_DEFINED
 #define STU_PRIVATE_DEFINED
 
+#include <setjmp.h>
+
 #include "types.h"
 
 struct Svlist;
@@ -45,6 +47,10 @@ typedef struct Stu {
     struct Gc *gc_head;
     struct Gc *gc_tail;
     int gc_allocs;
+
+    /* Store the last try marker/checkpoint. */
+    jmp_buf *last_try_marker;
+    struct Sv *last_exception;
 
     /* GC stats. */
     int stats_gc_managed_objects;

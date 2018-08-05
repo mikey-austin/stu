@@ -1,0 +1,23 @@
+(def throwing-func
+     (lambda (a b c)
+       (throw (list "I am throwing quicksmart" a b c))))
+
+(def another-nothing-func
+     (lambda (a b)
+       (throwing-func a b "hold on now")))
+
+(def harmless-func
+     (lambda (a)
+       (another-nothing-func a 314)))
+
+(def outer-func-with-try
+     (lambda ()
+       (try
+        ;; This function will invoke a function that throws.
+        (harmless-func 123)
+
+        ;; Simply output the recorded exception, which should
+        ;; be a string with the message.
+        (list $e))))
+
+(outer-func-with-try)

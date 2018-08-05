@@ -1,0 +1,19 @@
+(def another-nothing-func
+     (lambda (a b)
+       (list a b "no exception thrown")))
+
+(def harmless-func
+     (lambda (a)
+       (another-nothing-func a 314)))
+
+(def outer-func-with-try
+     (lambda ()
+       (try
+        ;; This function will _not_ throw an exception.
+        (harmless-func 123)
+
+        ;; This catch will not be invoked.
+        (list "exception -> " $e))))
+
+;; Start the dance.
+(outer-func-with-try)

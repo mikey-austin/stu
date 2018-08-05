@@ -54,4 +54,6 @@ extern Sv *Builtin_at(Stu *, Env *, Sv **);
 extern Sv *Builtin_type_of(Stu *, Env *, Sv **);
 extern Sv *Builtin_re_match(Stu *, Env *, Sv **);
 extern Sv *Builtin_re_match_p(Stu *, Env *, Sv **);
+extern Sv *Builtin_throw(Stu *, Env *, Sv **);
+
 #endif

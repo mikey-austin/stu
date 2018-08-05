@@ -73,6 +73,10 @@ extern Stu
     stu->gc_tail = NULL;
     stu->gc_allocs = 0;
 
+    /* Initialize exception handling. */
+    stu->last_try_marker = NULL;
+    stu->last_exception = NIL;
+
     stu->stats_gc_managed_objects = 0;
     stu->stats_gc_collections = 0;
     stu->stats_gc_frees = 0;

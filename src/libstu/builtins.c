@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <setjmp.h>
 #include <regex.h>
 
 #include "builtins.h"
@@ -69,6 +70,7 @@ Builtin_init(Stu *stu)
     DEF("type-of", Builtin_type_of, 1, PURE);
     DEF("re-match?", Builtin_re_match_p, 2, PURE);
     DEF("re-match", Builtin_re_match, 2, PURE);
+    DEF("throw", Builtin_throw, 1, PURE);
 }
 
 #define INIT_ACC(init) value_type acc_type = INTEGER, cur_type = INTEGER; \
@@ -693,4 +695,19 @@ extern Sv
         return Sv_new_bool(stu, 0);
     }
     return Sv_new_bool(stu, 1);
+}
+
+extern Sv
+*Builtin_throw(Stu *stu, Env *env, Sv **args) {
+    if (stu->last_try_marker == NULL) {
+        /* Can't jump anywhere. */
+        return Sv_new_err(stu, "'throw' called with no outer 'try' context");
+    }
+
+    /* Unwind the C stack back to last recorded try marker. */
+    stu->last_exception = args[0];
+    longjmp(*(stu->last_try_marker), 1);
+
+    /* Not reached. */
+    return NIL;
 }

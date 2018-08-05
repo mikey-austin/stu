@@ -16,6 +16,7 @@
  */
 
 #include <err.h>
+#include <setjmp.h>
 
 #include "env.h"
 #include "special_form.h"
@@ -136,6 +137,45 @@ static Sv
     return Sv_eval_list(stu, env, x);
 }
 
+static Sv
+*try(Stu *stu, Env *env, Sv *args)
+{
+    if (args->type != SV_CONS)
+        return Sv_new_err(stu, "'try' args is not a cons");
+
+    Sv *result = NIL;
+    int jmp_res = 0;
+    jmp_buf curr_marker;
+
+    Sv *to_try = CAR(args);
+    Sv *catch = CADR(args);
+
+    jmp_buf *prev_marker = stu->last_try_marker;
+    stu->last_try_marker = &curr_marker;
+
+    if ((jmp_res = setjmp(curr_marker)) != 0) {
+        /*
+         * We have "caught" an exception.
+         *
+         * TODO: Unwind the stu scope stacks depending on the number
+         *       of levels that have been wound back. Not doing this
+         *       means the garbage collector will never reclaim that
+         *       memory.
+         */
+        Env *catch_env = Env_put(
+            stu, env, Sv_new_sym(stu, "$e"), stu->last_exception);
+        result = Sv_eval(stu, catch_env, catch);
+    } else {
+        result = Sv_eval(stu, env, to_try);
+    }
+
+    /* Re-instate the previous try marker. */
+    stu->last_try_marker = prev_marker;
+    stu->last_exception = NIL;
+
+    return result;
+}
+
 static char *sym_strings[] = {
     "nil",  // Not a special form, but already taken as symbol 0
     "quote",
@@ -144,7 +184,8 @@ static char *sym_strings[] = {
     "lambda",
     "λ",
     "if",
-    "progn"
+    "progn",
+    "try"
 };
 
 static Special_form_f funcs[] = {
@@ -155,7 +196,8 @@ static Special_form_f funcs[] = {
     lambda,
     lambda,
     stu_if,
-    progn
+    progn,
+    try
 };
 
 #define SYM_STRINGS_SIZE (sizeof(sym_strings) / sizeof(*sym_strings))
