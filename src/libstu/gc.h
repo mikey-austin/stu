@@ -72,6 +72,7 @@ extern void Gc_sweep(struct Stu *, int);
 extern void Gc_scope_push(struct Stu *);
 extern void Gc_scope_pop(struct Stu *);
 extern void Gc_scope_save(struct Stu *, Gc *);
+extern int Gc_scope_stack_size(struct Stu *);
 extern void Gc_dump_stats(struct Stu *, FILE *);
 
 #endif

@@ -22,6 +22,7 @@
 #include "special_form.h"
 #include "stu_private.h"
 #include "sv.h"
+#include "gc.h"
 #include "symtab.h"
 
 static Sv
@@ -150,23 +151,32 @@ static Sv
     Sv *to_try = CAR(args);
     Sv *catch = CADR(args);
 
+    volatile int try_scope_stack_pos = Gc_scope_stack_size(stu);
     jmp_buf *prev_marker = stu->last_try_marker;
     stu->last_try_marker = &curr_marker;
 
-    if ((jmp_res = setjmp(curr_marker)) != 0) {
+    if ((jmp_res = setjmp(curr_marker)) == 0) {
+        result = Sv_eval(stu, env, to_try);
+    } else {
         /*
          * We have "caught" an exception.
-         *
-         * TODO: Unwind the stu scope stacks depending on the number
-         *       of levels that have been wound back. Not doing this
-         *       means the garbage collector will never reclaim that
-         *       memory.
          */
+        PUSH_N_SAVE(stu, stu->last_exception);
         Env *catch_env = Env_put(
             stu, env, Sv_new_sym(stu, "$e"), stu->last_exception);
         result = Sv_eval(stu, catch_env, catch);
-    } else {
-        result = Sv_eval(stu, env, to_try);
+        POP_SCOPE(stu);
+
+        /*
+         * Cleanup the no-longer-needed scope stacks between the try
+         * and the throw, and let the garbage collector re-claim the
+         * objects.
+         */
+        int curr_scope_stack_pos = Gc_scope_stack_size(stu);
+        int to_unwind = curr_scope_stack_pos - try_scope_stack_pos;
+        for (int i = to_unwind; i > 0; i--) {
+            POP_SCOPE(stu);
+        }
     }
 
     /* Re-instate the previous try marker. */

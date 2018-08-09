@@ -22,7 +22,6 @@
 #include "config.h"
 #include "alloc/alloc.h"
 #include "env.h"
-#include "gc.h"
 #include "hash.h"
 #include "stu_private.h"
 #include "sv.h"
@@ -253,6 +252,17 @@ Gc_sweep(Stu *stu, int unconditional)
         }
         cur = next;
     }
+}
+
+extern int
+Gc_scope_stack_size(struct Stu *stu) {
+    int size = 0;
+
+    for (Scope *s = stu->gc_scope_stack; s; s = s->stack_prev) {
+        size += 1;
+    }
+
+    return size;
 }
 
 extern void
