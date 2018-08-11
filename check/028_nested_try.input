@@ -1,0 +1,12 @@
+(def throwing-func
+     (lambda ()
+       (throw "thrown an exception")))
+
+(def func-that-does-not-throw
+     (lambda ()
+       (try (throwing-func)
+            (lambda (e) (list "inner exception message" "->" e)))))
+
+;; Outer try/catch.
+(try (func-that-does-not-throw)
+     (lambda (e) "should not be reached!"))

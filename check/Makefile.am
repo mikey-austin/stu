@@ -48,6 +48,7 @@ TESTS = 001_curried.input \
 		025_re.input \
 		026_try_and_throw.input \
 		027_try_no_throw.input \
+		028_nested_try.input \
 		test_hash.test \
 		test_multi_stu.test \
 		test_valid_form.test
