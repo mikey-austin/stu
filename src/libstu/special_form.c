@@ -159,12 +159,19 @@ static Sv
         result = Sv_eval(stu, env, to_try);
     } else {
         /*
-         * We have "caught" an exception.
+         * We have "caught" an exception, so evaluate the catch lambda
+         * with the exception as the argument. We quote the exception
+         * before passing to the catch, eg:
+         *
+         *   (catch-handler (quote exception))
          */
         PUSH_N_SAVE(stu, stu->last_exception);
-        Env *catch_env = Env_put(
-            stu, env, Sv_new_sym(stu, "$e"), stu->last_exception);
-        result = Sv_eval(stu, catch_env, catch);
+        Sv *handler = Sv_cons(
+            stu, catch, Sv_cons(
+                stu, Sv_cons(
+                    stu, Sv_new_sym(stu, "quote"), Sv_cons(
+                        stu, stu->last_exception, NIL)), NIL));
+        result = Sv_eval(stu, env, handler);
         POP_SCOPE(stu);
 
         /*

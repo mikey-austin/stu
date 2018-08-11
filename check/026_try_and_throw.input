@@ -18,6 +18,6 @@
 
         ;; Simply output the recorded exception, which should
         ;; be a string with the message.
-        (list $e))))
+        (lambda (e) (list e)))))
 
 (outer-func-with-try)

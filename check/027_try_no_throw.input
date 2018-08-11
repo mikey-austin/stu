@@ -13,7 +13,7 @@
         (harmless-func 123)
 
         ;; This catch will not be invoked.
-        (list "exception -> " $e))))
+        (lambda (e) (list "exception -> " e)))))
 
 ;; Start the dance.
 (outer-func-with-try)
