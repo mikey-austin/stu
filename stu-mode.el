@@ -4,7 +4,7 @@
 
 (defvar stu-font-lock-keywords
   '(("#/.*/i?" . font-lock-string-face)
-    ("\\((\\(?:def\\|if\\|lambda\\|quote\\|λ\\)\\)\\_>" . font-lock-keyword-face)))
+    ("\\((\\(?:def\\|if\\|try\\|throw\\|lambda\\|quote\\|λ\\)\\)\\_>" . font-lock-keyword-face)))
 
 (define-derived-mode stu-mode lisp-mode "Stu"
   "Major mode for editing stu code"
