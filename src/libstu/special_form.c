@@ -184,6 +184,15 @@ static Sv
         for (int i = to_unwind; i > 0; i--) {
             POP_SCOPE(stu);
         }
+
+        /*
+         * Sv_eval saves the result in the parent scope for us, however
+         * in this special case we had to manually pop potentially more
+         * than one scope due to the longjmp. Explicitly saving in the
+         * current scope here achieves the same effect as a regular call
+         * to Sv_eval.
+         */
+        SCOPE_SAVE(stu, result);
     }
 
     /* Re-instate the previous try marker. */

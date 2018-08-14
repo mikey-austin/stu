@@ -30,6 +30,7 @@
 #define POP_SCOPE(s)      Gc_scope_pop((s))
 #define POP_N_SAVE(s, x)  POP_SCOPE((s)); Gc_scope_save((s), (Gc *) (x))
 #define PUSH_N_SAVE(s, x) PUSH_SCOPE((s)); Gc_scope_save((s), (Gc *) (x))
+#define SCOPE_SAVE(s, x)  Gc_scope_save((s), (Gc *) (x))
 #define GC_SWEEPABLE(x)   ((x) ? !GC_MARKED((x)) && !GC_LOCKED((x)) : 0)
 #define GC_MARKED(x)      ((x) ? (((Gc *) x)->flags & GC_MARK_MASK) : 0)
 #define GC_MARK(x)        ((x) ? (((Gc *) x)->flags |= GC_MARK_MASK) : 0)
