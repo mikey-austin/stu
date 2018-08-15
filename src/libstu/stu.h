@@ -112,8 +112,9 @@ extern void Stu_destroy(Stu **);
  * =head2 StuVal *Stu_eval_file(Stu *I<stu>, const char *I<file>)
  *
  * Eval a NUL-terminated file path and return the result as a B<StuVal>.
- * The returned B<StuVal> object is managed by the garbage collector and need
- * not be explicitly cleaned.
+ * The returned B<StuVal> object is exempt from garbage collection, thus
+ * when the result is no longer required it must be released via a call
+ * to the I<Stu_release_val> function.
  *
  */
 extern StuVal *Stu_eval_file(Stu *, const char *);

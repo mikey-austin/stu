@@ -16,11 +16,11 @@
  */
 
 #include <err.h>
-#include <setjmp.h>
 
 #include "env.h"
 #include "special_form.h"
 #include "stu_private.h"
+#include "try.h"
 #include "sv.h"
 #include "gc.h"
 #include "symtab.h"
@@ -139,67 +139,9 @@ static Sv
 }
 
 static Sv
-*try(Stu *stu, Env *env, Sv *args)
+*try(Stu *stu, Env *env, Sv *x)
 {
-    if (args->type != SV_CONS)
-        return Sv_new_err(stu, "'try' args is not a cons");
-
-    Sv *result = NIL;
-    int jmp_res = 0;
-    jmp_buf curr_marker;
-
-    Sv *to_try = CAR(args);
-    Sv *catch = CADR(args);
-
-    volatile int try_scope_stack_pos = Gc_scope_stack_size(stu);
-    jmp_buf *prev_marker = stu->last_try_marker;
-    stu->last_try_marker = &curr_marker;
-
-    if ((jmp_res = setjmp(curr_marker)) == 0) {
-        result = Sv_eval(stu, env, to_try);
-    } else {
-        /*
-         * We have "caught" an exception, so evaluate the catch lambda
-         * with the exception as the argument. We quote the exception
-         * before passing to the catch, eg:
-         *
-         *   (catch-handler (quote exception))
-         */
-        PUSH_N_SAVE(stu, stu->last_exception);
-        Sv *handler = Sv_cons(
-            stu, catch, Sv_cons(
-                stu, Sv_cons(
-                    stu, Sv_new_sym(stu, "quote"), Sv_cons(
-                        stu, stu->last_exception, NIL)), NIL));
-        result = Sv_eval(stu, env, handler);
-        POP_SCOPE(stu);
-
-        /*
-         * Cleanup the no-longer-needed scope stacks between the try
-         * and the throw, and let the garbage collector re-claim the
-         * objects.
-         */
-        int curr_scope_stack_pos = Gc_scope_stack_size(stu);
-        int to_unwind = curr_scope_stack_pos - try_scope_stack_pos;
-        for (int i = to_unwind; i > 0; i--) {
-            POP_SCOPE(stu);
-        }
-
-        /*
-         * Sv_eval saves the result in the parent scope for us, however
-         * in this special case we had to manually pop potentially more
-         * than one scope due to the longjmp. Explicitly saving in the
-         * current scope here achieves the same effect as a regular call
-         * to Sv_eval.
-         */
-        SCOPE_SAVE(stu, result);
-    }
-
-    /* Re-instate the previous try marker. */
-    stu->last_try_marker = prev_marker;
-    stu->last_exception = NIL;
-
-    return result;
+    return Try_eval_stu_catch(stu, env, x);
 }
 
 static char *sym_strings[] = {

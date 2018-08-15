@@ -70,7 +70,7 @@
 
 <h2 id="StuVal-Stu_eval_file-Stu-stu-const-char-file">StuVal *Stu_eval_file(Stu *<i>stu</i>, const char *<i>file</i>)</h2>
 
-<p>Eval a NUL-terminated file path and return the result as a <b>StuVal</b>. The returned <b>StuVal</b> object is managed by the garbage collector and need not be explicitly cleaned.</p>
+<p>Eval a NUL-terminated file path and return the result as a <b>StuVal</b>. The returned <b>StuVal</b> object is exempt from garbage collection, thus when the result is no longer required it must be released via a call to the <i>Stu_release_val</i> function.</p>
 
 <h2 id="StuVal-Stu_eval_buf-Stu-stu-const-char-buf">StuVal *Stu_eval_buf(Stu *<i>stu</i>, const char *<i>buf</i>)</h2>
 
