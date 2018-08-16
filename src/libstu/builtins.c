@@ -704,8 +704,15 @@ extern Sv
         return Sv_new_err(stu, "'throw' called with no outer 'try' context");
     }
 
+    /*
+     * An exception in stu is a list containing the following:
+     *
+     *   '("argument to throw" . (call stack))
+     *
+     */
+    stu->last_exception = Sv_cons(stu, args[0], Call_stack_copy(stu));
+
     /* Unwind the C stack back to last recorded try marker. */
-    stu->last_exception = args[0];
     longjmp(*(stu->last_try_marker), 1);
 
     /* Not reached. */

@@ -29,6 +29,7 @@
 #include "sv.h"
 #include "symtab.h"
 #include "utils.h"
+#include "call_stack.h"
 
 extern Sv
 *Sv_new(Stu *stu, enum Sv_type type)
@@ -765,8 +766,12 @@ extern Sv
 
     z = CAR(cur);
 
-    if (z->type == SV_SYM && ((special = Special_form_get_f(stu, z)) != NULL))
-        return special(stu, env, CDR(cur));
+    if (z->type == SV_SYM && ((special = Special_form_get_f(stu, z)) != NULL)) {
+        Call_stack_push(stu, z);
+        y = special(stu, env, CDR(cur));
+        Call_stack_pop(stu);
+        return y;
+    }
 
     /* Evaluate all arguments. */
     while (!IS_NIL(cur)) {
@@ -788,7 +793,14 @@ extern Sv
         case SV_NATIVE_CLOS:
         case SV_LAMBDA:
         case SV_TUPLE_CONSTRUCTOR:
-            return Sv_call(stu, env, y, CDR(x));
+            if (z->type == SV_SYM) {
+                Call_stack_push(stu, z);
+            } else {
+                Call_stack_push(stu, y);
+            }
+            z = Sv_call(stu, env, y, CDR(x));
+            Call_stack_pop(stu);
+            return z;
 
         default:
             break;

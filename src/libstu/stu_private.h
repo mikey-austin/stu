@@ -65,6 +65,9 @@ typedef struct Stu {
     struct Sv **native_func_args;
     unsigned native_func_args_capacity;
 
+    /* Call stack. */
+    struct Sv *call_stack;
+
     /* Types data */
     struct Type_registry type_registry;
 

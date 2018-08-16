@@ -98,6 +98,8 @@ extern Stu
     PUSH_SCOPE(stu);
     Symtab_init(stu);
 
+    stu->call_stack = NIL;
+
     /* Setup NIL singleton outside of allocators and GC. */
     if (Sv_nil == NULL) {
         Sv_nil = CHECKED_CALLOC(1, sizeof(*Sv_nil));

@@ -1,1 +1,1 @@
-(("I am throwing quicksmart" 123 314 "hold on now"))
+(("I am throwing quicksmart" 123 314 "hold on now") "throw" "throwing-func" "another-nothing-func" "harmless-func" "try" "outer-func-with-try")

@@ -1,1 +1,1 @@
-("inner exception message" "->" "thrown an exception")
+("inner exception message" "->" ("thrown an exception" "throw" "throwing-func" "try" "func-that-does-not-throw" "try"))

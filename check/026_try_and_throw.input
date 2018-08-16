@@ -18,6 +18,6 @@
 
         ;; Simply output the recorded exception, which should
         ;; be a string with the message.
-        (lambda (e) (list e)))))
+        (lambda (e) e))))
 
 (outer-func-with-try)
