@@ -13,6 +13,7 @@ AC_PROG_INSTALL
 AC_CHECK_FUNCS([strdup])
 AC_CHECK_HEADERS([stdlib.h])
 AC_CHECK_HEADERS([string.h])
+AC_CHECK_HEADERS([stdbool.h])
 AC_CHECK_HEADERS([unistd.h])
 AC_PATH_PROG([POD2MAN], [pod2man])
 AC_PATH_PROG([POD2HTML], [pod2html])

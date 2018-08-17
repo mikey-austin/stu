@@ -26,7 +26,6 @@
 #include "gc.h"
 #include "sv.h"
 #include "env.h"
-#include "svlist.h"
 #include "stu_private.h"
 #include "parser.h"
 %}

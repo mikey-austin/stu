@@ -22,7 +22,6 @@
 
 #include "types.h"
 
-struct Svlist;
 struct Scope;
 struct Env;
 struct Hash;
@@ -84,7 +83,7 @@ extern struct Sv *Sv_nil;
 #define NIL Sv_nil
 
 /* Internal helper functions. */
-extern struct Svlist *Stu_parse_buf(Stu *, const char *);
-extern struct Svlist *Stu_parse_file(Stu *, const char *);
+extern struct Sv *Stu_parse_buf(Stu *, const char *);
+extern struct Sv *Stu_parse_file(Stu *, const char *);
 
 #endif

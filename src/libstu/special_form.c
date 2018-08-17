@@ -135,7 +135,7 @@ static Sv
 static Sv
 *progn(Stu *stu, Env *env, Sv *x)
 {
-    return Sv_eval_list(stu, env, x);
+    return Sv_eval_list(stu, env, x, false);
 }
 
 static Sv

@@ -26,7 +26,6 @@
 #include "builtins.h"
 #include "gc.h"
 #include "sv.h"
-#include "svlist.h"
 #include "lexer.h"
 #include "parser.h"
 #include "special_form.h"
@@ -150,10 +149,10 @@ Stu_destroy(Stu **stu)
     *stu = NULL;
 }
 
-extern Svlist
+extern Sv
 *Stu_parse_file(Stu *stu, const char *file)
 {
-    Svlist *list = Svlist_new();
+    Sv *list = NIL;
 
     if (!file || !strcmp(file, "-")) {
         yyin = stdin;
@@ -172,29 +171,28 @@ extern Svlist
         fclose(yyin);
     yylex_destroy();
 
-    return list;
+    return Sv_reverse(stu, list);
 }
 
 extern Sv
 *Stu_eval_file(Stu *stu, const char *file)
 {
-    Svlist *forms;
+    Sv *forms;
     Sv *result;
 
     PUSH_SCOPE(stu);
     forms = Stu_parse_file(stu, file);
-    result = Svlist_eval(stu, stu->main_env, forms);
+    result = Sv_eval_list(stu, stu->main_env, forms, true);
     Gc_lock(stu, (Gc *) result);
-    Svlist_destroy(&forms);
     POP_SCOPE(stu);
 
     return result;
 }
 
-extern Svlist
+extern Sv
 *Stu_parse_buf(Stu *stu, const char *buf)
 {
-    Svlist *list = Svlist_new();
+    Sv *list = NIL;
 
     if (buf) {
         YY_BUFFER_STATE bp = yy_scan_string(buf);
@@ -207,20 +205,19 @@ extern Svlist
         yy_delete_buffer(bp);
     }
 
-    return list;
+    return Sv_reverse(stu, list);
 }
 
 extern Sv
 *Stu_eval_buf(Stu *stu, const char *buf)
 {
-    Svlist *forms;
+    Sv *forms;
     Sv *result;
 
     PUSH_SCOPE(stu);
     forms = Stu_parse_buf(stu, buf);
-    result = Svlist_eval(stu, stu->main_env, forms);
+    result = Sv_eval_list(stu, stu->main_env, forms, true);
     Gc_lock(stu, (Gc *) result);
-    Svlist_destroy(&forms);
     POP_SCOPE(stu);
 
     return result;

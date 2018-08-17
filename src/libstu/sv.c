@@ -19,6 +19,7 @@
 #include <err.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #include "alloc/alloc.h"
 #include "env.h"
@@ -311,15 +312,11 @@ Sv_cons_dump(Stu *stu, Sv *sv, FILE *out)
     Sv *car = CAR(sv);
     Sv *cdr = CDR(sv);
     Sv_dump(stu, car, out);
-    if (cdr) {
+    if (!IS_NIL(cdr)) {
         switch (cdr->type) {
         case SV_CONS:
             printf(" ");
             Sv_cons_dump(stu, cdr, out);
-            break;
-
-        case SV_NIL:
-            /* Don't print terminating nil. */
             break;
 
         default:
@@ -327,8 +324,6 @@ Sv_cons_dump(Stu *stu, Sv *sv, FILE *out)
             Sv_dump(stu, cdr, out);
             break;
         }
-    } else {
-        warnx("NULL value in CDR");
     }
 }
 
@@ -670,7 +665,7 @@ extern Sv
 }
 
 extern Sv
-*Sv_eval_list(Stu *stu, Env *env, Sv *x)
+*Sv_eval_list(Stu *stu, Env *env, Sv *x, bool in_main_env)
 {
     if (IS_NIL(x)) return x;
 
@@ -679,7 +674,8 @@ extern Sv
     if (IS_NIL(CDR(x))) {
         return head;
     } else {
-        return Sv_eval_list(stu, env, CDR(x));
+        Env *next_env = in_main_env ? Env_main(stu) : env;
+        return Sv_eval_list(stu, next_env, CDR(x), in_main_env);
     }
 }
 
@@ -865,7 +861,7 @@ extern Sv
         if (partial) {
             return partial;
         } else {
-            return Sv_eval_list(stu, call_env, f->val.ufunc->body);
+            return Sv_eval_list(stu, call_env, f->val.ufunc->body, false);
         }
     }
 

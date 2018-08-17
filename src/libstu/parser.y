@@ -22,14 +22,13 @@
 #include "gc.h"
 #include "sv.h"
 #include "env.h"
-#include "svlist.h"
 #include "stu_private.h"
 
 extern int yylex(void);
-extern void yyerror(struct Stu *, Svlist **, char const *);
-extern int yyparse(struct Stu *, Svlist **);
+extern void yyerror(struct Stu *, Sv **, char const *);
+extern int yyparse(struct Stu *, Sv **);
 
-void yyerror (struct Stu *stu, Svlist **list, char const *s)
+void yyerror (struct Stu *stu, Sv **list, char const *s)
 {
     warnx("%s", s);
 }
@@ -52,15 +51,15 @@ void yyerror (struct Stu *stu, Svlist **list, char const *s)
 
 %start stu
 %parse-param { struct Stu *stu }
-%parse-param { Svlist **list }
+%parse-param { Sv **list }
 
 %%
 
 stu:
-    | forms                 { Svlist_push(*list, $1); }
+    | forms                 { *list = Sv_cons(stu, $1, *list); }
     ;
 
-forms: forms sexp           { Svlist_push(*list, $1); $$ = $2; }
+forms: forms sexp           { *list = Sv_cons(stu, $1, *list); $$ = $2; }
     | sexp                  { $$ = $1; }
     ;
 

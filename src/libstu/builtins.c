@@ -27,8 +27,8 @@
 #include "native_func.h"
 #include "stu_private.h"
 #include "sv.h"
-#include "svlist.h"
 #include "types.h"
+#include "call_stack.h"
 
 typedef enum {
   INTEGER,
@@ -371,19 +371,17 @@ extern Sv
 *Builtin_read(Stu *stu, Env *env, Sv **x)
 {
     Sv *code = *x, *result = NULL;
-    Svlist *forms = NULL;
+    Sv *forms = NIL;
 
     if (code->type != SV_STR || code->val.buf == NULL)
         return Sv_new_err(stu, "read expects a string argument");
 
     forms = Stu_parse_buf(stu, code->val.buf);
-    if (forms->count != 1) {
+    if (!IS_NIL(CDR(forms))) {
         result = Sv_new_err(stu, "read argument must contain exactly one form");
     } else {
-        result = forms->head->sv;
+        result = CAR(forms);
     }
-
-    Svlist_destroy(&forms);
 
     return result;
 }

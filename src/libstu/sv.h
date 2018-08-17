@@ -20,6 +20,7 @@
 
 #include <stdio.h>
 #include <regex.h>
+#include <stdbool.h>
 
 #include "gc.h"
 #include "types.h"
@@ -158,7 +159,7 @@ extern Sv *Sv_expand_1(struct Stu *, Sv *);
 extern void *Sv_get_foreign_obj(struct Stu *, Sv *);
 
 extern Sv *Sv_eval(struct Stu *, struct Env *, Sv *);
-extern Sv *Sv_eval_list(struct Stu *, struct Env *, Sv *);
+extern Sv *Sv_eval_list(struct Stu *, struct Env *, Sv *, bool);
 extern Sv *Sv_eval_special(struct Stu *, struct Env *, Sv *);
 extern Sv *Sv_eval_special_cons(struct Stu *, struct Env *, Sv *);
 extern Sv *Sv_eval_sexp(struct Stu *, struct Env *, Sv *);
