@@ -7,7 +7,7 @@ Stu is a simple & minimal lisp implementation in C. To build, you need the follo
 
 The following commands can be performed to develop stu:
 
-    $ autoreconf -i && ./configure CFLAGS="-O0 -g" --disable-shared && make
+    $ autoreconf -i && ./configure ALLOCATOR=system CFLAGS="-O0 -g" --disable-shared && make
     ...
     $ cat <<END |./src/repl/stu -f-
     > (def a 100)
