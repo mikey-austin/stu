@@ -22,37 +22,9 @@
 #include "sv.h"
 #include "gc.h"
 
-/*
- * This catch handler takes a lambda as an argument and applies it with
- * the supplied exception as the first argument.
- */
 static Sv
-*apply_lambda_catch_handler(Stu *stu, Sv *exception, Env *env, void *arg)
-{
-    Sv *catch_lambda = arg;
-    Sv *handler = Sv_cons(
-        stu, catch_lambda, Sv_cons(
-            stu, Sv_cons(
-                stu, Sv_new_sym(stu, "quote"), Sv_cons(
-                    stu, exception, NIL)), NIL));
-    return Sv_eval(stu, env, handler);
-}
-
-extern Sv
-*Try_eval_stu_catch(Stu *stu, Env *env, Sv *args)
-{
-    if (args->type != SV_CONS)
-        return Sv_new_err(stu, "'try' args is not a cons");
-
-    Sv *to_eval = CAR(args);
-    Sv *catch_lambda = CADR(args);
-
-    return Try_eval(
-        stu, env, to_eval, apply_lambda_catch_handler, (void *) catch_lambda);
-}
-
-extern Sv
-*Try_eval(Stu *stu, Env *env, Sv *to_eval, Sv *(*catch)(Stu *stu, Sv *e, Env *env, void *arg), void *catch_arg)
+*try(Stu *stu, Env *env, Sv *to_eval, Sv *(*catch)(Stu *stu, Sv *e, Env *env, void *arg),
+     void *catch_arg, Sv *(*eval)(Stu *stu, Env *env, Sv *x))
 {
     Sv *result = NIL;
     int jmp_res = 0;
@@ -63,7 +35,7 @@ extern Sv
     stu->last_try_marker = &curr_marker;
 
     if ((jmp_res = setjmp(curr_marker)) == 0) {
-        result = Sv_eval(stu, env, to_eval);
+        result = eval(stu, env, to_eval);
     } else {
         /*
          * We have "caught" an exception, so invoke the supplied catch
@@ -100,3 +72,45 @@ extern Sv
 
     return result;
 }
+
+/*
+ * This catch handler takes a lambda as an argument and applies it with
+ * the supplied exception as the first argument.
+ */
+static Sv
+*apply_lambda_catch_handler(Stu *stu, Sv *exception, Env *env, void *arg)
+{
+    Sv *catch_lambda = arg;
+    Sv *handler = Sv_cons(
+        stu, catch_lambda, Sv_cons(
+            stu, Sv_cons(
+                stu, Sv_new_sym(stu, "quote"), Sv_cons(
+                    stu, exception, NIL)), NIL));
+    return Sv_eval(stu, env, handler);
+}
+
+extern Sv
+*Try_eval_stu_catch(Stu *stu, Env *env, Sv *args)
+{
+    if (args->type != SV_CONS)
+        return Sv_new_err(stu, "'try' args is not a cons");
+
+    Sv *to_eval = CAR(args);
+    Sv *catch_lambda = CADR(args);
+
+    return Try_eval(
+        stu, env, to_eval, apply_lambda_catch_handler, (void *) catch_lambda);
+}
+
+extern Sv
+*Try_eval(Stu *stu, Env *env, Sv *to_eval, Sv *(*catch)(Stu *, Sv *, Env *, void *), void *catch_arg)
+{
+    return try(stu, env, to_eval, catch, catch_arg, Sv_eval);
+}
+
+extern Sv
+*Try_eval_list(Stu *stu, Env *env, Sv *to_eval, Sv *(*catch)(Stu *, Sv *, Env *, void *), void *catch_arg)
+{
+    return try(stu, env, to_eval, catch, catch_arg, Sv_eval_list_main_env);
+}
+

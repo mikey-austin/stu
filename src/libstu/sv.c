@@ -680,6 +680,12 @@ extern Sv
 }
 
 extern Sv
+*Sv_eval_list_main_env(struct Stu *stu, struct Env *env, Sv *x)
+{
+    return Sv_eval_list(stu, env, x, true);
+}
+
+extern Sv
 *Sv_eval_special(Stu *stu, Env *env, Sv *x)
 {
     Sv_special *special = x->val.special;

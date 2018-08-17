@@ -24,4 +24,6 @@ extern Sv *Try_eval_stu_catch(Stu *, Env *, Sv *);
 
 extern Sv *Try_eval(Stu *, Env *, Sv *, Sv *(*catch)(Stu *, Sv *, Env *, void *), void *);
 
+extern Sv *Try_eval_list(Stu *, Env *, Sv *, Sv *(*catch)(Stu *, Sv *, Env *, void *), void *);
+
 #endif
