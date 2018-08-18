@@ -26,6 +26,7 @@
 #include "builtins.h"
 #include "gc.h"
 #include "sv.h"
+#include "try.h"
 #include "lexer.h"
 #include "parser.h"
 #include "special_form.h"
@@ -174,6 +175,28 @@ extern Sv
     return Sv_reverse(stu, list);
 }
 
+static Sv
+*default_catch_handler(Stu *stu, Sv *e, Env *env, void *arg)
+{
+    fprintf(stderr, "An uncaught exception occured:\n\n");
+    Sv_dump(stu, CAR(e), stderr);
+    fprintf(stderr, "\n\nStack trace:\n");
+
+    Sv *frame = CDR(e);
+    for (int i = 0; !IS_NIL(frame); i++, frame = CDR(frame)) {
+        Sv *fun_name = CAR(frame);
+        if (!IS_NIL(fun_name)) {
+            fprintf(stderr, "%4d: %s\n", i, fun_name->val.buf);
+        }
+    }
+
+    // Terminate program with non-success.
+    exit(1);
+
+    // Not reached.
+    return NIL;
+}
+
 extern Sv
 *Stu_eval_file(Stu *stu, const char *file)
 {
@@ -182,8 +205,10 @@ extern Sv
 
     PUSH_SCOPE(stu);
     forms = Stu_parse_file(stu, file);
-    result = Sv_eval_list(stu, stu->main_env, forms, true);
-    Gc_lock(stu, (Gc *) result);
+    result = Try_eval_list(stu, stu->main_env, forms, default_catch_handler, NULL);
+    if (!IS_NIL(result)) {
+        Gc_lock(stu, (Gc *) result);
+    }
     POP_SCOPE(stu);
 
     return result;
@@ -216,8 +241,10 @@ extern Sv
 
     PUSH_SCOPE(stu);
     forms = Stu_parse_buf(stu, buf);
-    result = Sv_eval_list(stu, stu->main_env, forms, true);
-    Gc_lock(stu, (Gc *) result);
+    result = Try_eval_list(stu, stu->main_env, forms, default_catch_handler, NULL);
+    if (!IS_NIL(result)) {
+        Gc_lock(stu, (Gc *) result);
+    }
     POP_SCOPE(stu);
 
     return result;
@@ -274,7 +301,9 @@ Stu_is_valid_form(Stu *stu, const char *buf)
 extern void
 Stu_release_val(Stu *stu, Sv *sv)
 {
-    Gc_unlock(stu, (Gc *) sv);
+    if (GC_LOCKED(sv)) {
+        Gc_unlock(stu, (Gc *) sv);
+    }
 }
 
 extern void

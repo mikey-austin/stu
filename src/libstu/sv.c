@@ -315,12 +315,12 @@ Sv_cons_dump(Stu *stu, Sv *sv, FILE *out)
     if (!IS_NIL(cdr)) {
         switch (cdr->type) {
         case SV_CONS:
-            printf(" ");
+            fprintf(out, " ");
             Sv_cons_dump(stu, cdr, out);
             break;
 
         default:
-            printf(" . ");
+            fprintf(out, " . ");
             Sv_dump(stu, cdr, out);
             break;
         }
@@ -333,37 +333,37 @@ Sv_dump(Stu *stu, Sv *sv, FILE *out)
     if (sv) {
         switch (sv->type) {
         case SV_SYM:
-            printf("%s", Symtab_get_name(stu, sv->val.i));
+            fprintf(out, "%s", Symtab_get_name(stu, sv->val.i));
             break;
 
         case SV_ERR:
             if (sv->val.buf)
-                printf("<err \"%s\">", sv->val.buf);
+                fprintf(out, "<err \"%s\">", sv->val.buf);
             break;
 
         case SV_STR:
             if (sv->val.buf)
-                printf("\"%s\"", sv->val.buf);
+                fprintf(out, "\"%s\"", sv->val.buf);
             break;
 
         case SV_CONS:
-            printf("(");
+            fprintf(out, "(");
             Sv_cons_dump(stu, sv, out);
-            printf(")");
+            fprintf(out, ")");
             break;
 
         case SV_SPECIAL:
             switch (sv->val.special->type) {
             case SV_SPECIAL_COMMA:
-                printf(",");
+                fprintf(out, ",");
                 break;
 
             case SV_SPECIAL_COMMA_SPREAD:
-                printf(",@");
+                fprintf(out, ",@");
                 break;
 
             case SV_SPECIAL_BACKQUOTE:
-                printf("`");
+                fprintf(out, "`");
                 break;
             }
 
@@ -371,64 +371,64 @@ Sv_dump(Stu *stu, Sv *sv, FILE *out)
             break;
 
         case SV_INT:
-            printf("%ld", sv->val.i);
+            fprintf(out, "%ld", sv->val.i);
             break;
 
         case SV_FLOAT:
-            printf("%0.10f", sv->val.f);
+            fprintf(out, "%0.10f", sv->val.f);
             break;
 
         case SV_RATIONAL:
-            printf("%ld/%ld", sv->val.rational.n, sv->val.rational.d);
+            fprintf(out, "%ld/%ld", sv->val.rational.n, sv->val.rational.d);
             break;
 
         case SV_BOOL:
-            printf("%s", sv->val.i ? "#t" : "#f");
+            fprintf(out, "%s", sv->val.i ? "#t" : "#f");
             break;
 
         case SV_NATIVE_FUNC:
-            printf("<native-function>");
+            fprintf(out, "<native-function>");
             break;
 
         case SV_NATIVE_CLOS:
-            printf("<native-closure>");
+            fprintf(out, "<native-closure>");
             break;
 
         case SV_LAMBDA:
             if (sv->val.ufunc) {
-                printf("(λ ");
+                fprintf(out, "(λ ");
                 Sv_dump(stu, sv->val.ufunc->formals, out);
-                putchar(' ');
+                fprintf(out, " ");
                 Sv_dump(stu, sv->val.ufunc->body, out);
-                putchar(')');
+                fprintf(out, ")");
             }
             break;
 
         case SV_NIL:
-            printf("()");
+            fprintf(out, "()");
             break;
 
         case SV_TUPLE_CONSTRUCTOR:
-            printf("<tuple-constructor %s %u>",
+            fprintf(out, "<tuple-constructor %s %u>",
                 Symtab_get_name(stu, Type_name(stu, sv->val.tuple_constructor)),
                 Type_arity(stu, sv->val.tuple_constructor));
             break;
 
         case SV_TUPLE:
-            printf("[%s", Symtab_get_name(stu, Type_name(stu, sv->val.tuple->type)));
+            fprintf(out, "[%s", Symtab_get_name(stu, Type_name(stu, sv->val.tuple->type)));
             for (unsigned i = 0; i < Type_arity(stu, sv->val.tuple->type); ++i) {
-                putchar(' ');
+                fprintf(out, " ");
                 Sv_dump(stu, sv->val.tuple->values[i], out);
             }
-            putchar(']');
+            fprintf(out, "]");
             break;
 
         case SV_FOREIGN:
-            printf("<foreign %p>", Sv_get_foreign_obj(stu, sv));
+            fprintf(out, "<foreign %p>", Sv_get_foreign_obj(stu, sv));
             break;
 
         case SV_REGEX:
-            printf("<regex #/%s/%s>", sv->val.re.spec, (sv->val.re.icase ? "i" : ""));
+            fprintf(out, "<regex #/%s/%s>", sv->val.re.spec, (sv->val.re.icase ? "i" : ""));
             break;
         }
     }
