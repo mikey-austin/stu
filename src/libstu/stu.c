@@ -67,31 +67,9 @@ extern Stu
     stu->sv_ufunc_alloc = Alloc_new(stu, sizeof(Sv_ufunc), default_alloc);
     stu->gc_scope_alloc = Alloc_new(stu, sizeof(Scope), default_alloc);
 
-    /* Initialize interpreter. */
-    stu->gc_scope_stack = NULL;
-    stu->gc_head = NULL;
-    stu->gc_tail = NULL;
-    stu->gc_allocs = 0;
-
-    /* Initialize exception handling. */
-    stu->last_try_marker = NULL;
     stu->last_exception = NIL;
 
-    stu->stats_gc_managed_objects = 0;
-    stu->stats_gc_collections = 0;
-    stu->stats_gc_frees = 0;
-    stu->stats_gc_allocs = 0;
-    stu->stats_gc_cleaned = 0;
-    stu->stats_gc_scope_pushes = 0;
-    stu->stats_gc_scope_pops = 0;
-
-    stu->main_env = NULL;
-    stu->sym_name_to_id = NULL;
-    stu->sym_id_to_name = NULL;
     stu->sym_num_ids = HASH_SIZE;
-
-    stu->native_func_args = NULL;
-    stu->native_func_args_capacity = 0;
 
     Type_registry_init(&stu->type_registry);
 
