@@ -198,23 +198,6 @@ static Sv
 }
 
 extern Sv
-*Stu_eval_file(Stu *stu, const char *file)
-{
-    Sv *forms;
-    Sv *result;
-
-    PUSH_SCOPE(stu);
-    forms = Stu_parse_file(stu, file);
-    result = Try_eval_list(stu, stu->main_env, forms, default_catch_handler, NULL);
-    if (!IS_NIL(result)) {
-        Gc_lock(stu, (Gc *) result);
-    }
-    POP_SCOPE(stu);
-
-    return result;
-}
-
-extern Sv
 *Stu_parse_buf(Stu *stu, const char *buf)
 {
     Sv *list = NIL;
@@ -233,14 +216,14 @@ extern Sv
     return Sv_reverse(stu, list);
 }
 
-extern Sv
-*Stu_eval_buf(Stu *stu, const char *buf)
+static Sv
+*eval(Stu *stu, const char *arg, Sv *(*parse)(Stu *, const char *))
 {
     Sv *forms;
     Sv *result;
 
     PUSH_SCOPE(stu);
-    forms = Stu_parse_buf(stu, buf);
+    forms = parse(stu, arg);
     result = Try_eval_list(stu, stu->main_env, forms, default_catch_handler, NULL);
     if (!IS_NIL(result)) {
         Gc_lock(stu, (Gc *) result);
@@ -248,6 +231,18 @@ extern Sv
     POP_SCOPE(stu);
 
     return result;
+}
+
+extern Sv
+*Stu_eval_file(Stu *stu, const char *file)
+{
+    return eval(stu, file, Stu_parse_file);
+}
+
+extern Sv
+*Stu_eval_buf(Stu *stu, const char *buf)
+{
+    return eval(stu, buf, Stu_parse_buf);
 }
 
 extern int
