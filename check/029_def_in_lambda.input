@@ -1,0 +1,9 @@
+(def a 'outside)
+
+(def f (lambda ()
+         (def a 'inside)
+         a))
+
+(f)
+
+(list (f) a)
