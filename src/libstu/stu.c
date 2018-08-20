@@ -153,28 +153,6 @@ extern Sv
     return Sv_reverse(stu, list);
 }
 
-static Sv
-*default_catch_handler(Stu *stu, Sv *e, Env *env, void *arg)
-{
-    fprintf(stderr, "An uncaught exception occured:\n\n");
-    Sv_dump(stu, CAR(e), stderr);
-    fprintf(stderr, "\n\nStack trace:\n");
-
-    Sv *frame = CDR(e);
-    for (int i = 0; !IS_NIL(frame); i++, frame = CDR(frame)) {
-        Sv *fun_name = CAR(frame);
-        if (!IS_NIL(fun_name)) {
-            fprintf(stderr, "%4d: %s\n", i, fun_name->val.buf);
-        }
-    }
-
-    // Terminate program with non-success.
-    exit(1);
-
-    // Not reached.
-    return NIL;
-}
-
 extern Sv
 *Stu_parse_buf(Stu *stu, const char *buf)
 {
@@ -202,7 +180,7 @@ static Sv
 
     PUSH_SCOPE(stu);
     forms = parse(stu, arg);
-    result = Try_eval_list(stu, stu->main_env, forms, default_catch_handler, NULL);
+    result = Try_eval_list(stu, stu->main_env, forms, Try_default_catch_handler, NULL);
     if (!IS_NIL(result)) {
         Gc_lock(stu, (Gc *) result);
     }

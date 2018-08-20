@@ -14,6 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdlib.h>
+#include <stdio.h>
 #include <setjmp.h>
 
 #include "env.h"
@@ -114,3 +116,24 @@ extern Sv
     return try(stu, env, to_eval, catch, catch_arg, Sv_eval_list_main_env);
 }
 
+extern Sv
+*Try_default_catch_handler(Stu *stu, Sv *e, Env *env, void *arg)
+{
+    fprintf(stderr, "An uncaught exception occured:\n\n");
+    Sv_dump(stu, CAR(e), stderr);
+    fprintf(stderr, "\n\nStack trace:\n");
+
+    Sv *frame = CDR(e);
+    for (int i = 0; !IS_NIL(frame); i++, frame = CDR(frame)) {
+        Sv *fun_name = CAR(frame);
+        if (!IS_NIL(fun_name)) {
+            fprintf(stderr, "%4d: %s\n", i, fun_name->val.buf);
+        }
+    }
+
+    // Terminate program with non-success.
+    exit(1);
+
+    // Not reached.
+    return NIL;
+}
