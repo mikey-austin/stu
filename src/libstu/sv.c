@@ -664,27 +664,49 @@ extern Sv
     return y;
 }
 
+static Sv
+*list_isolated_eval(Stu *stu, Env *env, Sv *x, Env **next_env)
+{
+    *next_env = env;
+    return Sv_eval(stu, env, x);
+}
+
+static Sv
+*list_main_env_eval(Stu *stu, Env *env, Sv *x, Env **next_env)
+{
+    Env_capture_reset(stu);
+    Sv *result = Sv_eval(stu, env, x);
+    Env_capture_update_main_env(stu);
+    *next_env = Env_main(stu);
+
+    return result;
+}
+
 extern Sv
-*Sv_eval_list(Stu *stu, Env *env, Sv *x, bool in_main_env)
+*Sv_eval_list_generic(Stu *stu, Env *env, Sv *x, Sv *(*eval)(Stu *, Env *, Sv *, Env **))
 {
     if (IS_NIL(x)) return x;
 
-    Env_capture_reset(stu);
-    Sv *head = Sv_eval(stu, env, CAR(x));
-    Env_capture_update_main_env(stu);
+    Env *next_env;
+    Sv *head = eval(stu, env, CAR(x), &next_env);
 
     if (IS_NIL(CDR(x))) {
         return head;
     } else {
-        Env *next_env = in_main_env ? Env_main(stu) : env;
-        return Sv_eval_list(stu, next_env, CDR(x), in_main_env);
+        return Sv_eval_list_generic(stu, next_env, CDR(x), eval);
     }
 }
 
 extern Sv
-*Sv_eval_list_main_env(struct Stu *stu, struct Env *env, Sv *x)
+*Sv_eval_list(Stu *stu, Env *env, Sv *x)
 {
-    return Sv_eval_list(stu, env, x, true);
+    return Sv_eval_list_generic(stu, env, x, list_isolated_eval);
+}
+
+extern Sv
+*Sv_eval_list_main_env(Stu *stu, Env *env, Sv *x)
+{
+    return Sv_eval_list_generic(stu, env, x, list_main_env_eval);
 }
 
 extern Sv
@@ -869,7 +891,7 @@ extern Sv
         if (partial) {
             return partial;
         } else {
-            return Sv_eval_list(stu, call_env, f->val.ufunc->body, false);
+            return Sv_eval_list(stu, call_env, f->val.ufunc->body);
         }
     }
 
