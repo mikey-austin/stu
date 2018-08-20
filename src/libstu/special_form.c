@@ -102,7 +102,7 @@ static Sv
     Sv *lamb = lambda(stu, env, CDR(args));
 
     lamb->val.ufunc->is_macro = 1;
-    Env_main_put(stu, name, lamb);
+    Env_capture(stu, name, lamb);
 
     return NIL;
 }
