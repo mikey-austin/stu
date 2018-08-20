@@ -73,6 +73,10 @@ typedef struct Stu {
     /* Main environment. */
     struct Env *main_env;
 
+    /* Env capture pointers. */
+    struct Env *env_capture_head;
+    struct Env *env_capture_tail;
+
     /* Symbol table structures. */
     struct Hash *sym_name_to_id;
     char **sym_id_to_name;

@@ -47,9 +47,9 @@ static Sv
     if (!y || y->type != SV_SYM)
         return Sv_new_err(stu, "'def' needs a symbol as the first argument");
 
-    /* Def in the top scope. */
+    /* Record the new binding. */
     z = Sv_eval(stu, env, z);
-    Env_main_put(stu, y, z);
+    Env_capture(stu, y, z);
 
     /*
      * If we installed a lambda, also install in the lambda's env so

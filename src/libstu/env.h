@@ -41,5 +41,8 @@ extern Env *Env_main(struct Stu *);
 extern Env *Env_put(struct Stu *, Env *, Sv *, Sv *);
 extern Sv *Env_get(Env *, Sv *);
 extern int Env_exists(Env *, Sv *);
+extern void Env_capture(struct Stu *, Sv *, Sv *);
+extern void Env_capture_reset(struct Stu *);
+extern void Env_capture_update_main_env(struct Stu *);
 
 #endif

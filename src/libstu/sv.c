@@ -669,7 +669,9 @@ extern Sv
 {
     if (IS_NIL(x)) return x;
 
+    Env_capture_reset(stu);
     Sv *head = Sv_eval(stu, env, CAR(x));
+    Env_capture_update_main_env(stu);
 
     if (IS_NIL(CDR(x))) {
         return head;

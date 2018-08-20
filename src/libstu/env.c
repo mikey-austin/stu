@@ -44,6 +44,30 @@ Env_destroy(Stu *stu, Env **env)
     }
 }
 
+extern
+void Env_capture_reset(Stu *stu)
+{
+    stu->env_capture_tail = stu->env_capture_head = NULL;
+}
+
+extern
+void Env_capture(Stu *stu, Sv *key, Sv *val)
+{
+    stu->env_capture_head = Env_put(stu, stu->env_capture_head, key, val);
+    if (stu->env_capture_tail == NULL) {
+        stu->env_capture_tail = stu->env_capture_head;
+    }
+}
+
+extern
+void Env_capture_update_main_env(Stu *stu) {
+    if (stu->env_capture_tail == NULL) return;
+
+    stu->env_capture_tail->prev = stu->main_env;
+    stu->main_env = stu->env_capture_head;
+    Env_capture_reset(stu);
+}
+
 extern Env
 *Env_put(Stu *stu, Env *env, Sv *key, Sv *val)
 {
