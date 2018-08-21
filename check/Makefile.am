@@ -50,6 +50,7 @@ TESTS = 001_curried.input \
 		027_try_no_throw.input \
 		028_nested_try.input \
                 029_def_in_lambda.input \
+                030_def_tree.input \
 		test_hash.test \
 		test_multi_stu.test \
 		test_valid_form.test
