@@ -44,6 +44,12 @@ Gc_visit_sv(Stu *stu, Sv *sv, void (*action)(Stu *, Gc *))
             }
             break;
 
+        case SV_VECTOR:
+            for (long i = 0; i < sv->val.vector->length; i++) {
+                action(stu, (Gc *) sv->val.vector->values[i]);
+            }
+            break;
+
         case SV_TUPLE:
             for (unsigned i = 0; i < Type_arity(stu, sv->val.tuple->type); i++) {
                 action(stu, (Gc *) sv->val.tuple->values[i]);

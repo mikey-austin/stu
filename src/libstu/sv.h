@@ -51,6 +51,7 @@ enum Sv_type {
     SV_NATIVE_CLOS,
     SV_LAMBDA,
     SV_SPECIAL,
+    SV_VECTOR,
     SV_TUPLE,
     SV_TUPLE_CONSTRUCTOR,
     SV_FOREIGN,
@@ -70,6 +71,11 @@ struct Sv;
 struct Stu;
 
 typedef struct Sv *(*Sv_native_func_t)(struct Stu *, struct Env *, struct Sv **);
+
+typedef struct Sv_vector {
+    long length;
+    struct Sv *values[];
+} Sv_vector;
 
 typedef struct Sv_tuple {
     Type type;
@@ -117,6 +123,7 @@ union Sv_val {
     struct Sv_special *special;
     struct Sv *reg[SV_CONS_REGISTERS];
     struct Sv_ufunc *ufunc;
+    struct Sv_vector *vector;
     struct Sv_tuple *tuple;
     struct Type tuple_constructor;
     struct Sv_foreign foreign;

@@ -17,6 +17,7 @@
 
 #include <stdlib.h>
 #include <err.h>
+#include <limits.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -160,17 +161,26 @@ extern Sv
 extern Sv
 *Sv_new_vector(struct Stu *stu, Sv *sv)
 {
-    unsigned count = 0;
+    long count = 0;
     for (Sv *tmp = sv; !IS_NIL(tmp); tmp = CDR(tmp))
-        if (tmp->type == SV_CONS)
+        if (tmp->type == SV_CONS) {
+            if (count == LONG_MAX)
+                return Sv_new_err(stu, "Vector exceeds maximum allowed size");
             ++count;
-        else
+        } else {
             return Sv_new_err(stu, "Vector argument is not a proper list");
+        }
 
-    Type t = Type_new(stu, Sv_new_sym(stu, "vector"), count);
+    Sv *x = Sv_new(stu, SV_VECTOR);
+    Sv_vector *vec = CHECKED_MALLOC(sizeof(*vec) + count * sizeof(Sv*));
 
-    return Sv_new_tuple(stu, t, sv);
+    x->val.vector = vec;
+    vec->length = count;
+    long i = 0;
+    for (Sv *tmp = sv; !IS_NIL(tmp); tmp = CDR(tmp), ++i)
+        vec->values[i] = CAR(tmp);
 
+    return x;
 }
 
 extern Sv
@@ -274,6 +284,11 @@ Sv_destroy(Stu *stu, Sv **sv)
         case SV_NATIVE_CLOS:
             free((*sv)->val.clos);
             (*sv)->val.clos = NULL;
+            break;
+
+        case SV_VECTOR:
+            free((*sv)->val.vector);
+            (*sv)->val.vector = NULL;
             break;
 
         case SV_TUPLE:
@@ -408,6 +423,18 @@ Sv_dump(Stu *stu, Sv *sv, FILE *out)
             fprintf(out, "()");
             break;
 
+        case SV_VECTOR:
+            fprintf(out, "[", Symtab_get_name(stu, Type_name(stu, sv->val.tuple->type)));
+            if (sv->val.vector->length > 0) {
+                Sv_dump(stu, sv->val.tuple->values[0], out);
+                for (unsigned i = 1; i < sv->val.vector->length; ++i) {
+                    fprintf(out, " ");
+                    Sv_dump(stu, sv->val.tuple->values[i], out);
+                }
+            }
+            fprintf(out, "]");
+            break;
+
         case SV_TUPLE_CONSTRUCTOR:
             fprintf(out, "<tuple-constructor %s %u>",
                 Symtab_get_name(stu, Type_name(stu, sv->val.tuple_constructor)),
@@ -451,6 +478,18 @@ static Sv
     memcpy(t_copy, t, size);
     Sv *copy = Sv_new(stu, SV_TUPLE);
     copy->val.tuple = t_copy;
+    return copy;
+}
+
+static Sv
+*Sv_copy_vector(Stu *stu, Sv *x)
+{
+    Sv_vector *vec = x->val.vector;
+    size_t size = sizeof(Sv_vector) + vec->length * sizeof(Sv*);
+    Sv_vector *vec_copy = CHECKED_MALLOC(size);
+    memcpy(vec_copy, vec, size);
+    Sv *copy = Sv_new(stu, SV_VECTOR);
+    copy->val.vector = vec_copy;
     return copy;
 }
 
@@ -513,6 +552,10 @@ extern Sv
                 y = Sv_new_lambda(
                     stu, x->val.ufunc->env, x->val.ufunc->formals, x->val.ufunc->body);
             }
+            break;
+
+        case SV_VECTOR:
+            y = Sv_copy_vector(stu, x);
             break;
 
         case SV_TUPLE:
@@ -610,6 +653,16 @@ extern void
 *Sv_get_foreign_obj(Stu *stu, Sv *x)
 {
     return x->type == SV_FOREIGN ? x->val.foreign.obj : NULL;
+}
+
+static Sv
+*Sv_eval_vector(Stu *stu, Env *env, Sv *x)
+{
+    Sv *copy = Sv_copy(stu, x);
+    Sv_vector *vec = copy->val.vector;
+    for (long i = 0; i < vec->length; ++i)
+        vec->values[i] = Sv_eval(stu, env, vec->values[i]);
+    return copy;
 }
 
 static Sv
