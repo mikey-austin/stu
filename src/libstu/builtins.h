@@ -48,6 +48,7 @@ extern Sv *Builtin_lte(Stu *, Env *, Sv **);
 extern Sv *Builtin_read(Stu *, Env *, Sv **);
 extern Sv *Builtin_print(Stu *, Env *, Sv **);
 extern Sv *Builtin_vector(Stu *, Env *, Sv **);
+extern Sv *Builtin_vector_length(Stu *, Env *, Sv **);
 extern Sv *Builtin_tuple_constructor(Stu *, Env *, Sv **);
 extern Sv *Builtin_size(Stu *, Env *, Sv **);
 extern Sv *Builtin_at(Stu *, Env *, Sv **);

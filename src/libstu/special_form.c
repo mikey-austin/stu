@@ -33,6 +33,46 @@ static Sv
     return CAR(args);
 }
 
+static int
+is_symbol_vector_tree(Sv *sv) {
+    switch (sv->type) {
+    case SV_SYM:
+         return 1;
+    case SV_VECTOR:
+        for (long i = 0; i < sv->val.vector->length; ++i)
+            if (!is_symbol_vector_tree(sv->val.vector->values[i]))
+                return 0;
+        return 1;
+    default:
+        return 0;
+    }
+}
+
+static Sv
+*bind_def_vector_tree(Stu *stu, Sv *lhs, Sv *rhs) {
+    switch (lhs->type) {
+    case SV_SYM:
+        Env_capture(stu, lhs, rhs);
+        /*
+         * If we installed a lambda, also install in the lambda's env so
+         * it can call itself.
+         */
+        if (rhs->type == SV_LAMBDA)
+            rhs->val.ufunc->env = Env_put(stu, rhs->val.ufunc->env, lhs, rhs);
+        return NIL;
+    case SV_VECTOR:
+        if (rhs->type != SV_VECTOR)
+            return Sv_new_err(stu, "'def' expected a vector as a result");
+        if (lhs->val.vector->length != rhs->val.vector->length)
+            return Sv_new_err(stu, "'def' mismatch in vector lengths");
+        for (long i = 0; i < lhs->val.vector->length; ++i)
+            bind_def_vector_tree(stu, lhs->val.vector->values[i], rhs->val.vector->values[i]);
+        return NIL;
+    default:
+        return Sv_new_err(stu, "'def' needs a symbol or a vector of symbols as the first argument");
+    }
+}
+
 static Sv
 *def(Stu *stu, Env *env, Sv *args)
 {
@@ -43,22 +83,15 @@ static Sv
     y = CAR(args);
     z = CADR(args);
 
-    /* We need a symbol in the head. */
-    if (!y || y->type != SV_SYM)
-        return Sv_new_err(stu, "'def' needs a symbol as the first argument");
+    /* We need a symbol or a vector of symbols in the head. */
+    if (!y || !is_symbol_vector_tree(y)) {
+        return Sv_new_err(stu, "'def' needs a symbol or a vector of symbols as the first argument");
+    }
 
-    /* Record the new binding. */
     z = Sv_eval(stu, env, z);
-    Env_capture(stu, y, z);
 
-    /*
-     * If we installed a lambda, also install in the lambda's env so
-     * it can call itself.
-     */
-    if (z->type == SV_LAMBDA)
-        z->val.ufunc->env = Env_put(stu, z->val.ufunc->env, y, z);
-
-    return NIL;
+    /* Record the new binding(s) and return NIL. */
+    return bind_def_vector_tree(stu, y, z);
 }
 
 static Sv

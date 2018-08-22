@@ -63,7 +63,6 @@ Builtin_init(Stu *stu)
     DEF("<", Builtin_lt, 1, REST | PURE);
     DEF(">=", Builtin_gte, 1, REST | PURE);
     DEF("<=", Builtin_lte, 1, REST | PURE);
-    DEF("vector", Builtin_vector, 1, REST | PURE);
     DEF("tuple-constructor", Builtin_tuple_constructor, 2, PURE);
     DEF("size", Builtin_size, 1, PURE);
     DEF("at", Builtin_at, 2, PURE);
@@ -71,6 +70,7 @@ Builtin_init(Stu *stu)
     DEF("re-match?", Builtin_re_match_p, 2, PURE);
     DEF("re-match", Builtin_re_match, 2, PURE);
     DEF("throw", Builtin_throw, 1, PURE);
+    DEF("vector-length", Builtin_vector_length, 1, PURE);
 }
 
 #define INIT_ACC(init) value_type acc_type = INTEGER, cur_type = INTEGER; \
@@ -534,12 +534,6 @@ extern Sv
 }
 
 extern Sv
-*Builtin_vector(Stu *stu, Env *env, Sv **args)
-{
-    return Sv_new_vector(stu, args[0]);
-}
-
-extern Sv
 *Builtin_tuple_constructor(Stu *stu, Env *env, Sv **args)
 {
     Sv *name = args[0];
@@ -561,28 +555,37 @@ extern Sv
 }
 
 extern Sv
+*Builtin_vector_length(Stu *stu, Env *env, Sv **args)
+{
+    Sv *vec = args[0];
+    if (vec->type != SV_VECTOR)
+        return Sv_new_err(stu, "vector-length argument not a vector");
+    return Sv_new_int(stu, vec->val.vector->length);
+}
+
+extern Sv
+*Builtin_at(Stu *stu, Env *env, Sv **args)
+{
+    Sv *vec_sv = args[0];
+    Sv *index = args[1];
+    if (vec_sv->type != SV_VECTOR)
+        return Sv_new_err(stu, "at first argument not a vector");
+    if (index->type != SV_INT)
+        return Sv_new_err(stu, "at second argument not an integer");
+    Sv_vector *vec = vec_sv->val.vector;
+    long i = index->val.i;
+    if (i < 0 || i >= vec->length)
+        return Sv_new_err(stu, "at index out of bounds");
+    return vec->values[i];
+}
+
+extern Sv
 *Builtin_size(Stu *stu, Env *env, Sv **args)
 {
     Sv *tuple = args[0];
     if (tuple->type != SV_TUPLE)
         return Sv_new_err(stu, "size argument not a tuple");
     return Sv_new_int(stu, Type_arity(stu, tuple->val.tuple->type));
-}
-
-extern Sv
-*Builtin_at(Stu *stu, Env *env, Sv **args)
-{
-    Sv *index = args[0];
-    Sv *tuple_sv = args[1];
-    if (index->type != SV_INT)
-        return Sv_new_err(stu, "at first argument not an integer");
-    if (tuple_sv->type != SV_TUPLE)
-        return Sv_new_err(stu, "at second argument not a tuple");
-    Sv_tuple *tuple = tuple_sv->val.tuple;
-    long i = index->val.i;
-    if (i < 0 || i >= Type_arity(stu, tuple->type))
-        return Sv_new_err(stu, "at index out of bounds");
-    return tuple->values[i];
 }
 
 extern Sv
@@ -622,6 +625,9 @@ extern Sv
     case SV_LAMBDA:
     case SV_TUPLE_CONSTRUCTOR:
         return Sv_new_sym(stu, "function");
+
+    case SV_VECTOR:
+        return Sv_new_sym(stu, "vector");
 
     case SV_TUPLE:
         return Type_value(stu, x->val.tuple->type);
