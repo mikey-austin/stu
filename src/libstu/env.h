@@ -38,11 +38,14 @@ extern Env *Env_main_put(struct Stu *, Sv *, Sv *);
 extern Sv *Env_main_get(struct Stu *, Sv *);
 extern int Env_main_exists(struct Stu *, Sv *);
 extern Env *Env_main(struct Stu *);
+extern Env *Env_main_set(struct Stu *, Env *);
 extern Env *Env_put(struct Stu *, Env *, Sv *, Sv *);
 extern Sv *Env_get(Env *, Sv *);
 extern int Env_exists(Env *, Sv *);
+extern void Env_capture_save(struct Stu *, Env **, Env **);
+extern void Env_capture_restore(struct Stu *, Env *, Env *);
 extern void Env_capture(struct Stu *, Sv *, Sv *);
 extern void Env_capture_reset(struct Stu *);
-extern void Env_capture_update_main_env(struct Stu *);
+extern Env *Env_capture_rebase(struct Stu *, Env *);
 
 #endif

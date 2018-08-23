@@ -49,8 +49,21 @@ TESTS = 001_curried.input \
 		026_try_and_throw.input \
 		027_try_no_throw.input \
 		028_nested_try.input \
-                029_def_in_lambda.input \
-                030_def_tree.input \
+		029_def_in_lambda.input \
+		030_def_tree.input \
 		test_hash.test \
 		test_multi_stu.test \
 		test_valid_form.test
+
+#
+# These are expected failures until we have a module system as
+# they depend on functionality in the stdlib.stu. Calling "def"
+# and "defmacro" now do not leak outside of file/lambda scope.
+#
+XFAIL_TESTS = \
+		009_not.input \
+		010_pred.input \
+		011_map.input \
+		014_test_accessors.input \
+		020_lambda_no_args.input \
+		021_macroexpand.input

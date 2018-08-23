@@ -1,14 +1,16 @@
 ;; Native posix regexp functionality
-(let ((animal-re #/there are ([[:digit:]]+) (sheep|cows|mice)/)
-      (icase-re #/have ([[:digit:]]+\.[[:digit:]]+) (cows|chickens)/i))
-  (list
-   (re-match animal-re "there are 12 cows")
-   (re-match animal-re "there are 663 sheep")
-   (re-match animal-re "nothing to see here folks")
+(def animal-re #/there are ([[:digit:]]+) (sheep|cows|mice)/)
 
-   ;; Match predicates.
-   (re-match? #/^mary.*([[:digit:]]+)/ "mary had 2 lambs")
-   (re-match? #/[a-z]+/ "1234")
+(def icase-re #/have ([[:digit:]]+\.[[:digit:]]+) (cows|chickens)/i)
 
-   ;; Match case-insensitive regex.
-   (re-match icase-re "we hAvE 53258.73 CHICKENS")))
+(list
+ (re-match animal-re "there are 12 cows")
+ (re-match animal-re "there are 663 sheep")
+ (re-match animal-re "nothing to see here folks")
+
+ ;; Match predicates.
+ (re-match? #/^mary.*([[:digit:]]+)/ "mary had 2 lambs")
+ (re-match? #/[a-z]+/ "1234")
+
+ ;; Match case-insensitive regex.
+ (re-match icase-re "we hAvE 53258.73 CHICKENS"))

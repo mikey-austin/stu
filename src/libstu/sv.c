@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, 2017 Mikey Austin <mikey@jackiemclean.net>
+ * Copyright (c) 2016 - 2018 Mikey Austin <mikey@jackiemclean.net>
  * Copyright (c) 2017 Raphael Sousa Santos <contact@raphaelss.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
@@ -717,49 +717,33 @@ extern Sv
     return y;
 }
 
-static Sv
-*list_isolated_eval(Stu *stu, Env *env, Sv *x, Env **next_env)
-{
-    *next_env = env;
-    return Sv_eval(stu, env, x);
-}
-
-static Sv
-*list_main_env_eval(Stu *stu, Env *env, Sv *x, Env **next_env)
-{
-    Env_capture_reset(stu);
-    Sv *result = Sv_eval(stu, env, x);
-    Env_capture_update_main_env(stu);
-    *next_env = Env_main(stu);
-
-    return result;
-}
-
-extern Sv
-*Sv_eval_list_generic(Stu *stu, Env *env, Sv *x, Sv *(*eval)(Stu *, Env *, Sv *, Env **))
-{
-    if (IS_NIL(x)) return x;
-
-    Env *next_env;
-    Sv *head = eval(stu, env, CAR(x), &next_env);
-
-    if (IS_NIL(CDR(x))) {
-        return head;
-    } else {
-        return Sv_eval_list_generic(stu, next_env, CDR(x), eval);
-    }
-}
-
 extern Sv
 *Sv_eval_list(Stu *stu, Env *env, Sv *x)
 {
-    return Sv_eval_list_generic(stu, env, x, list_isolated_eval);
-}
+    if (IS_NIL(x)) return x;
 
-extern Sv
-*Sv_eval_list_main_env(Stu *stu, Env *env, Sv *x)
-{
-    return Sv_eval_list_generic(stu, env, x, list_main_env_eval);
+    Env *next_env = env;
+    Sv *last_result = NIL;
+    Sv *cur = CAR(x);
+
+    Env *tail, *head;
+    Env_capture_save(stu, &tail, &head);
+    PUSH_N_SAVE(stu, head);
+
+    while (!IS_NIL(cur)) {
+        Env_capture_reset(stu);
+        last_result = Sv_eval(stu, next_env, cur);
+        next_env = Env_capture_rebase(stu, next_env);
+        SCOPE_SAVE(stu, next_env);
+
+        x = CDR(x);
+        cur = CAR(x);
+    }
+
+    Env_capture_restore(stu, tail, head);
+    POP_N_SAVE(stu, last_result);
+
+    return last_result;
 }
 
 extern Sv

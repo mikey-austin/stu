@@ -113,7 +113,7 @@ extern Sv
 extern Sv
 *Try_eval_list(Stu *stu, Env *env, Sv *to_eval, Sv *(*catch)(Stu *, Sv *, Env *, void *), void *catch_arg)
 {
-    return try(stu, env, to_eval, catch, catch_arg, Sv_eval_list_main_env);
+    return try(stu, env, to_eval, catch, catch_arg, Sv_eval_list);
 }
 
 extern Sv

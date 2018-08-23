@@ -44,14 +44,28 @@ Env_destroy(Stu *stu, Env **env)
     }
 }
 
-extern
-void Env_capture_reset(Stu *stu)
+extern void
+Env_capture_save(Stu *stu, Env **tail, Env **head)
+{
+    *tail = stu->env_capture_tail;
+    *head = stu->env_capture_head;
+}
+
+extern void
+Env_capture_restore(Stu *stu, Env *tail, Env *head)
+{
+    stu->env_capture_tail = tail;
+    stu->env_capture_head = head;
+}
+
+extern void
+Env_capture_reset(Stu *stu)
 {
     stu->env_capture_tail = stu->env_capture_head = NULL;
 }
 
-extern
-void Env_capture(Stu *stu, Sv *key, Sv *val)
+extern void
+Env_capture(Stu *stu, Sv *key, Sv *val)
 {
     stu->env_capture_head = Env_put(stu, stu->env_capture_head, key, val);
     if (stu->env_capture_tail == NULL) {
@@ -59,27 +73,26 @@ void Env_capture(Stu *stu, Sv *key, Sv *val)
     }
 }
 
-extern
-void Env_capture_update_main_env(Stu *stu) {
-    if (stu->env_capture_tail == NULL) return;
+extern Env
+*Env_capture_rebase(Stu *stu, Env *base) {
+    if (stu->env_capture_tail == NULL) {
+        return base;
+    }
 
-    stu->env_capture_tail->prev = stu->main_env;
-    stu->main_env = stu->env_capture_head;
-    Env_capture_reset(stu);
+    stu->env_capture_tail->prev = base;
+    return stu->env_capture_head;
 }
 
 extern Env
 *Env_put(Stu *stu, Env *env, Sv *key, Sv *val)
 {
-    if (key) {
-        Env *new = Env_new(stu);
-        new->sym = key->val.i;
-        new->prev = env;
-        new->val = val;
-        return new;
-    }
+    if (!key) return env;
 
-    return env;
+    Env *new = Env_new(stu);
+    new->sym = key->val.i;
+    new->prev = env;
+    new->val = val;
+    return new;
 }
 
 extern Env
@@ -99,6 +112,12 @@ extern Env
 *Env_main(Stu *stu)
 {
     return stu->main_env;
+}
+
+extern Env
+*Env_main_set(Stu *stu, Env *env)
+{
+    stu->main_env = env;
 }
 
 extern int
