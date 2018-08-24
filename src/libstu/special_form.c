@@ -35,22 +35,27 @@ static Sv
 }
 
 static int
-is_symbol_vector_tree(Sv *sv) {
+is_def_pattern(Sv *sv) {
     switch (sv->type) {
     case SV_SYM:
          return 1;
     case SV_VECTOR:
         for (long i = 0; i < sv->val.vector->length; ++i)
-            if (!is_symbol_vector_tree(sv->val.vector->values[i]))
+            if (!is_def_pattern(sv->val.vector->values[i]))
                 return 0;
         return 1;
+    case SV_NIL:
+        return 1;
+    case SV_CONS:
+        return is_def_pattern(CAR(sv)) ? is_def_pattern(CDR(sv)) : 0;
     default:
         return 0;
     }
 }
 
 static Sv
-*bind_def_vector_tree(Stu *stu, Sv *lhs, Sv *rhs) {
+*bind_def_pattern(Stu *stu, Sv *lhs, Sv *rhs) {
+    Sv *res = NULL;
     switch (lhs->type) {
     case SV_SYM:
         Env_capture(stu, lhs, rhs);
@@ -61,16 +66,32 @@ static Sv
         if (rhs->type == SV_LAMBDA)
             rhs->val.ufunc->env = Env_put(stu, rhs->val.ufunc->env, lhs, rhs);
         return NIL;
+    case SV_NIL:
+        if (rhs->type == SV_NIL)
+            return NIL;
+        return Sv_new_err(stu, "'def' expected nil but got something else");
+    case SV_CONS:
+        if (rhs->type != SV_CONS)
+            return Sv_new_err(stu, "'def' expected a cons cell as a result");
+        res = bind_def_pattern(stu, CAR(lhs), CAR(rhs));
+        if (res->type != SV_NIL)
+            /* Return early in case something went wrong */
+            return res;
+        return bind_def_pattern(stu, CDR(lhs), CDR(rhs));
     case SV_VECTOR:
         if (rhs->type != SV_VECTOR)
             return Sv_new_err(stu, "'def' expected a vector as a result");
         if (lhs->val.vector->length != rhs->val.vector->length)
             return Sv_new_err(stu, "'def' mismatch in vector lengths");
-        for (long i = 0; i < lhs->val.vector->length; ++i)
-            bind_def_vector_tree(stu, lhs->val.vector->values[i], rhs->val.vector->values[i]);
+        for (long i = 0; i < lhs->val.vector->length; ++i) {
+            res = bind_def_pattern(stu, lhs->val.vector->values[i], rhs->val.vector->values[i]);
+            if (res->type != SV_NIL)
+                /* Return early in case something went wrong */
+                return res;
+        }
         return NIL;
     default:
-        return Sv_new_err(stu, "'def' needs a symbol or a vector of symbols as the first argument");
+        return Sv_new_err(stu, "'def' needs a pattern as the first argument");
     }
 }
 
@@ -84,15 +105,15 @@ static Sv
     y = CAR(args);
     z = CADR(args);
 
-    /* We need a symbol or a vector of symbols in the head. */
-    if (!y || !is_symbol_vector_tree(y)) {
-        return Sv_new_err(stu, "'def' needs a symbol or a vector of symbols as the first argument");
+    /* We need a pattern in the head. */
+    if (!y || !is_def_pattern(y)) {
+        return Sv_new_err(stu, "'def' needs a pattern as the first argument");
     }
 
     z = Sv_eval(stu, env, z);
 
     /* Record the new binding(s) and return NIL. */
-    return bind_def_vector_tree(stu, y, z);
+    return bind_def_pattern(stu, y, z);
 }
 
 static Sv
