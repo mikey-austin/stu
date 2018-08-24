@@ -63,8 +63,6 @@ Builtin_init(Stu *stu)
     DEF("<", Builtin_lt, 1, REST | PURE);
     DEF(">=", Builtin_gte, 1, REST | PURE);
     DEF("<=", Builtin_lte, 1, REST | PURE);
-    DEF("tuple-constructor", Builtin_tuple_constructor, 2, PURE);
-    DEF("size", Builtin_size, 1, PURE);
     DEF("at", Builtin_at, 2, PURE);
     DEF("type-of", Builtin_type_of, 1, PURE);
     DEF("re-match?", Builtin_re_match_p, 2, PURE);
@@ -534,27 +532,6 @@ extern Sv
 }
 
 extern Sv
-*Builtin_tuple_constructor(Stu *stu, Env *env, Sv **args)
-{
-    Sv *name = args[0];
-    Sv *arity = args[1];
-
-    if (name->type != SV_SYM)
-        return Sv_new_err(stu, "tuple-constructor first argument not a symbol");
-
-    if (arity->type != SV_INT)
-        return Sv_new_err(stu, "tuple-constructor second argument not an integer");
-
-    long num = arity->val.i;
-    if (num < 0)
-        return Sv_new_err(stu, "tuple-costructor second argument lower than zero");
-
-    Type tt = Type_new(stu, name, arity->val.i);
-
-    return Sv_new_tuple_constructor(stu, tt);
-}
-
-extern Sv
 *Builtin_vector_length(Stu *stu, Env *env, Sv **args)
 {
     Sv *vec = args[0];
@@ -577,15 +554,6 @@ extern Sv
     if (i < 0 || i >= vec->length)
         return Sv_new_err(stu, "at index out of bounds");
     return vec->values[i];
-}
-
-extern Sv
-*Builtin_size(Stu *stu, Env *env, Sv **args)
-{
-    Sv *tuple = args[0];
-    if (tuple->type != SV_TUPLE)
-        return Sv_new_err(stu, "size argument not a tuple");
-    return Sv_new_int(stu, Type_arity(stu, tuple->val.tuple->type));
 }
 
 extern Sv
@@ -623,19 +591,18 @@ extern Sv
     case SV_NATIVE_FUNC:
     case SV_NATIVE_CLOS:
     case SV_LAMBDA:
-    case SV_TUPLE_CONSTRUCTOR:
+    case SV_STRUCTURE_CONSTRUCTOR:
         return Sv_new_sym(stu, "function");
 
     case SV_VECTOR:
         return Sv_new_sym(stu, "vector");
 
-    case SV_TUPLE:
-        return Type_value(stu, x->val.tuple->type);
-
     case SV_SPECIAL:
     case SV_ERR:
-    default:
         return Sv_new_err(stu, "unknown type found in type-of");
+
+    default:
+        return Type_name_symbol(stu, x->type);
     }
 }
 
@@ -716,7 +683,7 @@ extern Sv
      */
     stu->last_exception = Sv_cons(stu, args[0], Call_stack_copy(stu));
 
-    /* Unwind the C stack back to last recorded try marker. */
+    /* Unwind the C stack back to last structureed try marker. */
     longjmp(*(stu->last_try_marker), 1);
 
     /* Not reached. */

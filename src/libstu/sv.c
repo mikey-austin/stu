@@ -34,7 +34,7 @@
 #include "call_stack.h"
 
 extern Sv
-*Sv_new(Stu *stu, enum Sv_type type)
+*Sv_new(Stu *stu, Sv_type type)
 {
     Sv *x = NULL;
 
@@ -184,32 +184,43 @@ extern Sv
 }
 
 extern Sv
-*Sv_new_tuple(struct Stu *stu, Type type, Sv *args)
+*Sv_new_structure(struct Stu *stu, Sv_type type, Sv *value_list)
 {
-    unsigned arity = Type_arity(stu, type);
-    Sv *x = Sv_new(stu, SV_TUPLE);
-    Sv_tuple *tup = CHECKED_MALLOC(sizeof(*tup) + arity * sizeof(Sv*));
+    Sv_vector *field_vector = Type_field_vector(stu, type)->val.vector;
 
-    unsigned i = 0;
-    while (!IS_NIL(args) && args->type == SV_CONS && i < arity) {
-        tup->values[i++] = CAR(args);
-        args = CDR(args);
+    Sv *x = Sv_new(stu, type);
+    Sv **fields =
+        CHECKED_MALLOC(field_vector->length * sizeof(Sv*));
+    x->val.structure = fields;
+
+    Sv *tmp = value_list;
+    for (long i = 0; i < field_vector->length; ++i, tmp = CDR(tmp)) {
+        if (tmp->type != SV_CONS)
+            return Sv_new_err(stu, "Record argument is not a proper list");
+        if (IS_NIL(tmp))
+            return Sv_new_err(stu, "Not enough arguments for structure");
+        fields[i] = CAR(tmp);
     }
 
-    if (!IS_NIL(args) || i != arity)
-        return Sv_new_err(stu, "List length doesn't match tuple arity");
-
-    tup->type = type;
-    x->val.tuple = tup;
-
+    if (!IS_NIL(tmp))
+        return Sv_new_err(stu, "Too many arguments for structure");
     return x;
 }
 
 extern Sv
-*Sv_new_tuple_constructor(struct Stu *stu, Type t)
-{
-    Sv *x = Sv_new(stu, SV_TUPLE_CONSTRUCTOR);
-    x->val.tuple_constructor = t;
+*Sv_new_structure_constructor(struct Stu *stu, Sv_type type) {
+    Sv *x = Sv_new(stu, SV_STRUCTURE_CONSTRUCTOR);
+    x->val.structure_constructor = type;
+    return x;
+}
+
+extern Sv
+*Sv_new_structure_access(struct Stu *stu, Sv *structure, Sv *field) {
+    Sv *x = Sv_new(stu, SV_STRUCTURE_ACCESS);
+    if (field->type != SV_SYM)
+        return Sv_new_err(stu, "Field access field is not a symbol");
+    x->val.reg[SV_CAR_REG] = structure;
+    x->val.reg[SV_CDR_REG] = field;
     return x;
 }
 
@@ -291,11 +302,6 @@ Sv_destroy(Stu *stu, Sv **sv)
             (*sv)->val.vector = NULL;
             break;
 
-        case SV_TUPLE:
-            free((*sv)->val.tuple);
-            (*sv)->val.tuple = NULL;
-            break;
-
         case SV_FOREIGN:
             if ((*sv)->val.foreign.destructor != NULL) {
                 (*sv)->val.foreign.destructor((*sv)->val.foreign.obj);
@@ -313,6 +319,10 @@ Sv_destroy(Stu *stu, Sv **sv)
             break;
 
         default:
+            if ((*sv)->type >= SV_BUILTIN_TYPE_END) {
+                free((*sv)->val.structure);
+                (*sv)->val.structure = NULL;
+            }
             break;
         }
 
@@ -424,30 +434,19 @@ Sv_dump(Stu *stu, Sv *sv, FILE *out)
             break;
 
         case SV_VECTOR:
-            fprintf(out, "[", Symtab_get_name(stu, Type_name(stu, sv->val.tuple->type)));
+            fprintf(out, "[");
             if (sv->val.vector->length > 0) {
-                Sv_dump(stu, sv->val.tuple->values[0], out);
-                for (unsigned i = 1; i < sv->val.vector->length; ++i) {
+                Sv_dump(stu, sv->val.vector->values[0], out);
+                for (long i = 1; i < sv->val.vector->length; ++i) {
                     fprintf(out, " ");
-                    Sv_dump(stu, sv->val.tuple->values[i], out);
+                    Sv_dump(stu, sv->val.vector->values[i], out);
                 }
             }
             fprintf(out, "]");
             break;
 
-        case SV_TUPLE_CONSTRUCTOR:
-            fprintf(out, "<tuple-constructor %s %u>",
-                Symtab_get_name(stu, Type_name(stu, sv->val.tuple_constructor)),
-                Type_arity(stu, sv->val.tuple_constructor));
-            break;
-
-        case SV_TUPLE:
-            fprintf(out, "[%s", Symtab_get_name(stu, Type_name(stu, sv->val.tuple->type)));
-            for (unsigned i = 0; i < Type_arity(stu, sv->val.tuple->type); ++i) {
-                fprintf(out, " ");
-                Sv_dump(stu, sv->val.tuple->values[i], out);
-            }
-            fprintf(out, "]");
+        case SV_STRUCTURE_CONSTRUCTOR:
+            fprintf(out, "<constructor %s>", Type_name_string(stu, sv->type));
             break;
 
         case SV_FOREIGN:
@@ -456,6 +455,10 @@ Sv_dump(Stu *stu, Sv *sv, FILE *out)
 
         case SV_REGEX:
             fprintf(out, "<regex #/%s/%s>", sv->val.re.spec, (sv->val.re.icase ? "i" : ""));
+            break;
+
+        default:
+            fprintf(out, "<structure %s>", Type_name_string(stu, sv->type));
             break;
         }
     }
@@ -470,18 +473,6 @@ static Sv
 }
 
 static Sv
-*Sv_copy_tuple(Stu *stu, Sv *x)
-{
-    Sv_tuple *t = x->val.tuple;
-    size_t size = sizeof(Sv_tuple) + Type_arity(stu, t->type) * sizeof(Sv*);
-    Sv_tuple *t_copy = CHECKED_MALLOC(size);
-    memcpy(t_copy, t, size);
-    Sv *copy = Sv_new(stu, SV_TUPLE);
-    copy->val.tuple = t_copy;
-    return copy;
-}
-
-static Sv
 *Sv_copy_vector(Stu *stu, Sv *x)
 {
     Sv_vector *vec = x->val.vector;
@@ -490,6 +481,16 @@ static Sv
     memcpy(vec_copy, vec, size);
     Sv *copy = Sv_new(stu, SV_VECTOR);
     copy->val.vector = vec_copy;
+    return copy;
+}
+
+extern Sv
+*Sv_copy_structure(Stu *stu, Sv *x) {
+    long length = Type_field_vector(stu, x->type)->val.vector->length;
+    Sv *copy = Sv_new(stu, x->type);
+    Sv **fields = CHECKED_MALLOC(length * sizeof(Sv*));
+    copy->val.structure = fields;
+    memcpy(fields, x->val.structure, length);
     return copy;
 }
 
@@ -558,8 +559,8 @@ extern Sv
             y = Sv_copy_vector(stu, x);
             break;
 
-        case SV_TUPLE:
-            y = Sv_copy_tuple(stu, x);
+        case SV_STRUCTURE_CONSTRUCTOR:
+            y = Sv_new_structure_constructor(stu, x->val.structure_constructor);
             break;
 
         case SV_REGEX:
@@ -567,6 +568,7 @@ extern Sv
             break;
 
         default:
+            y = Sv_copy_structure(stu, x);
             break;
         }
     }
@@ -666,14 +668,11 @@ static Sv
 }
 
 static Sv
-*Sv_eval_tuple(Stu *stu, Env *env, Sv *x)
+*Sv_eval_structure_access(Stu *stu, Env *env, Sv *x)
 {
-    Sv *copy = Sv_copy(stu, x);
-    Sv_tuple *t = copy->val.tuple;
-    unsigned size = Type_arity(stu, t->type);
-    for (unsigned i = 0; i < size; ++i)
-        t->values[i] = Sv_eval(stu, env, t->values[i]);
-    return copy;
+    Sv *structure = Sv_eval(stu, env, x->val.reg[SV_CAR_REG]);
+    Sv *field = x->val.reg[SV_CDR_REG];
+    return structure->val.structure[Type_field_index(stu, structure->type, field)];
 }
 
 extern Sv
@@ -704,8 +703,12 @@ extern Sv
         y = Sv_eval_sexp(stu, env, x);
         break;
 
-    case SV_TUPLE:
-        y = Sv_eval_tuple(stu, env, x);
+    case SV_VECTOR:
+        y = Sv_eval_vector(stu, env, x);
+        break;
+
+    case SV_STRUCTURE_ACCESS:
+        y = Sv_eval_structure_access(stu, env, x);
         break;
 
     default:
@@ -855,7 +858,7 @@ extern Sv
         case SV_NATIVE_FUNC:
         case SV_NATIVE_CLOS:
         case SV_LAMBDA:
-        case SV_TUPLE_CONSTRUCTOR:
+        case SV_STRUCTURE_CONSTRUCTOR:
             if (z->type == SV_SYM) {
                 Call_stack_push(stu, z);
             } else {
@@ -889,8 +892,8 @@ extern Sv
     if (f->type == SV_NATIVE_CLOS)
         return Sv_native_closure_call(stu, env, f->val.clos, a);
 
-    if (f->type == SV_TUPLE_CONSTRUCTOR)
-        return Sv_new_tuple(stu, f->val.tuple_constructor, a);
+    if (f->type == SV_STRUCTURE_CONSTRUCTOR)
+        return Sv_new_structure(stu, f->val.structure_constructor, a);
 
     if (f->type == SV_LAMBDA) {
         /* Bind the formals to the arguments. */

@@ -64,10 +64,6 @@ Call_stack_push(Stu *stu, Sv *x) {
         head = Sv_new_str(stu, "<LAMBDA>");
         break;
 
-    case SV_TUPLE_CONSTRUCTOR:
-        head = Sv_new_str(stu, "<TUPLE CONSTRUCTOR>");
-        break;
-
     default:
         return;
     }

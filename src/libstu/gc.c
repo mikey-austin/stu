@@ -50,12 +50,6 @@ Gc_visit_sv(Stu *stu, Sv *sv, void (*action)(Stu *, Gc *))
             }
             break;
 
-        case SV_TUPLE:
-            for (unsigned i = 0; i < Type_arity(stu, sv->val.tuple->type); i++) {
-                action(stu, (Gc *) sv->val.tuple->values[i]);
-            }
-            break;
-
         case SV_LAMBDA:
             if (sv->val.ufunc) {
                 action(stu, (Gc *) sv->val.ufunc->env);
@@ -65,7 +59,12 @@ Gc_visit_sv(Stu *stu, Sv *sv, void (*action)(Stu *, Gc *))
             break;
 
         default:
-            /* Already marked. */
+            if (sv->type >= SV_BUILTIN_TYPE_END) {
+                long length = Type_field_vector(stu, sv->type)->val.vector->length;
+                for (long i = 0; i < length; i++) {
+                    action(stu, (Gc *) sv->val.structure[i]);
+                }
+            }
             break;
         }
     }

@@ -37,26 +37,26 @@
 #define CADDR(sv)    ((sv) ? CAR(CDR(CDR((sv)))) : NULL)
 
 /* Types of stu values. */
-enum Sv_type {
-    SV_NIL,
-    SV_ERR,
-    SV_SYM,
-    SV_INT,
-    SV_FLOAT,
-    SV_RATIONAL,
-    SV_BOOL,
-    SV_STR,
-    SV_CONS,
-    SV_NATIVE_FUNC,
-    SV_NATIVE_CLOS,
-    SV_LAMBDA,
-    SV_SPECIAL,
-    SV_VECTOR,
-    SV_TUPLE,
-    SV_TUPLE_CONSTRUCTOR,
-    SV_FOREIGN,
-    SV_REGEX
-};
+typedef unsigned Sv_type;
+#define SV_NIL 0
+#define SV_ERR 1
+#define SV_SYM 2
+#define SV_INT 3
+#define SV_FLOAT 4
+#define SV_RATIONAL 5
+#define SV_BOOL 6
+#define SV_STR 7
+#define SV_CONS 8
+#define SV_NATIVE_FUNC 9
+#define SV_NATIVE_CLOS 10
+#define SV_LAMBDA 11
+#define SV_SPECIAL 12
+#define SV_VECTOR 13
+#define SV_STRUCTURE_ACCESS 14
+#define SV_STRUCTURE_CONSTRUCTOR 15
+#define SV_FOREIGN 16
+#define SV_REGEX 17
+#define SV_BUILTIN_TYPE_END 18
 
 enum Sv_special_type {
     SV_SPECIAL_COMMA,
@@ -76,11 +76,6 @@ typedef struct Sv_vector {
     long length;
     struct Sv *values[];
 } Sv_vector;
-
-typedef struct Sv_tuple {
-    Type type;
-    struct Sv *values[];
-} Sv_tuple;
 
 typedef struct Sv_ufunc {
     struct Env *env;
@@ -124,20 +119,20 @@ union Sv_val {
     struct Sv *reg[SV_CONS_REGISTERS];
     struct Sv_ufunc *ufunc;
     struct Sv_vector *vector;
-    struct Sv_tuple *tuple;
-    struct Type tuple_constructor;
     struct Sv_foreign foreign;
     struct Sv_re re;
+    struct Sv **structure;
+    Sv_type structure_constructor;
 };
 
 /* Core stu value. */
 typedef struct Sv {
     struct Gc gc;
-    enum Sv_type type;
+    Sv_type type;
     union Sv_val val;
 } Sv;
 
-extern Sv *Sv_new(struct Stu *, enum Sv_type);
+extern Sv *Sv_new(struct Stu *, Sv_type);
 extern Sv *Sv_new_int(struct Stu *, long);
 extern Sv *Sv_new_float(struct Stu *, double);
 extern Sv *Sv_new_rational(struct Stu *, long, long);
@@ -149,8 +144,9 @@ extern Sv *Sv_new_native_func(struct Stu *, Sv_native_func_t, unsigned, unsigned
 extern Sv *Sv_new_lambda(struct Stu *, struct Env *, Sv *, Sv *);
 extern Sv *Sv_new_special(struct Stu *, enum Sv_special_type type, Sv *body);
 extern Sv *Sv_new_vector(struct Stu *, Sv *);
-extern Sv *Sv_new_tuple(struct Stu *, Type, Sv *);
-extern Sv *Sv_new_tuple_constructor(struct Stu *, Type);
+extern Sv *Sv_new_structure(struct Stu *, Sv_type, Sv *);
+extern Sv *Sv_new_structure_constructor(struct Stu *, Sv_type);
+extern Sv *Sv_new_structure_access(struct Stu *, Sv *, Sv *);
 extern Sv *Sv_new_foreign(struct Stu *, void *, Sv_foreign_destructor_t);
 extern Sv *Sv_new_regex(struct Stu *, const char *, int);
 

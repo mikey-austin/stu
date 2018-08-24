@@ -64,6 +64,8 @@
 "#t"                                 { yylval.i = 1; return BOOLEAN; }
 "#f"                                 { yylval.i = 0; return BOOLEAN; }
 
+"::"                                 { return FIELD_ACCESSOR; }
+
 [a-zA-Z0-9._*+~#/$=<>?!&\x80-\xf3-]+ { yylval.str = yytext; return SYMBOL; }
 
 "#"\/(\\.|[^/])*\/[i]?               {

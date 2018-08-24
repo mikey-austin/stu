@@ -42,6 +42,7 @@ void yyerror (struct Stu *stu, Sv **list, char const *s)
     Sv *sv;
 }
 
+%token    FIELD_ACCESSOR
 %token <f>   FLOAT
 %token <i>   INTEGER BOOLEAN
 %token <str> STRING SYMBOL RE_SPEC RE_SPEC_I
@@ -79,6 +80,7 @@ elements: sexp              { $$ = Sv_cons(stu, $1, NIL); }
 sexp: atom                  { $$ = $1; }
     | list                  { $$ = $1; }
     | vector                { $$ = $1; }
+    | sexp FIELD_ACCESSOR sexp         { $$ = Sv_new_structure_access(stu, $1, $3); }
     | '\'' sexp             { $$ = Sv_cons(stu, Sv_new_sym(stu, "quote"), Sv_cons(stu, $2, NIL)); }
     | '`' sexp              { $$ = Sv_new_special(stu, SV_SPECIAL_BACKQUOTE, $2); }
     | ',' '@' sexp          { $$ = Sv_new_special(stu, SV_SPECIAL_COMMA_SPREAD, $3); }

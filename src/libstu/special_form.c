@@ -24,6 +24,7 @@
 #include "sv.h"
 #include "gc.h"
 #include "symtab.h"
+#include "types.h"
 
 static Sv
 *quote(Stu *stu, Env *env, Sv *args)
@@ -123,6 +124,30 @@ static Sv
 }
 
 static Sv
+*deftype(Stu *stu, Env *env, Sv *args)
+{
+    if (args->type != SV_CONS)
+        return Sv_new_err(stu, "deftype args is not a cons");
+
+    Sv *type_name = CAR(args);
+
+    if (type_name->type != SV_SYM)
+        return Sv_new_err(stu, "deftype first argument is not a symbol");
+
+    Sv *field_vector = Sv_new_vector(stu, CDR(args));
+
+    if (field_vector->type == SV_ERR)
+        /* Return error in case something went wrong */
+        return field_vector;
+
+    Sv_type type = Type_new(stu, type_name, field_vector);
+    Sv *constructor = Sv_new_structure_constructor(stu, type);
+    Env_capture(stu, type_name, constructor);
+
+    return NIL;
+}
+
+static Sv
 *defmacro(Stu *stu, Env *env, Sv *args)
 {
     if (args->type != SV_CONS)
@@ -166,39 +191,52 @@ static Sv
 }
 
 static Sv
-*progn(Stu *stu, Env *env, Sv *x)
-{
-    return Sv_eval_list(stu, env, x);
-}
-
-static Sv
 *try(Stu *stu, Env *env, Sv *x)
 {
     return Try_eval_stu_catch(stu, env, x);
+}
+
+static Sv
+*open(Stu *stu, Env *env, Sv *args) {
+    if (args->type != SV_CONS)
+        return Sv_new_err(stu, "'open' args is not a cons");
+    if (!IS_NIL(CDR(args)))
+        return Sv_new_err(stu, "'open' should only have one argument");
+    Sv *x = Sv_eval(stu, env, CAR(args));
+    if (x->type < SV_BUILTIN_TYPE_END)
+        return Sv_new_err(stu, "Value to be opened must be a structure");
+    Sv_vector *fields = Type_field_vector(stu, x->type)->val.vector;
+    Sv **values = x->val.structure;
+    for (long i = 0; i < fields->length; ++i)
+        Env_capture(stu, fields->values[i], values[i]);
+    return NIL;
 }
 
 static char *sym_strings[] = {
     "nil",  // Not a special form, but already taken as symbol 0
     "quote",
     "def",
+    "deftype",
     "defmacro",
     "lambda",
     "λ",
     "if",
-    "progn",
-    "try"
+    "try",
+    "open",
+    ""
 };
 
 static Special_form_f funcs[] = {
     NULL,
     quote,
     def,
+    deftype,
     defmacro,
     lambda,
     lambda,
     stu_if,
-    progn,
-    try
+    try,
+    open
 };
 
 #define SYM_STRINGS_SIZE (sizeof(sym_strings) / sizeof(*sym_strings))

@@ -20,24 +20,20 @@
 /* Forward declarations */
 typedef struct Stu Stu;
 typedef struct Sv Sv;
+typedef unsigned Sv_type;
 
 typedef struct Type_registry {
-    long *name;
-    unsigned *arity;
-    Sv **value;
+    Sv **name_symbol;
+    Sv **field_vectors;
     unsigned size, capacity;
 } Type_registry;
 
-typedef struct Type {
-    unsigned i;
-} Type;
-
 extern void Type_registry_init(Type_registry *);
 extern void Type_registry_release(Type_registry *);
-extern Type Type_new(Stu *, Sv*, unsigned);
-extern Type Type_new_str(Stu *stu, const char *, unsigned);
-extern long Type_name(Stu *, Type);
-extern unsigned Type_arity(Stu *, Type);
-extern Sv *Type_value(Stu *, Type);
+extern Sv_type Type_new(Stu *, Sv*, Sv*);
+extern Sv *Type_name_symbol(Stu *, Sv_type);
+extern const char *Type_name_string(Stu *, Sv_type);
+extern Sv *Type_field_vector(Stu *, Sv_type);
+extern long Type_field_index(Stu *, Sv_type, Sv*);
 
 #endif

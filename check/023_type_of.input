@@ -1,4 +1,4 @@
-(def person (tuple-constructor 'person 2))
+(deftype person name age)
 
 (def func (lambda (x y)
             (+ x y)))

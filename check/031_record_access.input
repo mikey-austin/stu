@@ -1,0 +1,15 @@
+(deftype person name age)
+
+(def x (person "John" 30))
+
+(def y (person "Mary" 32))
+
+(open y)
+
+(def person->vector (lambda (x)
+                      (open x)
+                      [name age]))
+
+(def [z-name z-age] (person->vector (person "Smith" 44)))
+
+(list x::name x::age name age z-name z-age)

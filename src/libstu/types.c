@@ -16,8 +16,11 @@
 
 #include "stu_private.h"
 #include "sv.h"
+#include "symtab.h"
 #include "types.h"
 #include "utils.h"
+
+#include <stdlib.h>
 
 #define INITIAL_CAPACITY 20
 #define GROWTH_FACTOR 2
@@ -25,9 +28,8 @@
 extern void
 Type_registry_init(Type_registry *reg)
 {
-   reg->name = CHECKED_CALLOC(INITIAL_CAPACITY, sizeof(*(reg->name)));
-   reg->arity = CHECKED_CALLOC(INITIAL_CAPACITY, sizeof(*(reg->arity)));
-   reg->value = CHECKED_CALLOC(INITIAL_CAPACITY, sizeof(*(reg->value)));
+   reg->name_symbol = CHECKED_CALLOC(INITIAL_CAPACITY, sizeof(*(reg->name_symbol)));
+   reg->field_vectors = CHECKED_CALLOC(INITIAL_CAPACITY, sizeof(*(reg->field_vectors)));
    reg->size = 0;
    reg->capacity = INITIAL_CAPACITY;
 }
@@ -35,74 +37,65 @@ Type_registry_init(Type_registry *reg)
 extern void
 Type_registry_release(Type_registry *reg)
 {
-    free(reg->name);
-    free(reg->arity);
-    free(reg->value);
-    reg->name = NULL;
-    reg->arity = NULL;
-    reg->value = NULL;
+    free(reg->name_symbol);
+    free(reg->field_vectors);
+    reg->name_symbol = NULL;
+    reg->field_vectors = NULL;
 }
 
 static void
 resize_arrays(Type_registry *reg)
 {
     reg->capacity *= GROWTH_FACTOR;
-    reg->name = CHECKED_REALLOC(reg->name, reg->capacity * sizeof(*(reg->name)));
-    reg->arity = CHECKED_REALLOC(reg->arity, reg->capacity * sizeof(*(reg->arity)));
-    reg->value = CHECKED_REALLOC(reg->value, reg->capacity * sizeof(*(reg->value)));
+    reg->name_symbol = CHECKED_REALLOC(reg->name_symbol, reg->capacity * sizeof(*(reg->name_symbol)));
+    reg->field_vectors = CHECKED_REALLOC(reg->field_vectors, reg->capacity * sizeof(*(reg->field_vectors)));
 }
 
-extern Type
-Type_new(Stu *stu, Sv *name, unsigned arity)
+extern Sv_type
+Type_new(Stu *stu, Sv *name, Sv *fields)
 {
-    Type t = {0};
     Type_registry *reg = &(stu->type_registry);
-    long name_i = name->val.i;
-
-    for (unsigned i = 0; i < reg->size; ++i) {
-        if (reg->name[i] == name_i && reg->arity[i] == arity) {
-            t.i = i;
-            return t;
-        }
-    }
 
     if (reg->size == reg->capacity)
         resize_arrays(reg);
 
-    PUSH_SCOPE(stu);
-    t.i = reg->size++;
-    reg->name[t.i] = name_i;
-    reg->arity[t.i] = arity;
-    reg->value[t.i] = Sv_new_tuple(stu, Type_new_str(stu, "tuple-type", 2),
-        Sv_cons(stu, name, Sv_cons(stu, Sv_new_int(stu, arity), NIL)));
-    Gc_lock(stu, (Gc *) reg->value[t.i]);
-    POP_SCOPE(stu);
-
-    return t;
-}
-
-extern Type
-Type_new_str(Stu *stu, const char *str, unsigned arity)
-{
-    Sv *name = Sv_new_sym(stu, str);
     Gc_lock(stu, (Gc *) name);
-    return Type_new(stu, name, arity);
-}
+    Gc_lock(stu, (Gc *) fields);
+    for (long i = 0; i < fields->val.vector->length; ++i)
+        Gc_lock(stu, (Gc *) fields->val.vector->values[i]);
 
-extern long
-Type_name(Stu *stu, Type t)
-{
-    return stu->type_registry.name[t.i];
-}
+    long index = reg->size++;
+    reg->name_symbol[index] = name;
+    reg->field_vectors[index] = fields;
 
-extern unsigned
-Type_arity(Stu *stu, Type t)
-{
-    return stu->type_registry.arity[t.i];
+    return SV_BUILTIN_TYPE_END + index;
 }
 
 extern Sv
-*Type_value(Stu *stu, Type t)
+*Type_name_symbol(Stu *stu, Sv_type t)
 {
-    return stu->type_registry.value[t.i];
+    return stu->type_registry.name_symbol[t - SV_BUILTIN_TYPE_END];
+}
+
+extern const char
+*Type_name_string(Stu *stu, Sv_type t)
+{
+    return Symtab_get_name(stu, Type_name_symbol(stu, t)->val.i);
+}
+
+extern Sv
+*Type_field_vector(Stu *stu, Sv_type t)
+{
+    return stu->type_registry.field_vectors[t - SV_BUILTIN_TYPE_END];
+}
+
+extern long
+Type_field_index(Stu *stu, Sv_type t, Sv *field)
+{
+    Sv_vector *vec = Type_field_vector(stu, t)->val.vector;
+    long sym_val = field->val.i;
+    for (long i = 0; i < vec->length; ++i)
+        if (sym_val == vec->values[i]->val.i)
+            return i;
+    return vec->length;
 }
