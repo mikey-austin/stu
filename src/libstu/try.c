@@ -110,10 +110,16 @@ extern Sv
     return try(stu, env, to_eval, catch, catch_arg, Sv_eval);
 }
 
+static inline Sv
+*eval_list_ignore_updated_env(Stu *stu, Env *env, Sv *x)
+{
+    return Sv_eval_list(stu, env, x, NULL);
+}
+
 extern Sv
 *Try_eval_list(Stu *stu, Env *env, Sv *to_eval, Sv *(*catch)(Stu *, Sv *, Env *, void *), void *catch_arg)
 {
-    return try(stu, env, to_eval, catch, catch_arg, Sv_eval_list);
+    return try(stu, env, to_eval, catch, catch_arg, eval_list_ignore_updated_env);
 }
 
 extern Sv

@@ -139,6 +139,7 @@ extern Sv *Sv_new_rational(struct Stu *, long, long);
 extern Sv *Sv_new_bool(struct Stu *, short);
 extern Sv *Sv_new_str(struct Stu *, const char *);
 extern Sv *Sv_new_sym(struct Stu *, const char *);
+extern Sv *Sv_new_sym_from_id(struct Stu *, long);
 extern Sv *Sv_new_err(struct Stu *, const char *);
 extern Sv *Sv_new_native_func(struct Stu *, Sv_native_func_t, unsigned, unsigned);
 extern Sv *Sv_new_lambda(struct Stu *, struct Env *, Sv *, Sv *);
@@ -161,7 +162,7 @@ extern Sv *Sv_expand_1(struct Stu *, Sv *);
 extern void *Sv_get_foreign_obj(struct Stu *, Sv *);
 
 extern Sv *Sv_eval(struct Stu *, struct Env *, Sv *);
-extern Sv *Sv_eval_list(struct Stu *, struct Env *, Sv *);
+extern Sv *Sv_eval_list(struct Stu *, struct Env *, Sv *, struct Env **);
 extern Sv *Sv_eval_special(struct Stu *, struct Env *, Sv *);
 extern Sv *Sv_eval_special_cons(struct Stu *, struct Env *, Sv *);
 extern Sv *Sv_eval_sexp(struct Stu *, struct Env *, Sv *);

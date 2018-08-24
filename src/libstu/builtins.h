@@ -27,12 +27,8 @@ extern Sv *Builtin_add(Stu *, Env *, Sv **);
 extern Sv *Builtin_sub(Stu *, Env *, Sv **);
 extern Sv *Builtin_mul(Stu *, Env *, Sv **);
 extern Sv *Builtin_div(Stu *, Env *, Sv **);
-extern Sv *Builtin_quote(Stu *, Env *, Sv **);
-extern Sv *Builtin_def(Stu *, Env *, Sv **);
 extern Sv *Builtin_cons(Stu *, Env *, Sv **);
 extern Sv *Builtin_list(Stu *, Env *, Sv **);
-extern Sv *Builtin_lambda(Stu *, Env *, Sv **);
-extern Sv *Builtin_defmacro(Stu *, Env *, Sv **);
 extern Sv *Builtin_macroexpand_1(Stu *, Env *, Sv **);
 extern Sv *Builtin_macroexpand(Stu *, Env *, Sv **);
 extern Sv *Builtin_eval(Stu *, Env *, Sv **);
@@ -56,5 +52,6 @@ extern Sv *Builtin_type_of(Stu *, Env *, Sv **);
 extern Sv *Builtin_re_match(Stu *, Env *, Sv **);
 extern Sv *Builtin_re_match_p(Stu *, Env *, Sv **);
 extern Sv *Builtin_throw(Stu *, Env *, Sv **);
+extern Sv *Builtin_import(Stu *, Env *, Sv **);
 
 #endif

@@ -29,6 +29,7 @@
 #include "sv.h"
 #include "types.h"
 #include "call_stack.h"
+#include "mod.h"
 
 typedef enum {
   INTEGER,
@@ -67,8 +68,9 @@ Builtin_init(Stu *stu)
     DEF("type-of", Builtin_type_of, 1, PURE);
     DEF("re-match?", Builtin_re_match_p, 2, PURE);
     DEF("re-match", Builtin_re_match, 2, PURE);
-    DEF("throw", Builtin_throw, 1, PURE);
+    DEF("throw", Builtin_throw, 1, DEFAULT);
     DEF("vector-length", Builtin_vector_length, 1, PURE);
+    DEF("import", Builtin_import, 1, DEFAULT);
 }
 
 #define INIT_ACC(init) value_type acc_type = INTEGER, cur_type = INTEGER; \
@@ -681,11 +683,17 @@ extern Sv
      *   '("argument to throw" . (call stack))
      *
      */
-    stu->last_exception = Sv_cons(stu, args[0], Call_stack_copy(stu));
+    stu->last_exception = Sv_cons(stu, Sv_copy(stu, args[0]), Call_stack_copy(stu));
 
     /* Unwind the C stack back to last structureed try marker. */
     longjmp(*(stu->last_try_marker), 1);
 
     /* Not reached. */
     return NIL;
+}
+
+extern Sv
+*Builtin_import(Stu *stu, Env *env, Sv **args)
+{
+    return Mod_import_from_file(stu, env, args[0]);
 }

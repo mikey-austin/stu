@@ -1,5 +1,5 @@
 ;;
-;; Copyright (c) 2016, 2017 Mikey Austin <mikey@jackiemclean.net>
+;; Copyright (c) 2016 - 2018 Mikey Austin <mikey@jackiemclean.net>
 ;;
 ;; Permission to use, copy, modify, and distribute this software for any
 ;; purpose with or without fee is hereby granted, provided that the above
@@ -18,9 +18,6 @@
 ;; Stdlib functions and definitions. Note that lambda or λ
 ;; can be used for lambda syntax.
 ;;
-
-(defmacro defun (name args & rest)
-  `(def ,name (λ ,args ,@rest)))
 
 (defmacro when (cond & body)
   `(if ,cond

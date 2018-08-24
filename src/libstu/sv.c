@@ -115,6 +115,14 @@ extern Sv
 }
 
 extern Sv
+*Sv_new_sym_from_id(Stu *stu, long id)
+{
+    Sv *x = Sv_new(stu, SV_SYM);
+    x->val.i = id;
+    return x;
+}
+
+extern Sv
 *Sv_new_err(Stu *stu, const char *err)
 {
     Sv *x = Sv_new_str(stu, err);
@@ -721,7 +729,7 @@ extern Sv
 }
 
 extern Sv
-*Sv_eval_list(Stu *stu, Env *env, Sv *x)
+*Sv_eval_list(Stu *stu, Env *env, Sv *x, Env **new_env)
 {
     if (IS_NIL(x)) return x;
 
@@ -745,6 +753,12 @@ extern Sv
 
     Env_capture_restore(stu, tail, head);
     POP_N_SAVE(stu, last_result);
+
+    /* Save updated environment in the new head scope stack. */
+    if (new_env != NULL) {
+        SCOPE_SAVE(stu, next_env);
+        *new_env = next_env;
+    }
 
     return last_result;
 }
@@ -931,7 +945,7 @@ extern Sv
         if (partial) {
             return partial;
         } else {
-            return Sv_eval_list(stu, call_env, f->val.ufunc->body);
+            return Sv_eval_list(stu, call_env, f->val.ufunc->body, NULL);
         }
     }
 

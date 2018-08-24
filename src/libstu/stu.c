@@ -137,7 +137,7 @@ extern Sv
         yyin = stdin;
     } else {
         if ((yyin = fopen(file, "r")) == NULL)
-            err(1, "Parse_file");
+            err(1, "Parse_file: %s", file);
     }
 
     switch (yyparse(stu, &list)) {

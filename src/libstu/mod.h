@@ -21,6 +21,6 @@
 #include "env.h"
 #include "sv.h"
 
-extern Sv *Mod_load_file(Stu *, const char *);
+extern Sv *Mod_import_from_file(Stu *, Env *, Sv *);
 
 #endif

@@ -145,6 +145,22 @@ static Sv
 }
 
 static Sv
+*defun(Stu *stu, Env *env, Sv *args)
+{
+    if (args->type != SV_CONS)
+        return Sv_new_err(stu, "'defun' args is not a cons");
+
+    Sv *name = CAR(args);
+    Sv *formals = CADR(args);
+    Sv *body = CADDR(args);
+
+    Sv *lambda_def = lambda(stu, env, Sv_cons(stu, formals, Sv_cons(stu, body, NIL)));
+    Sv *def_args = Sv_cons(stu, name, Sv_cons(stu, lambda_def, NIL));
+
+    return def(stu, env, def_args);
+}
+
+static Sv
 *deftype(Stu *stu, Env *env, Sv *args)
 {
     if (args->type != SV_CONS)
@@ -181,7 +197,7 @@ static Sv
     Sv *lamb = lambda(stu, env, CDR(args));
 
     lamb->val.ufunc->is_macro = 1;
-    Env_capture(stu, name, lamb);
+    Env_main_put(stu, name, lamb);
 
     return NIL;
 }
@@ -239,6 +255,7 @@ static char *sym_strings[] = {
     "def",
     "deftype",
     "defmacro",
+    "defun",
     "lambda",
     "λ",
     "if",
@@ -253,6 +270,7 @@ static Special_form_f funcs[] = {
     def,
     deftype,
     defmacro,
+    defun,
     lambda,
     lambda,
     stu_if,

@@ -1,3 +1,5 @@
+(def std (import "../src/stdlib.stu"))
+
 (list
- (nil? ())
- (nil? 1))
+ (std::nil? ())
+ (std::nil? 1))

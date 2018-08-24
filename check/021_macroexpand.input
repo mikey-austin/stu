@@ -1,3 +1,5 @@
+(open (import "../src/stdlib.stu"))
+
 ;; Test multi-level macro expand.
 
 (defmacro inner-macro (arg) `(list "hello" ,arg))
