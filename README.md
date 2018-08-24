@@ -38,3 +38,4 @@ Online manual pages are generated from both _docs/*.pod_ files and various heade
 The test suite uses valgrind if installed (which you should).
 
     $ make check
+    $ make check TESTS="my_specific_test_name"
