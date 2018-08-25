@@ -160,6 +160,7 @@ extern Sv *Sv_copy(struct Stu *, Sv *);
 extern Sv *Sv_expand(struct Stu *, Sv *);
 extern Sv *Sv_expand_1(struct Stu *, Sv *);
 extern void *Sv_get_foreign_obj(struct Stu *, Sv *);
+extern Sv *Sv_vector_append(struct Stu *, Sv *, Sv *);
 
 extern Sv *Sv_eval(struct Stu *, struct Env *, Sv *);
 extern Sv *Sv_eval_list(struct Stu *, struct Env *, Sv *, struct Env **);

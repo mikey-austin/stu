@@ -91,6 +91,8 @@ extern Stu
         err(1, "stu_new");
     Special_form_register_symbols(stu);
 
+    stu->mod_include_locations = Sv_new_vector(stu, NIL);
+
     Builtin_init(stu);
     POP_SCOPE(stu);
 
@@ -126,6 +128,34 @@ Stu_destroy(Stu **stu)
     }
 
     *stu = NULL;
+}
+
+extern
+void Stu_add_include_path(Stu *stu, const char *path)
+{
+    size_t plen = strlen(path);
+    char trimmed[plen + 1];
+
+    /* Remove trailing slashes before storage. */
+    for (int i = plen - 1; i > 0; i--) {
+        if (path[i] == '/') {
+            plen--;
+        } else {
+            break;
+        }
+    }
+
+    strncpy(trimmed, path, plen);
+    trimmed[plen] = '\0';
+
+    Gc_unlock(stu, (Gc *) stu->mod_include_locations);
+    PUSH_N_SAVE(stu, stu->mod_include_locations);
+
+    stu->mod_include_locations = Sv_vector_append(
+        stu, stu->mod_include_locations, Sv_new_str(stu, trimmed));
+
+    Gc_lock(stu, (Gc *) stu->mod_include_locations);
+    POP_SCOPE(stu);
 }
 
 extern Sv

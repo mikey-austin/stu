@@ -3,7 +3,7 @@
 # Run input through stutter and compare with a pre-created output file.
 #
 # Usage:
-#   bash runner.sh -f @top_builddir@/src/repl/stu -l @top_srcdir@/src/stdlib.stu 001_curried.input
+#   bash runner.sh -f @top_builddir@/src/repl/stu -L @top_srcdir@/src/stu 001_curried.input
 #
 # Returns 0 on success; 1 on failure.
 #
@@ -14,7 +14,7 @@ DIFF="@DIFF@"
 INPUT_SUFFIX=".input"
 OUTPUT_SUFFIX=".output"
 PREFIX="@top_srcdir@/check"
-STULIB="-l @top_srcdir@/src/stdlib.stu"
+STULIB="-L @top_srcdir@/src/stu/"
 STU="@top_builddir@/src/repl/stu"
 RUNNER=
 

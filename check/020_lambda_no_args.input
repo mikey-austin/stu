@@ -1,4 +1,4 @@
-(open (import "../src/stdlib.stu"))
+(open (import "stdlib.stu"))
 (defun my-func ()
   (+ 1 2 3 4))
 (my-func)

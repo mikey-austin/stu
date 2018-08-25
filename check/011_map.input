@@ -1,4 +1,4 @@
-(def std (import "../src/stdlib.stu"))
+(def std (import "stdlib.stu"))
 
 (std::grep (λ (a) (< a 100))
       (std::map (λ (a) (* 2 a)) '(1 2 1000 3 4)))

@@ -15,12 +15,58 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "stu_private.h"
 #include "env.h"
 #include "sv.h"
 #include "builtins.h"
 #include "gc.h"
+
+static char
+*append_file_to_loc(const char *location, const char *path)
+{
+    char buf[strlen(location) + strlen(path) + 2];
+
+    buf[0] = '\0';
+    strcat(buf, location);
+    strcat(buf, "/");
+    strcat(buf, path);
+
+    return strdup(buf);
+}
+
+static char
+*resolve_path(Stu *stu, char *file)
+{
+    size_t len;
+    if (file == NULL || (len = strlen(file)) == 0) {
+        return NULL;
+    }
+
+    if (file[0] == '/' || access(file, F_OK | R_OK) == 0) {
+        return strdup(file);
+    }
+
+    char *next = NULL, *result = NULL;
+    Sv *locations = stu->mod_include_locations;
+    for (int i = 0; i < locations->val.vector->length; i++) {
+        Sv *loc = locations->val.vector->values[i];
+        next = append_file_to_loc(loc->val.buf, file);
+        if (next == NULL) {
+            break;
+        } else if (access(next, F_OK | R_OK) == 0) {
+            result = next;
+            break;
+        } else {
+            free(next);
+            next = NULL;
+        }
+    }
+
+    return result;
+}
 
 extern Sv
 *Mod_import_from_file(Stu *stu, Env *base, Sv *file)
@@ -29,7 +75,13 @@ extern Sv
         return Sv_new_err(stu, "import needs a string file path");
     }
 
-    Sv *forms = Stu_parse_file(stu, file->val.buf);
+    char *resolved_path = resolve_path(stu, file->val.buf);
+    if (!resolved_path) {
+        return Sv_new_err(stu, "could not resolve file path");
+    }
+
+    Sv *forms = Stu_parse_file(stu, resolved_path);
+    free(resolved_path);
 
     /*
      * TODO: Make a way to pull the type name from out of a module

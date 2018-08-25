@@ -220,7 +220,8 @@ Gc_unlock(Stu *stu, Gc *gc)
         GC_UNLOCK(gc);
         switch (gc->flags >> GC_TYPE_BITS) {
         case GC_TYPE_SV:
-            Gc_visit_sv(stu, (Sv *) gc, Gc_unlock);
+            if (!IS_NIL((Sv *) gc))
+                Gc_visit_sv(stu, (Sv *) gc, Gc_unlock);
             break;
 
         case GC_TYPE_ENV:

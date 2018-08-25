@@ -81,7 +81,6 @@ typedef struct Stu Stu;
  * to I<Stu_new>; any subsequent calls will make use of the same instance.
  *
  */
-
 extern StuVal *Sv_nil;
 #define NIL Sv_nil
 
@@ -162,6 +161,14 @@ extern void Stu_release_val(Stu *, StuVal *);
  *
  */
 extern void Stu_dump_val(Stu *, StuVal *, FILE *);
+
+/**
+ * =head2 void Stu_add_include_path(Stu *I<stu>, const char *I<path>)
+ *
+ * Append an include path to the interpreter's list of search locations
+ * for I<import>ed module files.
+ */
+extern void Stu_add_include_path(Stu *, const char *);
 
 /**
  * =head2 void Stu_dump_stats(Stu *I<stu>, FILE *I<out>)

@@ -1,4 +1,4 @@
-(open (import "../src/stdlib.stu"))
+(open (import "stdlib.stu"))
 
 (def lst '(1 2 3 4 5))
 (list

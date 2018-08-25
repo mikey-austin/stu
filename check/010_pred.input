@@ -1,4 +1,4 @@
-(def std (import "../src/stdlib.stu"))
+(def std (import "stdlib.stu"))
 
 (list
  (std::nil? ())

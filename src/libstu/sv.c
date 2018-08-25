@@ -493,6 +493,24 @@ static Sv
 }
 
 extern Sv
+*Sv_vector_append(Stu *stu, Sv *x, Sv *y)
+{
+    if (IS_NIL(y)) return x;
+
+    Sv_vector *vec = x->val.vector;
+    size_t new_size = sizeof(Sv_vector) + (vec->length + 1) * sizeof(Sv *);
+    Sv_vector *new_vec = CHECKED_MALLOC(new_size);
+    new_vec->length = vec->length + 1;
+    memcpy(new_vec->values, vec->values, (vec->length * sizeof(Sv *)));
+    new_vec->values[new_vec->length - 1] = y;
+
+    Sv *z = Sv_new(stu, SV_VECTOR);
+    z->val.vector = new_vec;
+
+    return z;
+}
+
+extern Sv
 *Sv_copy_structure(Stu *stu, Sv *x) {
     long length = Type_field_vector(stu, x->type)->val.vector->length;
     Sv *copy = Sv_new(stu, x->type);

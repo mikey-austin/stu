@@ -35,7 +35,7 @@ main(int argc, char **argv)
     StuVal *result = NULL;
     Stu *stu = Stu_new();
 
-    while ((option = getopt(argc, argv, "rl:f:d")) != -1) {
+    while ((option = getopt(argc, argv, "rl:f:dL:")) != -1) {
         switch (option) {
         case 'f':
             files = 1;
@@ -49,6 +49,10 @@ main(int argc, char **argv)
             files = 1;
             result = Stu_eval_file(stu, optarg);
             Stu_release_val(stu, result);
+            break;
+
+        case 'L':
+            Stu_add_include_path(stu, optarg);
             break;
 
         case 'r':

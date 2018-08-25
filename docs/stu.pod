@@ -4,7 +4,7 @@ stu - a simple and minimal lisp dialect
 
 =head1 SYNOPSIS
 
-B<stu> [ B<-d> ] [ B<-r> ] [ B<-l> I<file> ] [ B<-f> I<file> ]
+B<stu> [ B<-d> ] [ B<-r> ] [ B<-L> I<path> ] [ B<-l> I<file> ] [ B<-f> I<file> ]
 
 =head1 DESCRIPTION
 
@@ -23,6 +23,10 @@ Print debugging information and statistics at program exit.
 =item B<-r>
 
 Start a REPL (read-evaluate-print-loop) after evaluating file arguments (see B<-f> and B<-l> options).
+
+=item B<-L> I<include path>
+
+Append the specified path to the list of interpreter module include locations. This option may be specified multiple times.
 
 =item B<-l> I<file>
 

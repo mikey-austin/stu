@@ -18,7 +18,7 @@
 
 <h1 id="SYNOPSIS">SYNOPSIS</h1>
 
-<p><b>stu</b> [ <b>-d</b> ] [ <b>-r</b> ] [ <b>-l</b> <i>file</i> ] [ <b>-f</b> <i>file</i> ]</p>
+<p><b>stu</b> [ <b>-d</b> ] [ <b>-r</b> ] [ <b>-L</b> <i>path</i> ] [ <b>-l</b> <i>file</i> ] [ <b>-f</b> <i>file</i> ]</p>
 
 <h1 id="DESCRIPTION">DESCRIPTION</h1>
 
@@ -40,6 +40,12 @@
 <dd>
 
 <p>Start a REPL (read-evaluate-print-loop) after evaluating file arguments (see <b>-f</b> and <b>-l</b> options).</p>
+
+</dd>
+<dt id="L-include-path"><b>-L</b> <i>include path</i></dt>
+<dd>
+
+<p>Append the specified path to the list of interpreter module include locations. This option may be specified multiple times.</p>
 
 </dd>
 <dt id="l-file"><b>-l</b> <i>file</i></dt>

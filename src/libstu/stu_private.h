@@ -77,6 +77,9 @@ typedef struct Stu {
     struct Env *env_capture_head;
     struct Env *env_capture_tail;
 
+    /* Module configuration. */
+    struct Sv *mod_include_locations;
+
     /* Symbol table structures. */
     struct Hash *sym_name_to_id;
     char **sym_id_to_name;
