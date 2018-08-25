@@ -167,6 +167,7 @@ extern void Stu_dump_val(Stu *, StuVal *, FILE *);
  *
  * Append an include path to the interpreter's list of search locations
  * for I<import>ed module files.
+ *
  */
 extern void Stu_add_include_path(Stu *, const char *);
 

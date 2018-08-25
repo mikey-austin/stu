@@ -30,7 +30,7 @@ Append the specified path to the list of interpreter module include locations. T
 
 =item B<-l> I<file>
 
-Evaluate the specified file while ignoring the result. This option is useful for loading libraries at interpreter startup.
+Evaluate the specified file while ignoring the result.
 
 =item B<-f> I<file>
 
