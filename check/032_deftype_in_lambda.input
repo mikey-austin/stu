@@ -1,0 +1,8 @@
+(def func (lambda (a b)
+            (deftype pair fst snd)
+            (pair a b)))
+
+;; pair should be undefined here so this should be an error
+(def err (pair 5 6))
+
+(list (func 1 2)::fst (func 3 4)::snd err)

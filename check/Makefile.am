@@ -52,6 +52,7 @@ TESTS = 001_curried.input \
 		029_def_in_lambda.input \
 		030_def_pattern.input \
 		031_record_access.input \
+		032_deftype_in_lambda.input \
 		test_hash.test \
 		test_multi_stu.test \
 		test_valid_form.test
