@@ -92,6 +92,7 @@ extern Stu
     Special_form_register_symbols(stu);
 
     stu->mod_include_locations = Sv_new_vector(stu, NIL);
+    Gc_lock(stu, (Gc *) stu->mod_include_locations);
 
     Builtin_init(stu);
     POP_SCOPE(stu);
