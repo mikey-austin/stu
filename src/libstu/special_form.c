@@ -25,6 +25,8 @@
 #include "gc.h"
 #include "symtab.h"
 #include "types.h"
+#include "hash.h"
+#include "mod.h"
 
 static Sv
 *quote(Stu *stu, Env *env, Sv *args)
@@ -114,6 +116,61 @@ static Sv
 
     /* Record the new binding(s) and return NIL. */
     return bind_def_pattern(stu, y, z);
+}
+
+static Sv
+*defmod(Stu *stu, Env *env, Sv *args)
+{
+    if (args->type != SV_CONS)
+        return Sv_new_err(stu, "'defmod' args is not a cons");
+
+    Sv *name = CAR(args);
+    if (name->type != SV_SYM)
+        return Sv_new_err(stu, "'defmod' expects a symbol as the first arg");
+
+    Sv *doc = Sv_eval(stu, env, CADR(args));
+    if (!IS_NIL(doc) && doc->type != SV_STR)
+        return Sv_new_err(stu, "'defmod' second argument must evaluate to a string");
+
+    Mod_spec *mod = Mod_current_spec(stu);
+    mod->name = name;
+    Gc_lock(stu, (Gc *) mod->name);
+    mod->doc = doc;
+    Gc_lock(stu, (Gc *) mod->doc);
+
+    return NIL;
+}
+
+static Sv
+*export(Stu *stu, Env *env, Sv *args)
+{
+    Mod_spec *mod = Mod_current_spec(stu);
+    if (!mod) {
+        /*
+         * Nothing to export as we're not in the context
+         * of a module definition.
+         */
+        return NIL;
+    }
+
+    if (args->type != SV_CONS)
+        return Sv_new_err(stu, "'export' args is not a cons");
+
+    Sv *name = CAR(args);
+    if (name->type != SV_SYM)
+        return Sv_new_err(stu, "'export' expects a symbol as the first arg");
+
+    Sv *doc = Sv_eval(stu, env, CADR(args));
+    if (!IS_NIL(doc) && doc->type != SV_STR)
+        return Sv_new_err(stu, "'export' second argument must evaluate to a string");
+
+    /* Store the data to export as an improper list. */
+    char *to_export = Symtab_get_name(stu, name->val.i);
+    Sv *slot = Sv_cons(stu, Sv_new_str(stu, to_export), doc);
+    Gc_lock(stu, (Gc *) slot);
+    Hash_put(mod->exports, to_export, slot);
+
+    return NIL;
 }
 
 static Sv
@@ -261,6 +318,8 @@ static char *sym_strings[] = {
     "if",
     "try",
     "open",
+    "defmod",
+    "export",
     ""
 };
 
@@ -275,7 +334,9 @@ static Special_form_f funcs[] = {
     lambda,
     stu_if,
     try,
-    open
+    open,
+    defmod,
+    export
 };
 
 #define SYM_STRINGS_SIZE (sizeof(sym_strings) / sizeof(*sym_strings))

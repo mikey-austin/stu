@@ -26,7 +26,7 @@
 extern void
 Symtab_init(Stu *stu)
 {
-    stu->sym_name_to_id = Hash_new(NULL);
+    stu->sym_name_to_id = Hash_new(NULL, NULL);
     stu->sym_id_to_name = CHECKED_CALLOC(
         stu->sym_num_ids,
         sizeof(*(stu->sym_id_to_name)));

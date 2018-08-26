@@ -22,7 +22,10 @@
 #include "env.h"
 #include "sv.h"
 #include "builtins.h"
+#include "hash.h"
 #include "gc.h"
+#include "symtab.h"
+#include "mod.h"
 
 static char
 *append_file_to_loc(const char *location, const char *path)
@@ -83,11 +86,9 @@ extern Sv
     Sv *forms = Stu_parse_file(stu, resolved_path);
     free(resolved_path);
 
-    /*
-     * TODO: Make a way to pull the type name from out of a module
-     *       file's list of forms.
-     */
-    Sv *name = file;
+    Mod_spec curr_spec, *saved_spec = Mod_current_spec(stu);
+    Mod_spec_init(stu, &curr_spec);
+    Mod_set_current_spec(stu, &curr_spec);
 
     PUSH_SCOPE(stu);
 
@@ -99,15 +100,60 @@ extern Sv
 
     Sv *fields = NIL, *vals = NIL;
     for (Env *cur = captured; cur != base; cur = cur->prev) {
+        if (!Hash_get(curr_spec.exports, Symtab_get_name(stu, cur->sym))) {
+            /* This symbol has not been exported. */
+            continue;
+        }
         fields = Sv_cons(stu, Sv_new_sym_from_id(stu, cur->sym), fields);
         vals = Sv_cons(stu, cur->val, vals);
     }
 
+    Sv *name = curr_spec.name ? curr_spec.name : file;
     Sv_type type = Type_new(stu, name, Sv_new_vector(stu, fields));
     Sv *constructor = Sv_new_structure_constructor(stu, type);
     Sv *module = Sv_eval(stu, base, Sv_cons(stu, constructor, vals));
 
+    Mod_spec_destroy(stu, &curr_spec);
+    Mod_set_current_spec(stu, saved_spec);
+
     POP_N_SAVE(stu, module);
 
     return module;
+}
+
+extern Mod_spec
+*Mod_current_spec(Stu *stu)
+{
+    return stu->current_module;
+}
+
+extern void
+Mod_set_current_spec(Stu *stu, Mod_spec *spec)
+{
+    stu->current_module = spec;
+}
+
+static void
+unlock_export(Hash_ent *entry, void *arg)
+{
+    Stu *stu = arg;
+    Sv *export = entry->v;
+    if (!IS_NIL(export))
+        Gc_unlock(stu, (Gc *) export);
+}
+
+extern void
+Mod_spec_init(Stu *stu, Mod_spec *spec)
+{
+    spec->exports = Hash_new(unlock_export, (void *) stu);
+}
+
+extern void
+Mod_spec_destroy(Stu *stu, Mod_spec *spec)
+{
+    if (!IS_NIL(spec->name))
+        Gc_unlock(stu, (Gc *) spec->name);
+    if (!IS_NIL(spec->doc))
+        Gc_unlock(stu, (Gc *) spec->doc);
+    Hash_destroy(&spec->exports);
 }

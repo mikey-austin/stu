@@ -27,6 +27,7 @@ struct Env;
 struct Hash;
 struct Sv;
 struct Alloc;
+struct Mod_spec;
 
 /*
  * Main stu interpreter structure.
@@ -79,6 +80,7 @@ typedef struct Stu {
 
     /* Module configuration. */
     struct Sv *mod_include_locations;
+    struct Mod_spec *current_module;
 
     /* Symbol table structures. */
     struct Hash *sym_name_to_id;

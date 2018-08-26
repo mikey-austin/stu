@@ -37,12 +37,13 @@ typedef struct Hash_ent {
 
 typedef struct Hash {
     int  num_entries;
-    void (*destroy)(struct Hash_ent *entry);
+    void (*destroy)(struct Hash_ent *entry, void *);
+    void *arg;
     struct Hash_ent *entries[2];
     struct Hash_ent *buckets[HASH_SIZE];
 } Hash;
 
-extern Hash *Hash_new(void (*destroy)(Hash_ent *entry));
+extern Hash *Hash_new(void (*destroy)(Hash_ent *entry, void *arg), void *arg);
 extern void Hash_destroy(Hash **hash);
 extern void Hash_put(Hash *hash, const char *key, void *value);
 extern Hash_ent *Hash_get(Hash *hash, const char *key);

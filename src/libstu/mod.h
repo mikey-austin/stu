@@ -20,7 +20,18 @@
 #include "stu_private.h"
 #include "env.h"
 #include "sv.h"
+#include "hash.h"
 
+typedef struct Mod_spec {
+    Sv *name;
+    Sv *doc;
+    Hash *exports;
+} Mod_spec;
+
+extern Mod_spec *Mod_current_spec(Stu *);
+extern void Mod_set_current_spec(Stu *, Mod_spec *);
+extern void Mod_spec_init(Stu *, Mod_spec *);
+extern void Mod_spec_destroy(Stu *, Mod_spec *);
 extern Sv *Mod_import_from_file(Stu *, Env *, Sv *);
 
 #endif

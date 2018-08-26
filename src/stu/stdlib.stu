@@ -14,74 +14,95 @@
 ;; OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ;;
 
-;;
-;; Stdlib functions and definitions. Note that lambda or λ
-;; can be used for lambda syntax.
-;;
+(defmod stdlib
+  "Stu standard library functions and definitions.
 
+   Note that lambda or λ can be used for lambda syntax.")
+
+(export let "make a new scope and bind the arguments to it")
+(defmacro let (args & body)
+  `((λ ,(map car args) ,@body)
+    ,@(map cadr args)))
+
+(export when "an if statement with no else")
 (defmacro when (cond & body)
   `(if ,cond
     (progn ,@body)
     nil))
 
+(export unless "perl-style unless")
 (defmacro unless (cond & body)
   `(when (not ,cond)
      (progn ,@body)))
 
-;; Boolean negation.
+(export not "Boolean negation")
 (defun not (a) (if a #f #t))
 
-;; nil predicate.
+(export nil? "nil predicate")
 (defun nil? (a) (= a nil))
 
-;; Fold right.
+(export foldr "Fold right")
 (defun foldr (f end lst)
              (if (nil? lst)
                  end
                (f (car lst) (foldr f end (cdr lst)))))
+
+(export reduce "An alias to foldr")
 (def reduce foldr)
 
-;; Fold left.
+(export foldl "Fold left")
 (defun foldl (f acc lst)
              (if (nil? lst)
                  acc
                (foldl f (f (car lst) acc) (cdr lst))))
+
+(export fold "An alias to foldl")
 (def fold foldl)
 
-;; Length of a list.
+(export length "Length of a list")
 (defun length (lst)
               (fold (λ (a b) (+ 1 b)) 0 lst))
 
-;; Standard map.
+(export map "Standard map")
 (defun map (f lst)
            (reduce (λ (a b) (cons (f a) b)) nil lst))
 
-;; Perl-style grep.
+(export grep "Perl-style grep which essentially filters list elements")
 (defun grep (p lst)
             (reduce (λ (a b)
                      (if (p a) (cons a b) b)) nil lst))
+
+(export filter "An alias of grep")
 (def filter grep)
 
+(export append "Concatenate two lists")
 (defun append (& lists)
   (foldl (foldr cons) () lists))
 
-;; Max & min
+(export max "Max of two comparable things")
 (defun max (a b) (if (> a b) a b))
+
+(export min "Min of two comparable things")
 (defun min (a b) (if (< a b) a b))
 
-;; List max & min.
+(export list-max "Find the max of a list")
 (def list-max (fold max 0))
+
+(export list-min "Find the min of a list")
 (defun list-min (lst)
                 (fold min (car lst) lst))
 
-;; The various list accessors.
-(defun cadr (a) (car (cdr a)))
-(defun caddr (a) (car (cdr (cdr a))))
-(defun cadddr (a) (car (cdr (cdr (cdr a)))))
-(defun caddddr (a) (car (cdr (cdr (cdr (cdr a))))))
-
+(export abs "Return the absolute value of the supplied number")
 (defun abs (a) (if (< a 0) (- a) a))
 
-(defmacro let (args & body)
-  `((λ ,(map car args) ,@body)
-    ,@(map cadr args)))
+(export cadr "CAR of the CDR")
+(defun cadr (a) (car (cdr a)))
+
+(export caddr "CAR of the CDR ^ 2")
+(defun caddr (a) (car (cdr (cdr a))))
+
+(export cadddr "CAR of the CDR ^ 3")
+(defun cadddr (a) (car (cdr (cdr (cdr a)))))
+
+(export caddddr "CAR of the CDR ^ 4")
+(defun caddddr (a) (car (cdr (cdr (cdr (cdr a))))))

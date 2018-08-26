@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <err.h>
 
 #include <libstu/hash.h>
 #include "test.h"
@@ -34,8 +35,12 @@
 #define TEST_VAL5 "test value 5"
 
 void
-destroy(Hash_ent *entry)
+destroy(Hash_ent *entry, void *arg)
 {
+    long passed = (long) arg;
+    if (passed != 1234)
+        errx(1, "argument was not passed to destroy callback");
+
     /* Free the malloced value. */
     if(entry && entry->v) {
         free(entry->v);
@@ -50,7 +55,7 @@ main(void)
     int i;
 
     /* Test hash creation. */
-    hash = Hash_new(destroy);
+    hash = Hash_new(destroy, (void *) 1234);
 
     TEST_START;
 

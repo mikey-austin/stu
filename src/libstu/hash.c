@@ -34,10 +34,11 @@ hash_key(const char *key)
 }
 
 extern Hash
-*Hash_new(void (*destroy)(Hash_ent *entry))
+*Hash_new(void (*destroy)(Hash_ent *entry, void *arg), void *arg)
 {
     Hash *new = CHECKED_CALLOC(1, sizeof(*new));
     new->destroy = destroy;
+    new->arg = arg;
     return new;
 }
 
@@ -53,7 +54,7 @@ Hash_destroy(Hash **to_destroy)
     for (cur = hash->entries[HEAD]; cur; cur = next) {
         next = NEXT_ENTRY(cur);
         if (hash->destroy)
-            hash->destroy(cur);
+            hash->destroy(cur, hash->arg);
         free(cur);
     }
 
@@ -123,7 +124,7 @@ Hash_del(Hash *hash, const char *key)
     if (ent != NULL) {
         hash->num_entries--;
         if (hash->destroy)
-            hash->destroy(ent);
+            hash->destroy(ent, hash->arg);
 
         /* Remove from entries list. */
         if (ent->entries[PREV] == NULL)
