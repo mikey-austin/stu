@@ -19,90 +19,91 @@
 
    Note that lambda or λ can be used for lambda syntax.")
 
-(export let "make a new scope and bind the arguments to it")
 (defmacro let (args & body)
+  "make a new scope and bind the arguments to it"
   `((λ ,(map car args) ,@body)
     ,@(map cadr args)))
 
-(export when "an if statement with no else")
 (defmacro when (cond & body)
+  "an if statement with no else"
   `(if ,cond
     (progn ,@body)
     nil))
 
-(export unless "perl-style unless")
 (defmacro unless (cond & body)
+  "perl-style unless"
   `(when (not ,cond)
      (progn ,@body)))
 
-(export not "Boolean negation")
-(defun not (a) (if a #f #t))
+(defun not (a)
+  "Boolean negation"
+  (if a #f #t))
 
-(export nil? "nil predicate")
-(defun nil? (a) (= a nil))
+(defun nil? (a)
+  "nil predicate"
+  (= a nil))
 
-(export foldr "Fold right")
 (defun foldr (f end lst)
-             (if (nil? lst)
-                 end
-               (f (car lst) (foldr f end (cdr lst)))))
+  "Fold right"
+  (if (nil? lst)
+      end
+    (f (car lst) (foldr f end (cdr lst)))))
 
-(export reduce "An alias to foldr")
-(def reduce foldr)
-
-(export foldl "Fold left")
 (defun foldl (f acc lst)
-             (if (nil? lst)
-                 acc
-               (foldl f (f (car lst) acc) (cdr lst))))
+  "Fold left"
+  (if (nil? lst)
+      acc
+    (foldl f (f (car lst) acc) (cdr lst))))
 
-(export fold "An alias to foldl")
-(def fold foldl)
-
-(export length "Length of a list")
 (defun length (lst)
-              (fold (λ (a b) (+ 1 b)) 0 lst))
+  "Length of a list"
+  (foldl (λ (a b) (+ 1 b)) 0 lst))
 
-(export map "Standard map")
 (defun map (f lst)
-           (reduce (λ (a b) (cons (f a) b)) nil lst))
+  "Standard map"
+  (foldr (λ (a b) (cons (f a) b)) nil lst))
 
-(export grep "Perl-style grep which essentially filters list elements")
 (defun grep (p lst)
-            (reduce (λ (a b)
-                     (if (p a) (cons a b) b)) nil lst))
+  "Perl-style grep which essentially filters list elements"
+  (foldr (λ (a b)
+             (if (p a) (cons a b) b)) nil lst))
 
-(export filter "An alias of grep")
-(def filter grep)
-
-(export append "Concatenate two lists")
 (defun append (& lists)
+  "Concatenate two lists"
   (foldl (foldr cons) () lists))
 
-(export max "Max of two comparable things")
-(defun max (a b) (if (> a b) a b))
+(defun max (a b)
+  "Max of two comparable things"
+  (if (> a b) a b))
 
-(export min "Min of two comparable things")
-(defun min (a b) (if (< a b) a b))
+(defun min (a b)
+  "Min of two comparable things"
+  (if (< a b) a b))
 
-(export list-max "Find the max of a list")
-(def list-max (fold max 0))
+(defun list-max (lst)
+  "Find the max of a list"
+  (foldl max 0 lst))
 
-(export list-min "Find the min of a list")
 (defun list-min (lst)
-                (fold min (car lst) lst))
+  "Find the min of a list"
+  (foldl min (car lst) lst))
 
-(export abs "Return the absolute value of the supplied number")
-(defun abs (a) (if (< a 0) (- a) a))
+(defun abs (a)
+  "Return the absolute value of the supplied number"
+  (if (< a 0) (- a) a))
 
-(export cadr "CAR of the CDR")
-(defun cadr (a) (car (cdr a)))
+(defun cadr (a)
+  "CAR of the CDR"
+  (car (cdr a)))
 
-(export caddr "CAR of the CDR ^ 2")
-(defun caddr (a) (car (cdr (cdr a))))
+(defun caddr (a)
+  "CAR of the CDR ^ 2"
+  (car (cdr (cdr a))))
 
-(export cadddr "CAR of the CDR ^ 3")
-(defun cadddr (a) (car (cdr (cdr (cdr a)))))
+(defun cadddr (a)
+  "CAR of the CDR ^ 3"
+  (car (cdr (cdr (cdr a)))))
 
-(export caddddr "CAR of the CDR ^ 4")
-(defun caddddr (a) (car (cdr (cdr (cdr (cdr a))))))
+(defun caddddr (a)
+  "CAR of the CDR ^ 4"
+  (car (cdr (cdr (cdr (cdr a))))))

@@ -429,11 +429,14 @@ Sv_dump(Stu *stu, Sv *sv, FILE *out)
 
         case SV_LAMBDA:
             if (sv->val.ufunc) {
-                fprintf(out, "(λ ");
-                Sv_dump(stu, sv->val.ufunc->formals, out);
-                fprintf(out, " ");
-                Sv_dump(stu, sv->val.ufunc->body, out);
-                fprintf(out, ")");
+                Sv_dump(
+                    stu, Sv_cons(
+                        stu,
+                        Sv_new_sym(stu, "λ"),
+                        Sv_cons(
+                            stu,
+                            sv->val.ufunc->formals,
+                            sv->val.ufunc->body)), out);
             }
             break;
 
@@ -455,6 +458,12 @@ Sv_dump(Stu *stu, Sv *sv, FILE *out)
 
         case SV_STRUCTURE_CONSTRUCTOR:
             fprintf(out, "<constructor %s>", Type_name_string(stu, sv->type));
+            break;
+
+        case SV_STRUCTURE_ACCESS:
+            Sv_dump(stu, sv->val.reg[SV_CAR_REG], out);
+            fprintf(out, "::");
+            Sv_dump(stu, sv->val.reg[SV_CDR_REG], out);
             break;
 
         case SV_FOREIGN:

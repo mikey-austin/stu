@@ -68,6 +68,7 @@ main(int argc, char **argv)
     if (!files || repl) {
         Prompt_init(argv[0]);
 
+        StuEnv *env = NULL;
         for (;;) {
             int nread = Prompt_readline(&input);
             if (input == NULL) {
@@ -76,7 +77,9 @@ main(int argc, char **argv)
             }
 
             if (*input != '\0' && *input != '\n') {
-                result = Stu_eval_buf(stu, input);
+                result = Stu_eval_buf_in_env(
+                    stu, input, Stu_main_env(stu), &env);
+                Stu_update_main_env(stu, env);
                 Stu_dump_val(stu, result, stdout);
                 Stu_release_val(stu, result);
                 Prompt_save(input);

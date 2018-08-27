@@ -1,0 +1,2 @@
+(def std (import "stdlib.stu"))
+(lambda () std::grep)

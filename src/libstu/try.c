@@ -26,7 +26,7 @@
 
 static Sv
 *try(Stu *stu, Env *env, Sv *to_eval, Sv *(*catch)(Stu *stu, Sv *e, Env *env, void *arg),
-     void *catch_arg, Sv *(*eval)(Stu *stu, Env *env, Sv *x))
+     void *catch_arg, Sv *(*eval)(Stu *stu, Env *env, Sv *x, Env **updated), Env **updated)
 {
     Sv *result = NIL;
     int jmp_res = 0;
@@ -37,7 +37,7 @@ static Sv
     stu->last_try_marker = &curr_marker;
 
     if ((jmp_res = setjmp(curr_marker)) == 0) {
-        result = eval(stu, env, to_eval);
+        result = eval(stu, env, to_eval, updated);
     } else {
         /*
          * We have "caught" an exception, so invoke the supplied catch
@@ -104,22 +104,23 @@ extern Sv
         stu, env, to_eval, apply_lambda_catch_handler, (void *) catch_lambda);
 }
 
+static inline Sv
+*eval_ignore_updated_env(Stu *stu, Env *env, Sv *x, Env **updated)
+{
+    return Sv_eval(stu, env, x);
+}
+
 extern Sv
 *Try_eval(Stu *stu, Env *env, Sv *to_eval, Sv *(*catch)(Stu *, Sv *, Env *, void *), void *catch_arg)
 {
-    return try(stu, env, to_eval, catch, catch_arg, Sv_eval);
-}
-
-static inline Sv
-*eval_list_ignore_updated_env(Stu *stu, Env *env, Sv *x)
-{
-    return Sv_eval_list(stu, env, x, NULL);
+    return try(stu, env, to_eval, catch, catch_arg, eval_ignore_updated_env, NULL);
 }
 
 extern Sv
-*Try_eval_list(Stu *stu, Env *env, Sv *to_eval, Sv *(*catch)(Stu *, Sv *, Env *, void *), void *catch_arg)
+*Try_eval_list(Stu *stu, Env *env, Sv *to_eval, Sv *(*catch)(Stu *, Sv *, Env *, void *),
+               void *catch_arg, Env **updated)
 {
-    return try(stu, env, to_eval, catch, catch_arg, eval_list_ignore_updated_env);
+    return try(stu, env, to_eval, catch, catch_arg, Sv_eval_list, updated);
 }
 
 extern Sv

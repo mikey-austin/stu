@@ -23,6 +23,6 @@ struct Env;
 extern Sv *Try_default_catch_handler(Stu *, Sv *, Env *, void *);
 extern Sv *Try_eval_stu_catch(Stu *, Env *, Sv *);
 extern Sv *Try_eval(Stu *, Env *, Sv *, Sv *(*catch)(Stu *, Sv *, Env *, void *), void *);
-extern Sv *Try_eval_list(Stu *, Env *, Sv *, Sv *(*catch)(Stu *, Sv *, Env *, void *), void *);
+extern Sv *Try_eval_list(Stu *, Env *, Sv *, Sv *(*catch)(Stu *, Sv *, Env *, void *), void *, Env **);
 
 #endif

@@ -24,8 +24,6 @@
 
 typedef struct Mod_spec {
     Sv *name;
-    Sv *doc;
-    Hash *exports;
 } Mod_spec;
 
 extern Mod_spec *Mod_current_spec(Stu *);

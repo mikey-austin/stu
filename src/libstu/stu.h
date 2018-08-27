@@ -67,6 +67,14 @@
 typedef struct Sv StuVal;
 
 /**
+ * =head2 StuEnv
+ *
+ * The structure which tracks the head of the environment binding list.
+ *
+ */
+typedef struct Env StuEnv;
+
+/**
  * =head2 Stu
  *
  * The main L<stu> interpreter structure.
@@ -125,6 +133,31 @@ extern StuVal *Stu_eval_file(Stu *, const char *);
  *
  */
 extern StuVal *Stu_eval_buf(Stu *, const char *);
+
+/**
+ * =head2 StuVal *Stu_eval_buf(Stu *I<stu>, const char *I<buf>, StuEnv *I<base>, StuEnv **I<updated>)
+ *
+ * Same as I<Stu_eval_buf>, but pass in an explicit environment I<base> and return
+ * the updated environment head in I<updated>.
+ *
+ */
+extern StuVal *Stu_eval_buf_in_env(Stu *, const char *, StuEnv *, StuEnv **);
+
+/**
+ * =head2 void Stu_update_main_env(Stu *I<stu>, StuEnv *I<env>)
+ *
+ * Update the interpreter's main environment HEAD pointer.
+ *
+ */
+extern void Stu_update_main_env(Stu *, StuEnv *);
+
+/**
+ * =head2 StuEnv *Stu_main_env(Stu *I<stu>)
+ *
+ * Fetch the interpreter's current main environment HEAD pointer.
+ *
+ */
+extern StuEnv *Stu_main_env(Stu *);
 
 /**
  * =head2 int Stu_is_valid_form(Stu *I<stu>, const char *I<buf>)

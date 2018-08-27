@@ -48,6 +48,10 @@
 
 <p>The main structure encapsulating the atomic lisp object. The contents of this structure are intentionally opaque.</p>
 
+<h2 id="StuEnv">StuEnv</h2>
+
+<p>The structure which tracks the head of the environment binding list.</p>
+
 <h2 id="Stu">Stu</h2>
 
 <p>The main <a href="/stu/stu.html">stu</a> interpreter structure.</p>
@@ -75,6 +79,18 @@
 <h2 id="StuVal-Stu_eval_buf-Stu-stu-const-char-buf">StuVal *Stu_eval_buf(Stu *<i>stu</i>, const char *<i>buf</i>)</h2>
 
 <p>Same as <i>Stu_eval_file</i>, but parse the NUL-terminated buffer instead.</p>
+
+<h2 id="StuVal-Stu_eval_buf-Stu-stu-const-char-buf-StuEnv-base-StuEnv-updated">StuVal *Stu_eval_buf(Stu *<i>stu</i>, const char *<i>buf</i>, StuEnv *<i>base</i>, StuEnv **<i>updated</i>)</h2>
+
+<p>Same as <i>Stu_eval_buf</i>, but pass in an explicit environment <i>base</i> and return the updated environment head in <i>updated</i>.</p>
+
+<h2 id="void-Stu_update_main_env-Stu-stu-StuEnv-env">void Stu_update_main_env(Stu *<i>stu</i>, StuEnv *<i>env</i>)</h2>
+
+<p>Update the interpreter&#39;s main environment HEAD pointer.</p>
+
+<h2 id="StuEnv-Stu_main_env-Stu-stu">StuEnv *Stu_main_env(Stu *<i>stu</i>)</h2>
+
+<p>Fetch the interpreter&#39;s current main environment HEAD pointer.</p>
 
 <h2 id="int-Stu_is_valid_form-Stu-stu-const-char-buf">int Stu_is_valid_form(Stu *<i>stu</i>, const char *<i>buf</i>)</h2>
 

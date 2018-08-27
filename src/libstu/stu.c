@@ -163,23 +163,25 @@ extern Sv
 *Stu_parse_file(Stu *stu, const char *file)
 {
     Sv *list = NIL;
+    FILE *in;
 
     if (!file || !strcmp(file, "-")) {
-        yyin = stdin;
-    } else {
-        if ((yyin = fopen(file, "r")) == NULL)
-            err(1, "Parse_file: %s", file);
+        in = stdin;
+    } else if ((in = fopen(file, "r")) == NULL) {
+        err(1, "Parse_file: %s", file);
     }
 
+    YY_BUFFER_STATE bp = yy_create_buffer(in, YY_BUF_SIZE);
+    yy_switch_to_buffer(bp);
     switch (yyparse(stu, &list)) {
     case 2:
         errx(1, "Parser memory allocation error");
         break;
     }
 
-    if (yyin && yyin != stdin)
-        fclose(yyin);
-    yylex_destroy();
+    if (in && in != stdin)
+        fclose(in);
+    yy_delete_buffer(bp);
 
     return Sv_reverse(stu, list);
 }
@@ -191,7 +193,6 @@ extern Sv
 
     if (buf) {
         YY_BUFFER_STATE bp = yy_scan_string(buf);
-        yy_switch_to_buffer(bp);
         switch (yyparse(stu, &list)) {
         case 2:
             errx(1, "Parser memory allocation error");
@@ -204,17 +205,19 @@ extern Sv
 }
 
 static Sv
-*eval(Stu *stu, const char *arg, Sv *(*parse)(Stu *, const char *))
+*eval(Stu *stu, const char *arg, Sv *(*parse)(Stu *, const char *), Env *base, Env **updated)
 {
-    Sv *forms;
-    Sv *result;
-
     PUSH_SCOPE(stu);
+
+    Sv *forms, *result;
     forms = parse(stu, arg);
-    result = Try_eval_list(stu, stu->main_env, forms, Try_default_catch_handler, NULL);
+    result = Try_eval_list(
+        stu, base, forms, Try_default_catch_handler, NULL,
+        (updated ? updated : NULL));
     if (!IS_NIL(result)) {
         Gc_lock(stu, (Gc *) result);
     }
+
     POP_SCOPE(stu);
 
     return result;
@@ -223,13 +226,31 @@ static Sv
 extern Sv
 *Stu_eval_file(Stu *stu, const char *file)
 {
-    return eval(stu, file, Stu_parse_file);
+    return eval(stu, file, Stu_parse_file, Env_main(stu), NULL);
 }
 
 extern Sv
 *Stu_eval_buf(Stu *stu, const char *buf)
 {
-    return eval(stu, buf, Stu_parse_buf);
+    return eval(stu, buf, Stu_parse_buf, Env_main(stu), NULL);
+}
+
+extern Sv
+*Stu_eval_buf_in_env(Stu *stu, const char *buf, Env *base, Env **updated)
+{
+    return eval(stu, buf, Stu_parse_buf, (base ? base : Env_main(stu)), updated);
+}
+
+extern void
+Stu_update_main_env(Stu *stu, Env *env)
+{
+    Env_main_set(stu, env);
+}
+
+extern Env
+*Stu_main_env(Stu *stu)
+{
+    return Env_main(stu);
 }
 
 extern int

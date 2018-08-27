@@ -22,7 +22,6 @@
 #include "env.h"
 #include "sv.h"
 #include "builtins.h"
-#include "hash.h"
 #include "gc.h"
 #include "symtab.h"
 #include "mod.h"
@@ -100,10 +99,6 @@ extern Sv
 
     Sv *fields = NIL, *vals = NIL;
     for (Env *cur = captured; cur != base; cur = cur->prev) {
-        if (!Hash_get(curr_spec.exports, Symtab_get_name(stu, cur->sym))) {
-            /* This symbol has not been exported. */
-            continue;
-        }
         fields = Sv_cons(stu, Sv_new_sym_from_id(stu, cur->sym), fields);
         vals = Sv_cons(stu, cur->val, vals);
     }
@@ -133,19 +128,10 @@ Mod_set_current_spec(Stu *stu, Mod_spec *spec)
     stu->current_module = spec;
 }
 
-static void
-unlock_export(Hash_ent *entry, void *arg)
-{
-    Stu *stu = arg;
-    Sv *export = entry->v;
-    if (!IS_NIL(export))
-        Gc_unlock(stu, (Gc *) export);
-}
-
 extern void
 Mod_spec_init(Stu *stu, Mod_spec *spec)
 {
-    spec->exports = Hash_new(unlock_export, (void *) stu);
+    spec->name = NULL;
 }
 
 extern void
@@ -153,7 +139,4 @@ Mod_spec_destroy(Stu *stu, Mod_spec *spec)
 {
     if (!IS_NIL(spec->name))
         Gc_unlock(stu, (Gc *) spec->name);
-    if (!IS_NIL(spec->doc))
-        Gc_unlock(stu, (Gc *) spec->doc);
-    Hash_destroy(&spec->exports);
 }
