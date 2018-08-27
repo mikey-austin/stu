@@ -429,6 +429,7 @@ Sv_dump(Stu *stu, Sv *sv, FILE *out)
 
         case SV_LAMBDA:
             if (sv->val.ufunc) {
+                PUSH_SCOPE(stu);
                 Sv_dump(
                     stu, Sv_cons(
                         stu,
@@ -437,6 +438,7 @@ Sv_dump(Stu *stu, Sv *sv, FILE *out)
                             stu,
                             sv->val.ufunc->formals,
                             sv->val.ufunc->body)), out);
+                POP_SCOPE(stu);
             }
             break;
 

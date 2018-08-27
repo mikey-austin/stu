@@ -58,6 +58,13 @@ Gc_visit_sv(Stu *stu, Sv *sv, void (*action)(Stu *, Gc *))
             }
             break;
 
+        case SV_STRUCTURE_ACCESS:
+            if (sv->val.reg[SV_CAR_REG])
+                action(stu, (Gc *) sv->val.reg[SV_CAR_REG]);
+            if (sv->val.reg[SV_CDR_REG])
+                action(stu, (Gc *) sv->val.reg[SV_CDR_REG]);
+            break;
+
         default:
             if (sv->type >= SV_BUILTIN_TYPE_END) {
                 long length = Type_field_vector(stu, sv->type)->val.vector->length;

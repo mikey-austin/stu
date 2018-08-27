@@ -27,8 +27,8 @@
 (defmacro when (cond & body)
   "an if statement with no else"
   `(if ,cond
-    (progn ,@body)
-    nil))
+       (progn ,@body)
+     nil))
 
 (defmacro unless (cond & body)
   "perl-style unless"
