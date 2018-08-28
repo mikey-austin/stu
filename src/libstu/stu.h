@@ -135,7 +135,7 @@ extern StuVal *Stu_eval_file(Stu *, const char *);
 extern StuVal *Stu_eval_buf(Stu *, const char *);
 
 /**
- * =head2 StuVal *Stu_eval_buf(Stu *I<stu>, const char *I<buf>, StuEnv *I<base>, StuEnv **I<updated>)
+ * =head2 StuVal *Stu_eval_buf_in_env(Stu *I<stu>, const char *I<buf>, StuEnv *I<base>, StuEnv **I<updated>)
  *
  * Same as I<Stu_eval_buf>, but pass in an explicit environment I<base> and return
  * the updated environment head in I<updated>.
