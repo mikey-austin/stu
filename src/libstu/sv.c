@@ -708,6 +708,9 @@ static Sv
 *Sv_eval_structure_access(Stu *stu, Env *env, Sv *x)
 {
     Sv *structure = Sv_eval(stu, env, x->val.reg[SV_CAR_REG]);
+    if (IS_NIL(structure) || structure->type == SV_ERR) {
+        return structure;
+    }
     Sv *field = x->val.reg[SV_CDR_REG];
     return structure->val.structure[Type_field_index(stu, structure->type, field)];
 }

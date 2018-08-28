@@ -54,6 +54,7 @@ TESTS = 001_curried.input \
 		031_record_access.input \
 		032_deftype_in_lambda.input \
 		033_structure_accessor_dump.input \
+		034_structure_accessor_validate.input \
 		test_hash.test \
 		test_multi_stu.test \
 		test_valid_form.test

@@ -1,0 +1,2 @@
+;; This should evaluate to an error
+a::b
