@@ -69,6 +69,7 @@ AC_CONFIG_FILES([
     Makefile
     src/Makefile
     src/repl/Makefile
+    src/studoc/Makefile
     src/libstu/Makefile
     src/libstu/alloc/Makefile
     src/libstu/libstu.pc

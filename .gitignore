@@ -3,6 +3,7 @@ lexer.[hc]
 stu.tab.[hc]
 libstu.pc
 stu
+studoc
 *~
 *.o
 *.lo
